@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>歌詞HTML整形ツール (for Print) v5.4</title>
+    <title>歌詞HTML整形ツール (for Print) v5.9</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -34,18 +34,21 @@
             font-family: monospace;
             font-size: 0.9em;
         }
-        .controls-section, .url-fetch-area {
+        .controls-section, .url-fetch-container, .history-container-wrapper {
             margin-bottom: 15px;
             padding: 10px;
             background-color: #f9f9f9;
             border: 1px solid #eee;
             border-radius: 4px;
+        }
+        .url-fetch-container {
             display: flex; 
             align-items: center; 
             flex-wrap: wrap; 
+            gap: 10px;
         }
-        .controls-section label, .url-fetch-area label {
-            margin-right: 10px;
+        .controls-section label, .url-fetch-container label {
+            margin-right: 5px;
             font-weight: bold;
             flex-shrink: 0; 
         }
@@ -53,15 +56,17 @@
             width: 200px;
             vertical-align: middle;
         }
-        .url-fetch-area input[type="text"] {
-            flex-grow: 1; 
+        .url-fetch-container input[type="text"], .url-fetch-container select {
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
-            margin-right: 10px; 
+        }
+        .url-fetch-container input[type="text"] {
+            flex-grow: 1; 
+            margin-right: 0;
             min-width: 200px; 
         }
-        .url-fetch-area button {
+        .url-fetch-container button, .url-fetch-container select {
             flex-shrink: 0; 
         }
         button {
@@ -83,18 +88,20 @@
         button:hover {
             background-color: #0056b3;
         }
-        button.control-btn { 
+        button.control-btn, button.history-delete-btn {
             padding: 2px 6px;
             font-size: 0.8em;
-            margin-left: 5px; /* Adjusted margin for multiple buttons */
-            margin-right: 0; 
+            margin-left: 8px;
             background-color: #6c757d;
             color:white;
             border:none;
             border-radius:3px;
             cursor:pointer;
         }
-        button.control-btn:hover {
+        button.history-delete-btn {
+            background-color: #dc3545;
+        }
+        button.control-btn:hover, button.history-delete-btn:hover {
             background-color: #5a6268;
         }
         button#downloadHtmlBtnEl { background-color: #28a745; } 
@@ -104,18 +111,26 @@
         button:disabled { background-color: #ccc; cursor: not-allowed; }
 
         #outputContainerEl { margin-top: 20px; border: 1px solid #ddd; padding: 15px; background-color: #f9f9f9; border-radius: 4px; min-height: 100px; }
-        iframe#outputFrameEl { width: 100%; height: 400px; border: 1px solid #ccc; }
+        iframe#outputFrameEl { /* ★修正1: リサイズ可能に */
+            width: 100%; 
+            height: 400px; /* 初期高さ */
+            min-height: 200px; /* 最小高さ */
+            max-height: 80vh; /* 最大高さ (ビューポートの80%) */
+            border: 1px solid #ccc;
+            resize: vertical; /* 垂直方向のリサイズを許可 */
+            overflow: auto;   /* リサイズハンドル表示に必要 */
+            display: block;   /* iframeのレイアウト挙動を安定させる */
+        }
         .instructions { background-color: #e9ecef; padding: 15px; border-radius: 4px; margin-bottom: 20px; font-size: 0.9em; }
         .instructions ul { padding-left: 20px; }
         .status-message { 
-            margin-left: 10px; 
             font-size: 0.9em;
             flex-grow: 1;
             text-align: left;
         }
         .status-message.error { color: red; font-weight: bold; }
         .status-message.success { color: green; }
-        .loader { display: none; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; vertical-align: middle; margin-left: 10px; flex-shrink: 0; }
+        .loader { display: none; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; vertical-align: middle; margin-left: 5px; flex-shrink: 0; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .page-break-preview-indicator { text-align:center; color:blue; font-size:0.8em; border-top:1px dashed blue; margin: 5px 0; padding: 2px 0; user-select: none; }
         .action-buttons { 
@@ -125,43 +140,99 @@
         .action-buttons button {
             margin: 5px;
         }
-        .br-placeholder.space-added::before { /* Show the added space visually */
-            content: "' '"; /* Visual cue for added space */
+        .br-placeholder.space-added::before { 
+            content: "' '"; 
             color: #aaa;
             font-style: italic;
             font-size: 0.8em;
         }
-        .br-placeholder.no-space { /* No visual cue when no space */
-             /* display: none; /* Or ensure it takes no space if it's an element */
+        /* --- History & Accordion Styles --- */
+        .history-container-wrapper {
+            padding: 0;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            background-color: #f9f9f9;
         }
+        .accordion-toggle {
+            cursor: pointer; user-select: none; padding: 10px 15px; background-color: #e9ecef;
+            border-bottom: 1px solid #ddd; border-radius: 4px 4px 0 0;
+            font-size: 1.1em; font-weight: bold; display: flex; justify-content: space-between; align-items: center;
+        }
+        .accordion-toggle:hover { background-color: #dcdfe2; }
+        .accordion-icon { display: inline-block; transition: transform 0.3s ease; font-size: 0.8em; }
+        .accordion-toggle.open .accordion-icon { transform: rotate(-180deg); }
+        .history-content { 
+            max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+            background-color: #fff; padding: 0 15px; border-radius: 0 0 4px 4px;
+        }
+        .history-content.open { max-height: 250px; overflow-y: auto; padding: 10px 15px; }
+        #historyListEl { list-style-type: none; padding-left: 0; margin-top: 0; }
+        #historyListEl li { /* ★修正2: li全体をクリック可能領域に */
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 8px; 
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+            cursor: pointer; /* li全体がクリック可能であることを示唆 */
+        }
+        #historyListEl li:hover { background-color: #e9f5ff; }
+        #historyListEl li:last-child { border-bottom: none; }
+        
+        .history-item-text-content { /* ★修正2: テキスト部分をまとめる */
+            flex-grow: 1;
+            margin-right: 10px;
+            overflow: hidden; 
+        }
+        .history-item-title-artist { /* ★修正2: 曲名・アーティスト名部分 */
+            font-weight: 600; color: #0056b3; display: block; 
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            font-size: 0.95em;
+        }
+        .history-item-external-url { /* ★修正2: (URL)部分のリンク */
+            font-size: 0.8em; color: #555; text-decoration: none;
+            display: inline-block; /* クリック範囲をテキストのみに限定 */
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            /* max-width: 300px; /* 例: 必要に応じて最大の幅を設定 */
+        }
+        .history-item-external-url:hover { text-decoration: underline; }
+        /* --- End History & Accordion Styles --- */
 
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>歌詞HTML整形ツール (for Print) v5.4</h1>
+        <h1>歌詞HTML整形ツール (for Print) v5.9</h1>
         <div class="instructions">
              <p><strong>使い方:</strong></p>
             <ul>
-                <li>方法1: URLを入力し「読み込み実行」後、下のテキストエリアにHTMLが読み込まれます (<code>utaten.com</code> のみ)。</li>
+                <li>方法1: URLを入力し「読み込み実行」後、下のテキストエリアにHTMLが読み込まれます (<code>utaten.com</code> のみ)。成功したURLは履歴に保存されます。プロキシの選択も可能です。</li>
                 <li>方法2: HTML断片を直接テキストエリアに貼り付けます。</li>
+                <li>読み込み履歴（アコーディオンで開閉）からURLを選択して再読み込みできます。履歴の主要部分クリックで再読み込み、URL部分クリックで元ページを開きます。</li>
                 <li>歌詞フォントサイズをスライダーで調整します。</li>
-                <li>「整形して表示」でプレビューを生成。プレビュー内のボタンで改行・空白・改ページを調整できます。</li>
+                <li>「整形を初期化」でプレビューを生成。プレビュー内のボタンで改行・空白・改ページを調整できます。</li>
                 <li>「生成HTMLをダウンロード」でファイルを保存、または「印刷」ボタンで直接印刷できます。</li>
             </ul>
         </div>
 
-        <h3>URLからHTML断片を読み込む (CORSプロキシ経由)</h3>
-        <div class="url-fetch-area">
-            <label for="urlInputEl">URL (utaten.comのみ):</label>
+        <div class="history-container-wrapper">
+            <h3 id="historyToggleBtnEl" class="accordion-toggle">読み込み履歴 <span class="accordion-icon">&#9660;</span></h3>
+            <div id="historyContentEl" class="history-content">
+                <ul id="historyListEl"></ul>
+            </div>
+        </div>
+
+        <h3>URLから歌詞ページのHTMLを読み込む</h3>
+        <div class="url-fetch-container">
+            <label for="proxySelectEl">プロキシ:</label>
+            <select id="proxySelectEl"></select>
+            <label for="urlInputEl">URL:</label>
             <input type="text" id="urlInputEl" placeholder="https://utaten.com/lyric/xxxxxx/">
             <button id="fetchUrlBtnEl">読み込み実行</button>
             <div class="loader" id="urlLoaderEl"></div>
             <div id="urlStatusEl" class="status-message"></div>
         </div>
 
-        <h3>HTML断片入力</h3>
-        <textarea id="htmlInputEl" placeholder="ここにHTMLの断片を貼り付けるか、上記URLから読み込んでください..."></textarea>
+        <h3>歌詞ページのHTML</h3>
+        <textarea id="htmlInputEl" placeholder="ここにHTMLを貼り付けるか、上記URLから読み込んでください..."></textarea>
 
         <div class="controls-section">
             <label for="fontSizeSliderEl">歌詞フォントサイズ: <span id="fontSizeValueDisplayEl">20</span>pt</label>
@@ -169,7 +240,7 @@
         </div>
         
         <div class="action-buttons">
-            <button id="generatePreviewBtnEl">整形して表示</button>
+            <button id="generatePreviewBtnEl">整形を初期化</button>
             <button id="downloadHtmlBtnEl" disabled>生成HTMLをダウンロード</button>
             <button id="printBtnEl" disabled>印刷</button>
         </div>
@@ -196,12 +267,35 @@
         const fetchUrlBtnEl = document.getElementById('fetchUrlBtnEl');
         const urlStatusEl = document.getElementById('urlStatusEl');
         const urlLoaderEl = document.getElementById('urlLoaderEl');
+        const historyListEl = document.getElementById('historyListEl');
+        const proxySelectEl = document.getElementById('proxySelectEl');
+        const historyToggleBtnEl = document.getElementById('historyToggleBtnEl'); 
+        const historyContentEl = document.getElementById('historyContentEl'); 
+
 
         let songInfo = {};
         let originalLyricsLines = []; 
         let normalLineBreakStates = []; 
         let pageBreakAfterLineStates = [];
-        let addSpaceOnBrRemovalStates = []; // ★新機能: 空白追加の状態管理
+        let addSpaceOnBrRemovalStates = [];
+
+        const MAX_HISTORY_ITEMS = 15;
+        const HISTORY_STORAGE_KEY = 'lyricsToolUrlHistory_v2';
+
+        const proxies = [
+            { name: "Proxy 1 (codetabs)", buildUrl: (targetUrl) => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(targetUrl)}` },
+            { name: "Proxy 2 (allorigins)", buildUrl: (targetUrl) => `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}` }
+        ];
+
+        function populateProxies() {
+            proxies.forEach((proxy, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = proxy.name;
+                proxySelectEl.appendChild(option);
+            });
+             proxySelectEl.value = "0"; 
+        }
         
         fontSizeValueDisplayEl.textContent = fontSizeSliderEl.value;
 
@@ -215,6 +309,12 @@
                  }
             }
         });
+        
+        historyToggleBtnEl.addEventListener('click', () => {
+            historyContentEl.classList.toggle('open');
+            historyToggleBtnEl.classList.toggle('open');
+        });
+
 
         fetchUrlBtnEl.addEventListener('click', async () => {
             const targetUrl = urlInputEl.value.trim();
@@ -236,13 +336,29 @@
             urlStatusEl.textContent = '読み込み中...';
             urlStatusEl.className = 'status-message';
             fetchUrlBtnEl.disabled = true;
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+            
+            const selectedProxyIndex = parseInt(proxySelectEl.value);
+            const proxyBuilder = proxies[selectedProxyIndex].buildUrl;
+            const proxyUrl = proxyBuilder(targetUrl);
+
             try {
                 const response = await fetch(proxyUrl);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status} (プロキシまたは対象サイトの問題の可能性があります)`);
-                htmlInputEl.value = await response.text();
-                urlStatusEl.textContent = 'HTMLの読み込みに成功しました。';
+                if (!response.ok) throw new Error(`HTTPエラー ${response.status}. プロキシ (${proxies[selectedProxyIndex].name}) または対象サイトの問題の可能性があります。`);
+                const htmlText = await response.text();
+                htmlInputEl.value = htmlText;
+
+                const tempParser = new DOMParser();
+                const tempDoc = tempParser.parseFromString(htmlText, 'text/html');
+                const title = (tempDoc.querySelector('h2.newLyricTitle__main')?.textContent.replace('歌詞', '').trim()) || "タイトル不明";
+                const artist = (tempDoc.querySelector('div.lyricData__main h3 a')?.textContent.trim()) || "アーティスト不明";
+
+                if (title && title !== "タイトル不明") {
+                    addToHistory(targetUrl, title, artist);
+                }
+                
+                urlStatusEl.textContent = 'HTML読み込み成功。自動的に整形・プレビューします。';
                 urlStatusEl.className = 'status-message success';
+                generatePreviewBtnEl.click();
             } catch (error) {
                 console.error('Fetch error:', error);
                 urlStatusEl.textContent = `URL取得失敗: ${error.message}. 手動コピー＆ペーストしてください。`;
@@ -255,7 +371,7 @@
 
         generatePreviewBtnEl.addEventListener('click', () => {
             const rawHtml = htmlInputEl.value;
-            if (!rawHtml.trim()) { alert('HTML断片を入力してください。'); return; }
+            if (!rawHtml.trim()) { alert('歌詞ページのHTMLを入力してください。'); return; }
             const parser = new DOMParser();
             const doc = parser.parseFromString(rawHtml, 'text/html');
 
@@ -280,7 +396,7 @@
             originalLyricsLines = rawLyricsHtml.split(/<br\s*\/?>/i).map(line => line.trim());
             normalLineBreakStates = Array(originalLyricsLines.length - 1).fill(true);
             pageBreakAfterLineStates = Array(originalLyricsLines.length -1).fill(false);
-            addSpaceOnBrRemovalStates = Array(originalLyricsLines.length - 1).fill(false); // ★新機能: 初期化
+            addSpaceOnBrRemovalStates = Array(originalLyricsLines.length - 1).fill(false);
 
             displayFullPreview();
             downloadHtmlBtnEl.disabled = false;
@@ -304,12 +420,11 @@
                         }
                     }
 
-                    if (normalLineBreakStates[index]) { // BRが表示されている
+                    if (normalLineBreakStates[index]) { 
                         lyricsHtmlForPreview += `<button class="control-btn remove-br-btn" data-line-index="${index}">改行削除</button>`;
                         lyricsHtmlForPreview += `<br data-br-index="${index}">`;
-                    } else { // BRが削除されている
+                    } else { 
                         lyricsHtmlForPreview += `<button class="control-btn restore-br-btn" data-line-index="${index}">改行追加</button>`;
-                        // ★新機能: 空白追加/削除ボタン
                         if (addSpaceOnBrRemovalStates[index]) {
                             lyricsHtmlForPreview += `<button class="control-btn toggle-space-btn" data-line-index="${index}" data-action="remove_space">空白削除</button>`;
                             lyricsHtmlForPreview += `<span class="br-placeholder space-added" data-br-index="${index}"> </span>`;
@@ -334,8 +449,8 @@
                 .lyric-line-content { display: inline; }
                 button.control-btn { padding:1px 4px; font-size:0.75em; margin-left:5px; background-color:#6c757d; color:white; border:none; border-radius:3px; cursor:pointer; vertical-align: baseline;}
                 button.control-btn:hover { background-color:#5a6268; }
-                .br-placeholder { /* Empty, no space for removed BR by default */ }
-                .br-placeholder.space-added::before { content: "' '"; color: #ccc; font-style: italic; font-size:0.8em; margin: 0 2px; } /* Visual cue */
+                .br-placeholder.no-space { /* Empty */ }
+                .br-placeholder.space-added::before { content: " "; white-space: pre; }
                 .page-break-preview-indicator { text-align:center; color:blue; font-size:0.8em; border-top:1px dashed blue; margin: 5px 0; padding: 2px 0; user-select: none;}
             </style></head><body><h1>${songInfo.title}</h1><div class="song-info"><p>アーティスト: ${songInfo.artist}</p><p>作詞: ${songInfo.lyricist}</p><p>作曲: ${songInfo.composer}</p><p>リリース日: ${songInfo.releaseDate}</p></div><div class="lyrics">${lyricsHtmlForPreview}</div></body></html>`;
             
@@ -352,12 +467,10 @@
             iframeDoc.querySelectorAll('.restore-br-btn').forEach(b => b.onclick = () => toggleNormalBreak(parseInt(b.dataset.lineIndex), true));
             iframeDoc.querySelectorAll('.add-pb-btn').forEach(b => b.onclick = () => togglePageBreak(parseInt(b.dataset.lineIndex), true));
             iframeDoc.querySelectorAll('.remove-pb-btn').forEach(b => b.onclick = () => togglePageBreak(parseInt(b.dataset.lineIndex), false));
-            // ★新機能: 空白追加/削除ボタンのリスナー
             iframeDoc.querySelectorAll('.toggle-space-btn').forEach(button => {
                 button.onclick = () => {
                     const index = parseInt(button.dataset.lineIndex);
-                    const action = button.dataset.action;
-                    toggleSpaceState(index, action === "add_space");
+                    toggleSpaceState(index, button.dataset.action === "add_space");
                 };
             });
         }
@@ -365,11 +478,6 @@
         function toggleNormalBreak(index, showBr) {
             if (index >= 0 && index < normalLineBreakStates.length) {
                 normalLineBreakStates[index] = showBr;
-                // Optionally, if a BR is restored, reset the "add space" state for that line,
-                // as the space is only relevant when the BR is removed.
-                // if (showBr) {
-                //    addSpaceOnBrRemovalStates[index] = false;
-                // }
                 displayFullPreview();
             }
         }
@@ -379,7 +487,6 @@
                 displayFullPreview();
             }
         }
-        // ★新機能: 空白状態をトグルする関数
         function toggleSpaceState(index, addSpace) {
             if (index >= 0 && index < addSpaceOnBrRemovalStates.length) {
                 addSpaceOnBrRemovalStates[index] = addSpace;
@@ -387,25 +494,21 @@
             }
         }
 
-
         function generateFinalHtmlForOutput() {
             const currentFontSize = fontSizeSliderEl.value;
             let lyricsHtmlOutput = '';
             originalLyricsLines.forEach((line, index) => {
                 lyricsHtmlOutput += line; 
                 
-                if (index < normalLineBreakStates.length) { // Not the last line segment
-                    if (normalLineBreakStates[index]) { // If there's a normal BR
+                if (index < normalLineBreakStates.length) {
+                    if (normalLineBreakStates[index]) { 
                         lyricsHtmlOutput += '<br>';
-                    } else { // BR is removed
-                        // ★新機能: 条件に応じて空白を挿入
+                    } else { 
                         if (addSpaceOnBrRemovalStates[index]) {
                             lyricsHtmlOutput += ' '; 
                         }
-                        // Else: no BR, no space (direct concatenation)
                     }
                 }
-                // Add page break div *after* the line and its BR/space logic
                 if (index < pageBreakAfterLineStates.length && pageBreakAfterLineStates[index]) {
                     lyricsHtmlOutput += '<div class="print-page-break-element"></div>';
                 }
@@ -434,8 +537,97 @@
             </style></head><body><h1>${songInfo.title}</h1><div class="song-info"><p>アーティスト: ${songInfo.artist}</p><p>作詞: ${songInfo.lyricist}</p><p>作曲: ${songInfo.composer}</p><p>リリース日: ${songInfo.releaseDate}</p></div><div class="lyrics">${lyricsHtmlOutput}</div></body></html>`;
         }
 
+        function getHistory() {
+            const historyJson = localStorage.getItem(HISTORY_STORAGE_KEY);
+            try {
+                const parsed = JSON.parse(historyJson);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) { return []; }
+        }
+        function saveHistory(history) {
+            localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
+        }
+        function addToHistory(url, title, artist) {
+            if (!url || !title || title === "タイトル不明") return;
+            let history = getHistory();
+            history = history.filter(item => item.url !== url);
+            history.unshift({ url: url, title: title, artist: artist || "不明" });
+            if (history.length > MAX_HISTORY_ITEMS) {
+                history = history.slice(0, MAX_HISTORY_ITEMS);
+            }
+            saveHistory(history);
+            renderHistory();
+        }
+        function deleteHistoryItem(urlToDelete) {
+            let history = getHistory();
+            history = history.filter(item => item.url !== urlToDelete);
+            saveHistory(history);
+            renderHistory();
+        }
+        function renderHistory() { // ★修正2: クリック動作の変更
+            if (!historyListEl) return;
+            historyListEl.innerHTML = '';
+            const history = getHistory();
+            if (history.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = '履歴はありません。';
+                li.style.cssText = 'font-style: italic; color: #777; text-align: center; padding: 10px 0;';
+                historyListEl.appendChild(li);
+                return;
+            }
+            history.forEach((item) => {
+                const li = document.createElement('li');
+                // li全体を再読み込みのトリガーにする
+                li.onclick = (event) => {
+                    // イベントが外部リンクまたは削除ボタンから発生したものでないことを確認
+                    if (event.target.classList.contains('history-item-external-url') || 
+                        event.target.classList.contains('history-delete-btn') ||
+                        event.target.parentElement.classList.contains('history-delete-btn')) {
+                        return; 
+                    }
+                    urlInputEl.value = item.url;
+                    fetchUrlBtnEl.click();
+                };
+                
+                const textContentDiv = document.createElement('div');
+                textContentDiv.className = 'history-item-text-content';
+
+                const titleArtistSpan = document.createElement('span');
+                titleArtistSpan.className = 'history-item-title-artist';
+                titleArtistSpan.textContent = `${item.title}：${item.artist || '不明'}`;
+                titleArtistSpan.title = `クリックして再読み込み: ${item.title}`;
+                
+                const externalUrlLink = document.createElement('a');
+                externalUrlLink.href = item.url;
+                externalUrlLink.className = 'history-item-external-url';
+                externalUrlLink.target = '_blank';
+                // ★修正2: URLの省略表示はCSSで行う (max-widthとellipsis)
+                externalUrlLink.textContent = `(${item.url})`; 
+                externalUrlLink.title = `元のページを開く: ${item.url}`;
+                externalUrlLink.onclick = (e) => {
+                    e.stopPropagation(); // li のクリックイベントを発火させない
+                };
+
+                textContentDiv.appendChild(titleArtistSpan);
+                textContentDiv.appendChild(externalUrlLink);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = '削除';
+                deleteBtn.classList.add('history-delete-btn');
+                deleteBtn.dataset.url = item.url;
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation(); // li のクリックイベントを発火させない
+                    deleteHistoryItem(item.url);
+                };
+                
+                li.appendChild(textContentDiv);
+                li.appendChild(deleteBtn);
+                historyListEl.appendChild(li);
+            });
+        }
+
         downloadHtmlBtnEl.addEventListener('click', () => {
-            if (!songInfo.title) { alert('先に「整形して表示」を実行してください。'); return; }
+            if (!songInfo.title) { alert('先に「整形を初期化」を実行してください。'); return; }
             const finalHtmlContent = generateFinalHtmlForOutput();
             let filename = (songInfo.title && songInfo.title !== "タイトル不明") ? songInfo.title.replace(/[\\/*?:"<>|]/g, "_") + ".html" : "lyrics_formatted.html";
             const blob = new Blob([finalHtmlContent], { type: 'text/html;charset=utf-8' });
@@ -447,9 +639,13 @@
         });
 
         printBtnEl.addEventListener('click', () => {
-            if (!songInfo.title) { alert('先に「整形して表示」を実行してください。'); return; }
+            if (!songInfo.title) { alert('先に「整形を初期化」を実行してください。'); return; }
             const finalHtmlContent = generateFinalHtmlForOutput();
             const printWindow = window.open('', '_blank', 'width=800,height=600');
+            if (!printWindow) {
+                alert("印刷ウィンドウを開けませんでした。ポップアップブロッカーを確認してください。");
+                return;
+            }
             printWindow.document.open();
             printWindow.document.write(finalHtmlContent);
             printWindow.document.close();
@@ -462,10 +658,13 @@
                     } else { setTimeout(attemptPrint, 200); }
                 } catch (e) { console.error("Error during print attempt:", e); }
             };
-            if (printWindow) {
-                if (printWindow.document.readyState === "complete") { attemptPrint(); }
-                else { printWindow.onload = attemptPrint; setTimeout(attemptPrint, 500); }
-            } else { alert("印刷ウィンドウを開けませんでした。ポップアップブロッカーを確認してください。"); }
+            if (printWindow.document.readyState === "complete") { attemptPrint(); }
+            else { printWindow.onload = attemptPrint; setTimeout(attemptPrint, 500); }
+        });
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            populateProxies();
+            renderHistory();
         });
     </script>
 </body>
