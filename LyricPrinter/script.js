@@ -14,6 +14,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const proxySelectEl = document.getElementById('proxySelectEl');
     const historyToggleBtnEl = document.getElementById('historyToggleBtnEl'); 
     const historyContentEl = document.getElementById('historyContentEl'); 
+    const updateHistoryToggleBtnEl = document.getElementById('updateHistoryToggleBtnEl'); // 更新履歴用
+    const updateHistoryContentEl = document.getElementById('updateHistoryContentEl'); // 更新履歴用
+
 
     let songInfo = {};
     let originalLyricsLines = []; 
@@ -22,11 +25,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let addSpaceOnBrRemovalStates = [];
 
     const MAX_HISTORY_ITEMS = 15;
-    const HISTORY_STORAGE_KEY = 'lyricsToolUrlHistory_v2';
+    const HISTORY_STORAGE_KEY = 'lyricsToolUrlHistory_v2'; 
 
     const proxies = [
-        { name: "Proxy 1 (codetabs)", buildUrl: (targetUrl) => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(targetUrl)}` },
-        { name: "Proxy 2 (allorigins)", buildUrl: (targetUrl) => `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}` }
+        { name: "Proxy 1 (codetabs)", idName: "codetabs", buildUrl: (targetUrl) => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(targetUrl)}` },
+        { name: "Proxy 2 (allorigins)", idName: "allorigins", buildUrl: (targetUrl) => `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}` }
     ];
 
     function populateProxies() {
@@ -36,26 +39,48 @@ document.addEventListener('DOMContentLoaded', () => {
             option.textContent = proxy.name;
             proxySelectEl.appendChild(option);
         });
-            proxySelectEl.value = "0"; 
+        proxySelectEl.value = "0"; 
     }
     
     fontSizeValueDisplayEl.textContent = fontSizeSliderEl.value;
 
     fontSizeSliderEl.addEventListener('input', (event) => {
-        fontSizeValueDisplayEl.textContent = event.target.value;
+        const newSize = event.target.value;
+        fontSizeValueDisplayEl.textContent = newSize;
+        if (typeof gtag === 'function') {
+            gtag('event', 'font_size_adjusted', {
+                'event_category': 'controls', 'event_label': 'lyrics_font_size', 'value': parseInt(newSize)
+            });
+        }
         if (outputFrameEl.contentDocument && outputFrameEl.contentDocument.body && outputFrameEl.contentDocument.body.innerHTML) {
-                const iframeDoc = outputFrameEl.contentDocument;
-                const lyricsEl = iframeDoc.querySelector('.lyrics');
-                if (lyricsEl) {
-                    lyricsEl.style.fontSize = event.target.value + 'pt';
-                }
+            const iframeDoc = outputFrameEl.contentDocument;
+            const lyricsEl = iframeDoc.querySelector('.lyrics');
+            if (lyricsEl) { lyricsEl.style.fontSize = newSize + 'pt'; }
         }
     });
     
-    if (historyToggleBtnEl) { // Ensure element exists before adding listener
+    if (historyToggleBtnEl) {
         historyToggleBtnEl.addEventListener('click', () => {
             historyContentEl.classList.toggle('open');
             historyToggleBtnEl.classList.toggle('open');
+            if (typeof gtag === 'function') {
+                gtag('event', 'toggle_history_view', {
+                    'event_category': 'ui_interaction', 'event_label': historyContentEl.classList.contains('open') ? 'open' : 'close'
+                });
+            }
+        });
+    }
+    // 更新履歴アコーディオンの制御
+    if (updateHistoryToggleBtnEl) {
+        updateHistoryToggleBtnEl.addEventListener('click', () => {
+            updateHistoryContentEl.classList.toggle('open');
+            updateHistoryToggleBtnEl.classList.toggle('open');
+             if (typeof gtag === 'function') {
+                gtag('event', 'toggle_update_history_view', {
+                    'event_category': 'ui_interaction',
+                    'event_label': updateHistoryContentEl.classList.contains('open') ? 'open' : 'close'
+                });
+            }
         });
     }
 
@@ -82,12 +107,27 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchUrlBtnEl.disabled = true;
         
         const selectedProxyIndex = parseInt(proxySelectEl.value);
-        const proxyBuilder = proxies[selectedProxyIndex].buildUrl;
-        const proxyUrl = proxyBuilder(targetUrl);
+        const selectedProxy = proxies[selectedProxyIndex];
+        const proxyUrl = selectedProxy.buildUrl(targetUrl);
 
+        if (typeof gtag === 'function') {
+            gtag('event', 'fetch_url_attempt', {
+                'event_category': 'lyrics_source', 'event_label': targetUrl.substring(0, 100), 'proxy_used': selectedProxy.idName
+            });
+        }
+        
         try {
             const response = await fetch(proxyUrl);
-            if (!response.ok) throw new Error(`HTTPエラー ${response.status}. プロキシ (${proxies[selectedProxyIndex].name}) または対象サイトの問題の可能性があります。`);
+            if (!response.ok) {
+                const errorMsg = `HTTPエラー <span class="math-inline">\{response\.status\}\. プロキシ \(</span>{selectedProxy.name}) または対象サイトの問題の可能性があります。`;
+                if (typeof gtag === 'function') {
+                    gtag('event', 'fetch_url_outcome', {
+                        'event_category': 'lyrics_source', 'event_label': 'failure',
+                        'proxy_used': selectedProxy.idName, 'error_details': `status_${response.status}`
+                    });
+                }
+                throw new Error(errorMsg);
+            }
             const htmlText = await response.text();
             htmlInputEl.value = htmlText;
 
@@ -99,6 +139,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (title && title !== "タイトル不明") {
                 addToHistory(targetUrl, title, artist);
             }
+            if (typeof gtag === 'function') {
+                gtag('event', 'fetch_url_outcome', {
+                    'event_category': 'lyrics_source', 'event_label': 'success',
+                    'proxy_used': selectedProxy.idName, 'song_title': title.substring(0,100)
+                });
+            }
             
             urlStatusEl.textContent = 'HTML読み込み成功。自動的に整形・プレビューします。';
             urlStatusEl.className = 'status-message success';
@@ -107,6 +153,12 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Fetch error:', error);
             urlStatusEl.textContent = `URL取得失敗: ${error.message}. 手動コピー＆ペーストしてください。`;
             urlStatusEl.className = 'status-message error';
+            if (typeof gtag === 'function') {
+                gtag('event', 'fetch_url_outcome', {
+                    'event_category': 'lyrics_source', 'event_label': 'failure',
+                    'proxy_used': selectedProxy.idName, 'error_details': error.message.substring(0,100)
+                });
+            }
         } finally {
             urlLoaderEl.style.display = 'none';
             fetchUrlBtnEl.disabled = false;
@@ -141,6 +193,12 @@ document.addEventListener('DOMContentLoaded', () => {
         normalLineBreakStates = Array(originalLyricsLines.length - 1).fill(true);
         pageBreakAfterLineStates = Array(originalLyricsLines.length -1).fill(false);
         addSpaceOnBrRemovalStates = Array(originalLyricsLines.length - 1).fill(false);
+
+        if (typeof gtag === 'function') {
+            gtag('event', 'generate_preview', {
+                'event_category': 'core_action', 'event_label': songInfo.title ? songInfo.title.substring(0,100) : 'unknown_title'
+            });
+        }
 
         displayFullPreview();
         downloadHtmlBtnEl.disabled = false;
@@ -194,233 +252,4 @@ document.addEventListener('DOMContentLoaded', () => {
             button.control-btn { padding:1px 4px; font-size:0.75em; margin-left:5px; background-color:#6c757d; color:white; border:none; border-radius:3px; cursor:pointer; vertical-align: baseline;}
             button.control-btn:hover { background-color:#5a6268; }
             .br-placeholder.no-space { /* Empty */ }
-            .br-placeholder.space-added::before { content: " "; white-space: pre; }
-            .page-break-preview-indicator { text-align:center; color:blue; font-size:0.8em; border-top:1px dashed blue; margin: 5px 0; padding: 2px 0; user-select: none;}
-        </style></head><body><h1>${songInfo.title}</h1><div class="song-info"><p>アーティスト: ${songInfo.artist}</p><p>作詞: ${songInfo.lyricist}</p><p>作曲: ${songInfo.composer}</p><p>リリース日: ${songInfo.releaseDate}</p></div><div class="lyrics">${lyricsHtmlForPreview}</div></body></html>`;
-        
-        const iframeDoc = outputFrameEl.contentDocument || outputFrameEl.contentWindow.document;
-        iframeDoc.open();
-        iframeDoc.write(previewContent);
-        iframeDoc.close();
-        
-        // iframeのコンテンツが完全にロードされた後にリスナーをアタッチ
-        // srcdocや動的writeの場合、onloadが期待通りに発火しないことがあるため、setTimeoutで遅延させるのが一つの手
-        setTimeout(() => {
-            if (iframeDoc.body) { // bodyが利用可能か確認
-                attachControlListeners(iframeDoc);
-            }
-        }, 100); // 100msの遅延。必要に応じて調整。
-    }
-    
-    function attachControlListeners(iframeDoc) {
-        if (!iframeDoc || !iframeDoc.body) return; // iframeDocがnullまたはbodyがない場合は何もしない
-        iframeDoc.querySelectorAll('.remove-br-btn').forEach(b => b.onclick = () => toggleNormalBreak(parseInt(b.dataset.lineIndex), false));
-        iframeDoc.querySelectorAll('.restore-br-btn').forEach(b => b.onclick = () => toggleNormalBreak(parseInt(b.dataset.lineIndex), true));
-        iframeDoc.querySelectorAll('.add-pb-btn').forEach(b => b.onclick = () => togglePageBreak(parseInt(b.dataset.lineIndex), true));
-        iframeDoc.querySelectorAll('.remove-pb-btn').forEach(b => b.onclick = () => togglePageBreak(parseInt(b.dataset.lineIndex), false));
-        iframeDoc.querySelectorAll('.toggle-space-btn').forEach(button => {
-            button.onclick = () => {
-                const index = parseInt(button.dataset.lineIndex);
-                toggleSpaceState(index, button.dataset.action === "add_space");
-            };
-        });
-    }
-
-    function toggleNormalBreak(index, showBr) {
-        if (index >= 0 && index < normalLineBreakStates.length) {
-            normalLineBreakStates[index] = showBr;
-            displayFullPreview();
-        }
-    }
-    function togglePageBreak(index, addPb) {
-            if (index >= 0 && index < pageBreakAfterLineStates.length) {
-            pageBreakAfterLineStates[index] = addPb;
-            displayFullPreview();
-        }
-    }
-    function toggleSpaceState(index, addSpace) {
-        if (index >= 0 && index < addSpaceOnBrRemovalStates.length) {
-            addSpaceOnBrRemovalStates[index] = addSpace;
-            displayFullPreview();
-        }
-    }
-
-    function generateFinalHtmlForOutput() {
-        const currentFontSize = fontSizeSliderEl.value;
-        let lyricsHtmlOutput = '';
-        originalLyricsLines.forEach((line, index) => {
-            lyricsHtmlOutput += line; 
-            
-            if (index < normalLineBreakStates.length) {
-                if (normalLineBreakStates[index]) { 
-                    lyricsHtmlOutput += '<br>';
-                } else { 
-                    if (addSpaceOnBrRemovalStates[index]) {
-                        lyricsHtmlOutput += ' '; 
-                    }
-                }
-            }
-            if (index < pageBreakAfterLineStates.length && pageBreakAfterLineStates[index]) {
-                lyricsHtmlOutput += '<div class="print-page-break-element"></div>';
-            }
-        });
-
-        return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${songInfo.title} - 歌詞</title><style>
-            body { font-family: 'MS Mincho', 'Hiragino Mincho ProN', Meiryo, sans-serif; margin: 20mm; font-size: 12pt; background-color: #fff; color: #000; }
-            h1 { font-size: 20pt; text-align: center; margin-bottom: 15px; font-weight: bold; }
-            .song-info { text-align: right; margin-bottom: 25px; font-size: 10pt; } .song-info p { margin: 3px 0; }
-            .lyrics { margin-top: 20px; text-align: left; font-size: ${currentFontSize}pt; line-height: 2.2; column-count: 1; }
-            ruby { display: ruby; ruby-position: over !important; line-height: initial; }
-            ruby rt { font-size: 0.55em; opacity: 0.95; user-select: none; }
-            @media print {
-                body { margin: 15mm; font-size: 11pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                h1 { font-size: 18pt; }
-                .song-info { font-size: 9pt; }
-                .lyrics { font-size: ${Math.max(8, parseInt(currentFontSize) - 1)}pt; line-height: 2.0; }
-                .print-page-break-element { 
-                    page-break-after: always !important; 
-                    display: block !important; height: 0 !important; line-height: 0 !important; font-size: 0 !important;
-                    margin: 0 !important; padding: 0 !important; border: none !important;
-                    visibility: visible !important; content: ""; 
-                }
-            }
-            .print-page-break-element { display: none; }
-        </style></head><body><h1>${songInfo.title}</h1><div class="song-info"><p>アーティスト: ${songInfo.artist}</p><p>作詞: ${songInfo.lyricist}</p><p>作曲: ${songInfo.composer}</p><p>リリース日: ${songInfo.releaseDate}</p></div><div class="lyrics">${lyricsHtmlOutput}</div></body></html>`;
-    }
-
-    function getHistory() {
-        const historyJson = localStorage.getItem(HISTORY_STORAGE_KEY);
-        try {
-            const parsed = JSON.parse(historyJson);
-            return Array.isArray(parsed) ? parsed : [];
-        } catch (e) { return []; }
-    }
-    function saveHistory(history) {
-        localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
-    }
-    function addToHistory(url, title, artist) {
-        if (!url || !title || title === "タイトル不明") return;
-        let history = getHistory();
-        history = history.filter(item => item.url !== url);
-        history.unshift({ url: url, title: title, artist: artist || "不明" });
-        if (history.length > MAX_HISTORY_ITEMS) {
-            history = history.slice(0, MAX_HISTORY_ITEMS);
-        }
-        saveHistory(history);
-        renderHistory();
-    }
-    function deleteHistoryItem(urlToDelete) {
-        let history = getHistory();
-        history = history.filter(item => item.url !== urlToDelete);
-        saveHistory(history);
-        renderHistory();
-    }
-    function renderHistory() {
-        if (!historyListEl) return;
-        historyListEl.innerHTML = '';
-        const history = getHistory();
-        if (history.length === 0) {
-            const li = document.createElement('li');
-            li.textContent = '履歴はありません。';
-            li.style.cssText = 'font-style: italic; color: #777; text-align: center; padding: 10px 0;';
-            historyListEl.appendChild(li);
-            return;
-        }
-        history.forEach((item) => {
-            const li = document.createElement('li');
-            li.onclick = (event) => {
-                if (event.target.classList.contains('history-item-external-url') || 
-                    event.target.classList.contains('history-delete-btn') ||
-                    (event.target.parentElement && event.target.parentElement.classList.contains('history-delete-btn'))) {
-                    return; 
-                }
-                urlInputEl.value = item.url;
-                fetchUrlBtnEl.click();
-            };
-            
-            const textContentDiv = document.createElement('div');
-            textContentDiv.className = 'history-item-text-content';
-
-            const titleArtistSpan = document.createElement('span');
-            titleArtistSpan.className = 'history-item-title-artist';
-            titleArtistSpan.textContent = `${item.title}：${item.artist || '不明'}`;
-            titleArtistSpan.title = `クリックして再読み込み: ${item.title}`;
-            
-            const externalUrlLink = document.createElement('a');
-            externalUrlLink.href = item.url;
-            externalUrlLink.className = 'history-item-external-url';
-            externalUrlLink.target = '_blank';
-            externalUrlLink.textContent = `(${item.url})`; 
-            externalUrlLink.title = `元のページを開く: ${item.url}`;
-            externalUrlLink.onclick = (e) => {
-                e.stopPropagation(); 
-            };
-
-            textContentDiv.appendChild(titleArtistSpan);
-            textContentDiv.appendChild(externalUrlLink);
-
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = '削除';
-            deleteBtn.classList.add('history-delete-btn');
-            deleteBtn.dataset.url = item.url;
-            deleteBtn.onclick = (e) => {
-                e.stopPropagation(); 
-                deleteHistoryItem(item.url);
-            };
-            
-            li.appendChild(textContentDiv);
-            li.appendChild(deleteBtn);
-            historyListEl.appendChild(li);
-        });
-    }
-
-    downloadHtmlBtnEl.addEventListener('click', () => {
-        if (!songInfo.title) { alert('先に「整形を初期化」を実行してください。'); return; }
-        const finalHtmlContent = generateFinalHtmlForOutput();
-        let filename = (songInfo.title && songInfo.title !== "タイトル不明") ? songInfo.title.replace(/[\\/*?:"<>|]/g, "_") + ".html" : "lyrics_formatted.html";
-        const blob = new Blob([finalHtmlContent], { type: 'text/html;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = filename;
-        document.body.appendChild(a); a.click();
-        document.body.removeChild(a); URL.revokeObjectURL(url);
-    });
-
-    printBtnEl.addEventListener('click', () => {
-        if (!songInfo.title) { alert('先に「整形を初期化」を実行してください。'); return; }
-        const finalHtmlContent = generateFinalHtmlForOutput();
-        const printWindow = window.open('', '_blank', 'width=800,height=600');
-        if (!printWindow) {
-            alert("印刷ウィンドウを開けませんでした。ポップアップブロッカーを確認してください。");
-            return;
-        }
-        printWindow.document.open();
-        printWindow.document.write(finalHtmlContent);
-        printWindow.document.close();
-        
-        const attemptPrint = () => {
-            try {
-                if (!printWindow || printWindow.closed) { return; }
-                if (printWindow.document.readyState === "complete") {
-                    printWindow.focus(); printWindow.print();
-                } else { setTimeout(attemptPrint, 200); }
-            } catch (e) { console.error("Error during print attempt:", e); }
-        };
-        // Ensure content is loaded before attempting to print
-        if (printWindow.document.readyState === "complete") {
-             attemptPrint();
-        } else {
-            printWindow.onload = attemptPrint;
-            // Fallback timeout for safety, as onload might not always fire as expected with dynamic writes
-            setTimeout(() => {
-                if (printWindow.document.readyState !== "complete") {
-                    attemptPrint(); // Attempt even if onload didn't fire after a delay
-                }
-            }, 700); // Slightly longer delay
-        }
-    });
-    
-    // Initial setup on page load
-    populateProxies();
-    renderHistory();
-});
+            .br-placeholder.space-added::before { content: " "; white-
