@@ -3,20 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ PAGE_TITLE }}</title>
-    <meta name="description" content="{{ META_DESCRIPTION }}">
+    <title>歌詞ページ印刷用整形ツール</title>
+    <meta name="version" content="13"> 
+    <meta name="last-updated" content="2025-05-26">
+    <meta name="description" content="指定された歌詞ページのURLまたはHTMLソースから、印刷に適した形式に整形するツールです。ルビ表示、フォントサイズ、改行、改ページなどを調整できます。">
     
-    <meta property="og:title" content="{{ OG_TITLE }}">
-    <meta property="og:description" content="{{ OG_DESCRIPTION }}">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ SITE_URL }}">
-    <meta property="og:image" content="{{ OG_IMAGE_URL }}">
-    <meta name="twitter:card" content="summary_large_image"> <meta name="twitter:title" content="{{ OG_TITLE }}">
-    <meta name="twitter:description" content="{{ OG_DESCRIPTION }}">
-    <meta name="twitter:image" content="{{ OG_IMAGE_URL }}">
-
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WWQTE7VWKG"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -24,53 +15,118 @@
       gtag('js', new Date());
       gtag('config', 'G-WWQTE7VWKG');
     </script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <div class="theme-switcher-container">
-            <button id="theme-toggle-button" aria-label="テーマを切り替える">
-                <i id="theme-icon" class="fa-solid"></i>
-            </button>
+        <h1>歌詞ページ印刷用整形ツール</h1>
+        <p class="version-info">最終更新: 2025年5月26日 (Rev. 13)</p>
+
+        <p class="tool-description">
+            指定された歌詞ページのURLまたはHTMLソースから、印刷に適した形式に整形するツールです。<br>
+            ルビ表示、フォントサイズ、改行、改ページなどを調整できます。
+        </p>
+
+        <div class="instructions">
+             <p><strong>使い方:</strong></p>
+            <ul>
+                <li>方法1: 下の「URLから歌詞ページのHTMLを読み込む」セクションに <code>utaten.com</code> のURLを入力し、「読み込み実行」ボタンを押してください。成功したURLは履歴に保存されます。プロキシの選択も可能です。</li>
+                <li>方法2: 「歌詞ページのHTML」入力欄にHTMLを直接貼り付けます。</li>
+                <li>読み込み履歴（アコーディオンで開閉）からURLを選択して再読み込みできます。履歴の主要部分クリックで再読み込み、URL部分クリックで元ページを開きます。</li>
+                <li>歌詞フォントサイズをスライダーで調整します。</li>
+                <li>「整形を初期化」でプレビューを生成。プレビュー内のボタンで改行・空白・改ページを調整できます。</li>
+                <li>「生成HTMLをダウンロード」でファイルを保存、または「印刷」ボタンで直接印刷できます。</li>
+            </ul>
         </div>
 
-        <header class="profile-section">
-            <img src="{{ PROFILE_AVATAR_URL }}" alt="{{ PROFILE_NAME }}のプロフィール画像" class="profile-image" id="profile-avatar">
-            <h1 class="profile-name" id="profile-name-display">{{ PROFILE_NAME }}</h1>
-            <p class="profile-bio" id="profile-bio-display">{{ PROFILE_BIO_HTML }}</p> <div class="social-links">
-                <a href="https://x.com/kiyo4act/" target="_blank" rel="noopener noreferrer" class="social-link button-style">
-                    <i class="fa-brands fa-x-twitter"></i> X (旧Twitter)
-                </a>
-                <a href="https://github.com/kiyo4act" target="_blank" rel="noopener noreferrer" class="social-link button-style">
-                    <i class="fa-brands fa-github"></i> GitHub
-                </a>
-                <a href="https://konoe.studio/" target="_blank" rel="noopener noreferrer" class="social-link button-style">
-                    <i class="fa-solid fa-file-lines"></i> ブログ 
-                </a>
+        <div class="history-container-wrapper">
+            <h3 id="historyToggleBtnEl" class="accordion-toggle">読み込み履歴 <span class="accordion-icon">&#9660;</span></h3>
+            <div id="historyContentEl" class="history-content">
+                <ul id="historyListEl"></ul>
             </div>
-        </header>
+        </div>
+        
+        <h3>URLから歌詞ページのHTMLを読み込む</h3>
+        <div class="url-fetch-container">
+            <label for="proxySelectEl">プロキシ:</label>
+            <select id="proxySelectEl"></select>
+            <label for="urlInputEl">URL:</label>
+            <input type="text" id="urlInputEl" placeholder="https://utaten.com/lyric/xxxxxx/">
+            <button id="fetchUrlBtnEl">読み込み実行</button>
+            <div class="loader" id="urlLoaderEl"></div>
+            <div id="urlStatusEl" class="status-message"></div>
+        </div>
 
-        <main>
-            <section class="tools-section">
-                <h2>公開しているツール</h2>
-                <div id="tools-list-container">
-                    <p class="loading-message">ツール一覧を読み込み中...</p>
-                </div>
-            </section>
+        <h3>歌詞ページのHTML</h3>
+        <textarea id="htmlInputEl" placeholder="ここにHTMLを貼り付けるか、上記URLから読み込んでください..."></textarea>
 
-            <section class="other-links-section">
-                <h2>その他リンク</h2>
+        <div class="controls-section">
+            <label for="fontSizeSliderEl">歌詞フォントサイズ: <span id="fontSizeValueDisplayEl">20</span>pt</label>
+            <input type="range" id="fontSizeSliderEl" min="8" max="28" value="20">
+        </div>
+        
+        <div class="action-buttons">
+            <button id="generatePreviewBtnEl">整形を初期化</button>
+            <button id="downloadHtmlBtnEl" disabled>生成HTMLをダウンロード</button>
+            <button id="printBtnEl" disabled>印刷</button>
+        </div>
+
+        <h2>整形後プレビュー</h2>
+        <div id="outputContainerEl">
+            <iframe id="outputFrameEl" title="整形後HTMLプレビュー"></iframe>
+        </div>
+
+        <div class="update-history-wrapper">
+            <h3 id="updateHistoryToggleBtnEl" class="accordion-toggle">ツールの更新履歴 <span class="accordion-icon">&#9660;</span></h3>
+            <div id="updateHistoryContentEl" class="update-history-content accordion-content"> 
                 <ul>
-                    <li><a href="【その他の重要なリンク1のURL】" target="_blank" rel="noopener noreferrer" class="button-style">【リンク1のタイトル】</a></li>
-                    <li><a href="【その他の重要なリンク2のURL】" target="_blank" rel="noopener noreferrer" class="button-style">【リンク2のタイトル】</a></li>
+                    <li>
+                        <span class="version-date">2025年5月26日</span> <span class="version-rev">(Rev. 13)</span>
+                        <ul class="change-list">
+                            <li>ツールタイトル、バージョン情報、説明、更新履歴の管理をHTML直書きに変更。</li>
+                            <li>JavaScriptから上記静的テキスト設定処理を削除。</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <span class="version-date">2025年5月26日</span> <span class="version-rev">(Rev. 12)</span>
+                        <ul class="change-list">
+                            <li>Google Analytics (GA4) との連携機能を追加 (測定ID: G-WWQTE7VWKG)。主要操作のイベントトラッキングを実装。</li>
+                            <li>（旧）更新履歴をアコーディオン形式で追加。（Rev.13でHTML直書きに変更）</li>
+                            <li>読み込み履歴アコーディオンの上下の隙間を調整。</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <span class="version-date">2025年5月26日</span> <span class="version-rev">(Rev. 11)</span>
+                        <ul class="change-list">
+                            <li>「整形後プレビュー」画面の下方向への手動リサイズ機能を追加。</li>
+                            <li>読み込み履歴のクリック動作を改善（項目全体で再読み込み、URL部分のみ外部リンク化）。</li>
+                            <li>履歴に表示されるURLを、表示領域に余裕がある場合は省略しないようにCSSで調整。</li>
+                        </ul>
+                    </li>
+                     <li>
+                        <span class="version-date">2025年5月26日</span> <span class="version-rev">(Rev. 10)</span>
+                        <ul class="change-list">
+                            <li>UIテキスト変更（「HTML断片」→「歌詞ページのHTML」など）。</li>
+                            <li>読み込み履歴の見た目を改善。</li>
+                            <li>読み込み履歴をアコーディオン化し、URL入力欄の上に配置。</li>
+                            <li>URL読み込み成功時に自動でプレビューを生成、「整形して表示」ボタンを「整形を初期化」に変更。</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <span class="version-date">2025年5月26日</span> <span class="version-rev">(Rev. 1-9)</span>
+                        <ul class="change-list">
+                            <li>基本機能開発、UI改善、バグ修正、GA4連携準備など。(詳細は<a href="https://github.com/your-username/your-repo/blob/main/README.md#%E6%9B%B4%E6%96%B0%E5%B1%A5%E6%AD%B4" target="_blank" rel="noopener noreferrer">README</a>参照)</li>
+                        </ul>
+                    </li>
                 </ul>
-            </section>
-        </main>
+            </div>
+        </div>
 
-        <footer>
-            <p>最終更新日: <span id="page-last-updated">読み込み中...</span></p>
-            <p>&copy; <span id="current-year"></span> <span id="footer-profile-name">{{ PROFILE_NAME }}</span></p>
-        </footer>
+        <p style="font-size: 0.8em; text-align: center; margin-top: 20px; padding-bottom: 20px;">
+            このツールはクライアントサイドで動作します。入力データはサーバーに送信されません。
+        </p>
     </div>
-    <script src="script.js"></script>
+
+    <script src="script.js" defer></script>
 </body>
 </html>
