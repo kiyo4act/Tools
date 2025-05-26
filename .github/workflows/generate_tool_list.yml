@@ -1,0 +1,54 @@
+# .github/workflows/generate_tool_list.yml
+name: Generate Tools List
+
+on:
+  push:
+    branches:
+      - main # ご利用のメインブランチ名に合わせてください (例: master, main)
+    paths: # 以下のパスのファイルが変更された場合のみワークフローを実行
+      - '*/index.html'       # 各ツールフォルダ内のindex.html
+      - '!tools-list.json'   # tools-list.json自体の変更ではトリガーしない (無限ループ防止)
+      # ワークフローやスクリプト自体の変更時も実行対象に含める
+      - '.github/workflows/generate_tool_list.yml'
+      - 'generate_list_script.py' # Pythonスクリプトのファイル名
+  workflow_dispatch: {} # 手動実行も可能にする (オプション)
+
+permissions:
+  contents: write # リポジトリへのコミット・プッシュのために必要
+
+jobs:
+  build-list:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11' # 必要に応じてバージョンを指定
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install beautifulsoup4 # HTMLパーサーライブラリ
+
+      - name: Generate tools-list.json
+        run: |
+          python generate_list_script.py
+        # GITHUB_REPOSITORY 環境変数はGitHub Actionsによって自動的に設定されます。
+        # Pythonスクリプトはこれを利用して REPO_BASE_PATH を決定します。
+
+      - name: Commit and push if tools-list.json changed
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action Bot"
+          git add tools-list.json
+          # 変更があった場合のみコミット＆プッシュ
+          if git diff --staged --quiet; then
+            echo "No changes to tools-list.json. Nothing to commit."
+          else
+            git commit -m "Automated: Update tools-list.json"
+            git push
+            echo "tools-list.json updated and pushed to the repository."
+          fi
