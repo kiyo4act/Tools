@@ -1,9 +1,9 @@
 [
   {
-    "name": "歌詞ページ印刷用整形ツール",
+    "name": "{{ PAGE_TITLE }}",
     "path": "LyricPrinter",
     "url": "/Tools/LyricPrinter/",
-    "description": "指定された歌詞ページのURLまたはHTMLソースから、印刷に適した形式に整形するツールです。ルビ表示、フォントサイズ、改行、改ページなどを調整できます。",
-    "lastUpdated": "2025-05-26"
+    "description": "{{ META_DESCRIPTION }}",
+    "lastUpdated": null
   }
 ]
