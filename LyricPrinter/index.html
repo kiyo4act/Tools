@@ -4,15 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>歌詞ページ印刷用整形ツール</title>
-    <meta name="version" content="11"> 
+    <meta name="version" content="12"> 
     <meta name="last-updated" content="2025-05-26">
     <meta name="description" content="指定された歌詞ページのURLまたはHTMLソースから、印刷に適した形式に整形するツールです。ルビ表示、フォントサイズ、改行、改ページなどを調整できます。">
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WWQTE7VWKG"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-WWQTE7VWKG'); // GA4測定IDを設定
+    </script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <h1>歌詞ページ印刷用整形ツール</h1>
-        <p class="version-info">最終更新: 2025年5月26日 (Rev. 11)</p>
+        <p class="version-info">最終更新: 2025年5月26日 (Rev. 12)</p>
 
         <p class="tool-description">
             指定された歌詞ページのURLまたはHTMLソースから、印刷に適した形式に整形するツールです。<br>
@@ -68,7 +77,14 @@
         <div id="outputContainerEl">
             <iframe id="outputFrameEl" title="整形後HTMLプレビュー"></iframe>
         </div>
-        <p style="font-size: 0.8em; text-align: center; margin-top: 20px;">
+
+        <div class="update-history-wrapper">
+            <h3 id="updateHistoryToggleBtnEl" class="accordion-toggle">ツールの更新履歴 <span class="accordion-icon">&#9660;</span></h3>
+            <div id="updateHistoryContentEl" class="update-history-content accordion-content"> 
+                </div>
+        </div>
+
+        <p style="font-size: 0.8em; text-align: center; margin-top: 20px; padding-bottom: 20px;">
             このツールはクライアントサイドで動作します。入力データはサーバーに送信されません。
         </p>
     </div>
