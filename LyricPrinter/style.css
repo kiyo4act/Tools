@@ -20,17 +20,17 @@ h1 {
     color: #333;
     margin-bottom: 5px; 
 }
-h2 { /* Added specific margin for h2 */
+h2 { 
     text-align: center;
     color: #333;
-    margin-top: 30px; /* More space above h2 */
+    margin-top: 30px; 
     margin-bottom: 15px;
 }
-h3 { /* Generic h3 styling */
+h3 { 
     text-align: center;
     color: #333;
     margin-top: 25px; 
-    margin-bottom: 10px; /* Reduced bottom margin for h3 */
+    margin-bottom: 10px; 
 }
 
 
@@ -63,18 +63,15 @@ textarea {
     font-size: 0.9em;
 }
 
-.controls-section, .url-fetch-container, .history-container-wrapper {
-    margin-bottom: 20px; /* Consistent bottom margin for sections */
+.controls-section, .url-fetch-container, .history-container-wrapper, .update-history-wrapper { /* Added .update-history-wrapper */
+    margin-bottom: 20px; 
     padding: 10px;
     background-color: #f9f9f9;
     border: 1px solid #eee;
     border-radius: 4px;
 }
-/* ★修正2: history-container-wrapperの上下マージン調整 */
-.history-container-wrapper {
-    margin-top: 25px; /* Match default h3 top margin */
-    margin-bottom: 20px;
-    padding: 0; /* Wrapper itself has no padding if toggle has it */
+.history-container-wrapper, .update-history-wrapper { /* Specific for wrappers */
+    padding: 0; 
 }
 
 
@@ -84,9 +81,9 @@ textarea {
     flex-wrap: wrap; 
     gap: 10px;
 }
-/* ★修正2: URL読み込みセクションのh3のマージン調整 */
-.history-container-wrapper + h3 { /* h3 following history wrapper */
-    margin-top: 20px; /* Space between history and URL input h3 */
+
+.history-container-wrapper + h3 { 
+    margin-top: 20px; 
 }
 
 
@@ -176,7 +173,7 @@ iframe#outputFrameEl {
     overflow: auto;     
     display: block;   
 }
-.instructions { background-color: #e9ecef; padding: 15px; border-radius: 4px; margin-bottom: 25px; font-size: 0.9em; } /* Increased margin-bottom */
+.instructions { background-color: #e9ecef; padding: 15px; border-radius: 4px; margin-bottom: 25px; font-size: 0.9em; }
 .instructions ul { padding-left: 20px; }
 .status-message { 
     font-size: 0.9em;
@@ -203,32 +200,30 @@ iframe#outputFrameEl {
     font-size: 0.8em;
 }
 
-/* --- History & Accordion Styles --- */
-.accordion-toggle { /* ★修正2: アコーディオンヘッダーの上下マージンを0に */
+/* --- Accordion Styles (Common for History & Update History) --- */
+.accordion-toggle { 
     cursor: pointer;
     user-select: none;
     padding: 12px 15px;
-    background-color: #e9ecef; /* Slightly darker than section background */
-    /* border-bottom: 1px solid #ddd; Removed to rely on content's top border when open */
-    border-radius: 4px; /* Rounded corners always */
-    font-size: 1.05em; 
+    background-color: #f0f2f5; /* Slightly different background for distinction */
+    border-bottom: 1px solid #d1d9e0;
+    border-radius: 4px; 
+    font-size: 1.0em; /* Slightly smaller for sub-sections */
     font-weight: bold;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: background-color 0.2s, border-radius 0s linear 0.35s; /* Delay border-radius change */
-    margin-top: 0;
+    transition: background-color 0.2s, border-radius 0.35s ease-out;
+    margin-top: 0; /* Remove default h3 margin if it's a toggle */
     margin-bottom: 0;
 }
-.accordion-toggle.open {
+.accordion-toggle.open { /* Style when accordion is open */
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
-    border-bottom: 1px solid #ddd; /* Add border when open and content is visible */
-     transition: background-color 0.2s, border-radius 0s linear 0s;
+    /* border-bottom: 1px solid #d1d9e0; */ /* Kept for consistency */
 }
-
 .accordion-toggle:hover {
-    background-color: #dce1e6;
+    background-color: #e4e8eb;
 }
 .accordion-icon {
     display: inline-block;
@@ -239,25 +234,30 @@ iframe#outputFrameEl {
 .accordion-toggle.open .accordion-icon {
     transform: rotate(-180deg);
 }
-.history-content { 
+.accordion-content { /* Common style for accordion content panels */
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.35s ease-out, padding-top 0.35s ease-out, padding-bottom 0.35s ease-out, border-top-width 0.35s ease-out;
-    background-color: #fff; 
+    background-color: #ffffff; 
     padding-left: 15px; 
     padding-right: 15px;
     padding-top: 0; 
     padding-bottom: 0;
     border-top: none; 
     border-radius: 0 0 4px 4px;
+    border-left: 1px solid #eee; /* Match wrapper border */
+    border-right: 1px solid #eee;
+    border-bottom: 1px solid #eee;
 }
-.history-content.open {
+.accordion-content.open {
     max-height: 250px; 
     overflow-y: auto;
     padding-top: 10px; 
     padding-bottom: 10px;
-    border-top: 1px solid #ddd; /* Separator line when open */
+    border-top: 1px solid #d1d9e0; 
 }
+
+/* History List Specific Styles */
 #historyListEl {
     list-style-type: none;
     padding-left: 0;
@@ -279,7 +279,6 @@ iframe#outputFrameEl {
 #historyListEl li:last-child {
     border-bottom: none;
 }
-
 .history-item-text-content { 
     flex-grow: 1;
     margin-right: 10px;
@@ -309,4 +308,30 @@ iframe#outputFrameEl {
 }
 .history-item-external-url:hover {
     text-decoration: underline;
+}
+
+/* Update History Specific Styles */
+.update-history-wrapper {
+     margin-top: 30px; /* More space before update history */
+}
+#updateHistoryContentEl ul {
+    list-style-type: disc;
+    padding-left: 20px;
+    font-size: 0.9em;
+}
+#updateHistoryContentEl li {
+    margin-bottom: 8px;
+}
+#updateHistoryContentEl .version-date {
+    font-weight: bold;
+    color: #333;
+}
+#updateHistoryContentEl .version-rev {
+    font-style: italic;
+    color: #555;
+}
+#updateHistoryContentEl .change-list {
+    list-style-type: circle;
+    padding-left: 20px;
+    margin-top: 4px;
 }
