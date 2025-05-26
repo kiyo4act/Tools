@@ -14,9 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const proxySelectEl = document.getElementById('proxySelectEl');
     const historyToggleBtnEl = document.getElementById('historyToggleBtnEl'); 
     const historyContentEl = document.getElementById('historyContentEl'); 
-    const updateHistoryToggleBtnEl = document.getElementById('updateHistoryToggleBtnEl'); // 更新履歴用
-    const updateHistoryContentEl = document.getElementById('updateHistoryContentEl'); // 更新履歴用
-
+    const updateHistoryToggleBtnEl = document.getElementById('updateHistoryToggleBtnEl');
+    const updateHistoryContentEl = document.getElementById('updateHistoryContentEl');
 
     let songInfo = {};
     let originalLyricsLines = []; 
@@ -70,8 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    // 更新履歴アコーディオンの制御
-    if (updateHistoryToggleBtnEl) {
+    if (updateHistoryToggleBtnEl) { // 更新履歴アコーディオンの制御
         updateHistoryToggleBtnEl.addEventListener('click', () => {
             updateHistoryContentEl.classList.toggle('open');
             updateHistoryToggleBtnEl.classList.toggle('open');
@@ -496,99 +494,8 @@ document.addEventListener('DOMContentLoaded', () => {
         else { printWindow.onload = attemptPrint; setTimeout(attemptPrint, 700); }
     });
     
-    // --- 更新履歴表示ロジック ---
-    function renderUpdateHistory() {
-        const updates = [
-            { date: "2025年5月26日", rev: 12, changes: [
-                "GA4測定IDを反映。",
-                "バージョン情報を総リビジョン数に変更 (Rev. 12)。",
-                "更新履歴をアコーディオン形式で追加。",
-                "読み込み履歴アコーディオンの上下の隙間を調整。"
-            ]},
-            { date: "2025年5月26日", rev: 11, changes: [
-                "iframeプレビューの縦リサイズ機能追加。",
-                "読み込み履歴のクリック動作改善（項目全体で再読み込み、URL部分のみ外部リンク）。",
-                "履歴URLをPC等で省略せず表示するようCSS調整。"
-            ]},
-            { date: "2025年5月26日", rev: 10, changes: [
-                "UIテキスト変更（「HTML断片」→「歌詞ページのHTML」など）。",
-                "読み込み履歴の見た目を改善。",
-                "読み込み履歴をアコーディオン化し、URL入力欄の上に配置。",
-                "URL読み込み成功時に自動でプレビューを生成、「整形して表示」ボタンを「整形を初期化」に変更。"
-            ]},
-            { date: "2025年5月26日", rev: "9 (v5.9)", changes: [
-                "GA4連携機能の提案・実装（トラッキングコード設置、主要イベント送信）。",
-                 // (GA4測定ID設定はRev.12で実施)
-            ]},
-             { date: "2025年5月26日", rev: "8 (v5.8)", changes: [
-                "ファイル分割（HTML, CSS, JS）。",
-                "バージョン情報・ツール説明をメタタグとページ表示に追加。",
-                "タイトル変更「歌詞HTML整形ツール (for Print)」→「歌詞ページ印刷用整形ツール」。"
-            ]},
-            { date: "2025年5月26日", rev: "7 (v5.7)", changes: [
-                "CORSプロキシ選択機能追加。",
-                "履歴への追加タイミングをURL読み込み成功時（曲名・アーティスト名解析後）に変更。",
-                "履歴の表示内容を「曲名：アーティスト名 (URL)」形式に変更、URL部分は外部リンク化。",
-                "履歴の見た目を改善。"
-            ]},
-            { date: "2025年5月26日", rev: "6 (v5.6)", changes: [
-                "URL読み込み機能のCORSプロキシを `api.allorigins.win` から `api.codetabs.com` に変更。",
-                "URL読み込み失敗時のエラーメッセージを改善。"
-            ]},
-            { date: "2025年5月26日", rev: "5 (v5.5)", changes: [
-                "ダウンロードHTMLにフォントサイズが常に最新の状態で反映されるよう修正。",
-                "URL読み込み履歴機能追加（localStorage使用、表示、再読み込み、削除）。",
-                "改行削除時に条件付きで空白を挿入する機能追加（プレビューボタン、ダウンロードHTMLへの反映）。" 
-                // 「改行削除時の不要な空白除去」はv5.3で一度対応、v5.4で空白挿入機能が入ったため、ここでの「不要な空白」はv5.3の意図と解釈。
-                // 「Chromeでの改ページ」もv5.3で一度対応。
-            ]},
-            { date: "2025年5月26日", rev: "4 (v5.3)", changes: [
-                "プレビューiframeの下方向リサイズ機能追加。(Rev.11で再要望・実装)",
-                "履歴クリック動作の改善、URL表示改善。(Rev.11で再要望・実装)",
-                "URL入力欄のドメインを `utaten.com` に制限。",
-                "改行削除時の行末空白を削除するよう修正。",
-                "Chromeでの印刷時改ページ対応を改善。"
-            ]},
-            { date: "2025年5月26日", rev: "3 (v5.1)", changes: [
-                "URL読み込みボタンの位置調整。",
-                "プレビュー欄の高さ復元。",
-                "改ページボタンの名称変更 「P-追加」→「改ページ追加」。"
-            ]},
-            { date: "2025年5月26日", rev: "2 (v4)", changes: [
-                "ダウンロードHTMLへのフォントサイズ反映修正。",
-                "URL入力からのHTML読み込み機能追加。",
-                "プレビューでの歌詞行末の改行削除/復元機能追加。",
-                "プレビューの空行への改ページ追加/削除機能追加。"
-            ]},
-            { date: "2025年5月26日", rev: "1 (v2)", changes: [
-                "クライアントサイド実行形式 (単一HTMLファイル) に変更。",
-                "ルビ表示修正 (spanベースから標準rubyタグへの変換)。",
-                "歌詞フォントサイズ調整スライダーとリアルタイムプレビュー機能追加。"
-            ]}
-            // それ以前: Pythonツールとしての初期開発
-        ];
-
-        if (!updateHistoryContentEl) return;
-        const ul = document.createElement('ul');
-        updates.forEach(update => {
-            const li = document.createElement('li');
-            li.innerHTML = `<span class="version-date">${update.date}</span> <span class="version-rev">(Rev. ${update.rev})</span>`;
-            const changesUl = document.createElement('ul');
-            changesUl.className = 'change-list';
-            update.changes.forEach(change => {
-                const changeLi = document.createElement('li');
-                changeLi.textContent = change;
-                changesUl.appendChild(changeLi);
-            });
-            li.appendChild(changesUl);
-            ul.appendChild(li);
-        });
-        updateHistoryContentEl.appendChild(ul);
-    }
-
-
     // Initial setup on page load
     populateProxies();
     renderHistory();
-    renderUpdateHistory(); // 更新履歴も初期表示
+    // renderUpdateHistory(); // HTML直書きにしたのでJSからの呼び出しは不要
 });
