@@ -32,6 +32,11 @@ h3 {
     margin-top: 25px; 
     margin-bottom: 10px; 
 }
+/* Specific h3 inside url-fetch-container-wrapper */
+.url-fetch-container-wrapper > h3 {
+    margin-top: 0; /* Remove top margin if it's the first child of wrapper */
+    margin-bottom: 15px; /* Space before the container */
+}
 
 
 .version-info {
@@ -65,24 +70,24 @@ textarea {
 }
 /* Section common styles */
 .controls-section, 
-.url-fetch-container-wrapper, /* Wrapper for URL fetch and privacy note */
+.url-fetch-container-wrapper, 
 .history-container-wrapper, 
 .update-history-wrapper,
-.instructions, /* Instructions and Troubleshooting now share some base styling */
+.instructions,
 .troubleshooting-section { 
     margin-bottom: 20px; 
-    padding: 15px; /* Consistent padding for sections */
+    padding: 15px; 
     background-color: #f9f9f9;
     border: 1px solid #eee;
     border-radius: 4px;
 }
 .history-container-wrapper, 
 .update-history-wrapper,
-.troubleshooting-section { /* Accordion wrappers have no internal padding */
+.troubleshooting-section { /* Accordion wrappers have no internal padding for the toggle button */
     padding: 0; 
 }
 .url-fetch-container-wrapper { /* Specific padding for URL fetch wrapper */
-    padding-bottom: 5px; /* Reduce bottom padding if privacy note is inside */
+    padding-bottom: 15px; /* Ensure padding for privacy note */
 }
 
 
@@ -91,14 +96,12 @@ textarea {
     align-items: center; 
     flex-wrap: wrap; 
     gap: 10px;
-    padding: 0; /* Remove padding if wrapper has it */
-    border: none; /* Remove border if wrapper has it */
-    background-color: transparent; /* Transparent if wrapper has background */
-    margin-bottom: 10px; /* Space before privacy note */
+    /* Removed background, border, padding as these are on the wrapper */
+    margin-bottom: 10px; 
 }
 
-.history-container-wrapper + h3, /* h3 after history */
-.troubleshooting-section + .history-container-wrapper { /* history after troubleshooting */
+.history-container-wrapper + .url-fetch-container-wrapper > h3, /* h3 after history */
+.troubleshooting-section + .history-container-wrapper { 
     margin-top: 20px; 
 }
 
@@ -204,9 +207,7 @@ iframe#outputFrameEl {
 }
 .instructions { 
     background-color: #e9ecef; 
-    /* padding: 15px; Moved to common section style */
     border-radius: 4px; 
-    /* margin-bottom: 25px; Moved to common section style */
     font-size: 0.9em; 
 }
 .instructions p strong {
@@ -219,15 +220,15 @@ iframe#outputFrameEl {
     margin-top: 0;
 }
 .instructions ol.steps li {
-    margin-bottom: 1em; /* 余白を設ける */
+    margin-bottom: 1.2em; /* Increased margin */
 }
 .instructions ol.steps li small.step-note {
     display: block;
     font-size: 0.9em;
     color: #555;
-    margin-top: 0.3em;
+    margin-top: 0.4em; /* Increased margin */
 }
-.instructions ul li span.important-note { /* 「使い方」内の注意書き */
+.instructions ul li span.important-note { 
     display: block; 
     margin-top: 8px; 
     font-weight: bold;
@@ -337,7 +338,7 @@ iframe#outputFrameEl {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 8px; /* ★修正2: パディング調整 */
+    padding: 12px 8px; 
     border-bottom: 1px solid #f0f0f0;
     transition: background-color 0.2s;
     cursor: pointer; 
@@ -350,11 +351,11 @@ iframe#outputFrameEl {
 }
 .history-item-text-content { 
     flex-grow: 1;
-    margin-right: 15px; /* ★修正2: 削除ボタンとの間隔を広げる */
+    margin-right: 15px; 
     overflow: hidden; 
     display: flex; 
     flex-direction: column; 
-    gap: 4px; /* ★修正2: 曲名とURLの間の隙間を少し広げる */
+    gap: 4px; 
 }
 .history-item-title-artist { 
     font-weight: 600; 
@@ -379,26 +380,25 @@ iframe#outputFrameEl {
 .history-item-external-url:hover {
     text-decoration: underline;
 }
-.privacy-note { /* ★修正5: プライバシー注釈スタイル (URL読み込みセクション用) */
+.privacy-note { 
     font-size: 0.85em;
-    color: #555; /* 少し濃いめのグレー */
-    padding: 10px; /* 上下左右のパディング */
-    background-color: #e9f5fd; /* 薄い水色系 */
-    border: 1px solid #bce8f1; /* 水色系の枠線 */
+    color: #555; 
+    padding: 10px; 
+    background-color: #e9f5fd; 
+    border: 1px solid #bce8f1; 
     border-radius: 4px; 
-    margin-top: 10px; /* 上の要素との間隔 */
+    margin-top: 10px; 
     display: flex;
     align-items: center;
     line-height: 1.4;
 }
 .privacy-icon { 
-    width: 1.1em; /* 少し大きく */
+    width: 1.1em; 
     height: 1.1em;
     margin-right: 0.6em;
     color: #007bff; 
     flex-shrink: 0;
 }
-
 
 /* Update History Specific Styles */
 .update-history-wrapper {
