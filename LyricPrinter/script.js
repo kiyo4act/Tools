@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const historyContentEl = document.getElementById('historyContentEl'); 
     const updateHistoryToggleBtnEl = document.getElementById('updateHistoryToggleBtnEl');
     const updateHistoryContentEl = document.getElementById('updateHistoryContentEl');
-    const repeatHeaderCheckboxEl = document.getElementById('repeatHeaderCheckboxEl');
+    // repeatHeaderCheckboxEl は Rev.13 には存在しないので削除
     const troubleshootingToggleBtnEl = document.getElementById('troubleshootingToggleBtnEl'); 
     const troubleshootingContentEl = document.getElementById('troubleshootingContentEl'); 
 
@@ -61,19 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    if (repeatHeaderCheckboxEl) {
-        repeatHeaderCheckboxEl.addEventListener('change', () => {
-            if (typeof gtag === 'function') {
-                gtag('event', 'toggle_repeat_header', {
-                    'event_category': 'controls',
-                    'event_label': repeatHeaderCheckboxEl.checked ? 'on' : 'off'
-                });
-            }
-            if (songInfo.title && originalLyricsLines.length > 0) {
-                 displayFullPreview(); 
-            }
-        });
-    }
+    // repeatHeaderCheckboxEl のイベントリスナーはRev.13には存在しないので削除
 
     function setupAccordionToggle(toggleButton, contentElement, eventName) {
         if (toggleButton && contentElement) { 
@@ -217,7 +205,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displayFullPreview() {
         const currentFontSize = fontSizeSliderEl.value;
-        const shouldRepeatHeader = repeatHeaderCheckboxEl.checked;
+        // const shouldRepeatHeader = repeatHeaderCheckboxEl.checked; // Rev.13には存在しない
+        const shouldRepeatHeader = false; // Rev.13の動作に合わせるため、常にfalseとしておく
         let lyricsHtmlForPreview = '';
         originalLyricsLines.forEach((line, index) => {
             lyricsHtmlForPreview += `<span class="lyric-line-content">${line}</span>`;
@@ -247,7 +236,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 if (pageBreakAfterLineStates[index]) {
-                    lyricsHtmlForPreview += `<div class="page-break-preview-indicator">-- 改ページ指示箇所 ${shouldRepeatHeader ? "(+ヘッダー再表示)" : ""} --</div>`;
+                    // Rev.13ではヘッダー繰り返しオプションがないため、インジケータもシンプルに
+                    lyricsHtmlForPreview += `<div class="page-break-preview-indicator">-- 改ページ指示箇所 --</div>`;
                 }
             }
         });
@@ -304,13 +294,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function generateFinalHtmlForOutput() {
         const currentFontSize = fontSizeSliderEl.value;
-        const shouldRepeatHeader = repeatHeaderCheckboxEl.checked;
+        // const shouldRepeatHeader = repeatHeaderCheckboxEl.checked; // Rev.13には存在しない
+        const shouldRepeatHeader = false; // Rev.13の動作に合わせる
 
-        const getHeaderHtml = (isMainHeader = false) => {
+        const getHeaderHtml = (isMainHeader = false) => { // Rev.13ではヘッダー繰り返しがないので isMainHeader は実質常にtrue
             if (!songInfo.title && !songInfo.artist && !songInfo.lyricist && !songInfo.composer && !songInfo.releaseDate) return '';
-            const headerClass = isMainHeader ? "main-header-info" : "repeated-header-info";
+            // Rev.13では繰り返しヘッダー用のクラスは不要
             return `
-                <div class="${headerClass}">
+                <div class="main-header-info"> 
                     <h1>${songInfo.title || ''}</h1>
                     <div class="song-info">
                         <p>アーティスト: ${songInfo.artist || '不明'}</p>
@@ -319,8 +310,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>`;
         };
-        const headerToRepeat = shouldRepeatHeader ? getHeaderHtml(false) : '';
         const mainHeaderHtml = getHeaderHtml(true);
+        // const headerToRepeat = shouldRepeatHeader ? getHeaderHtml(false) : ''; // Rev.13では不要
 
         let lyricsHtmlOutput = '';
         originalLyricsLines.forEach((line, index) => {
@@ -337,22 +328,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (index < pageBreakAfterLineStates.length && pageBreakAfterLineStates[index]) {
                 lyricsHtmlOutput += '<div class="print-page-break-element"></div>';
-                if (shouldRepeatHeader) { 
-                    lyricsHtmlOutput += headerToRepeat;
-                }
+                // if (shouldRepeatHeader) { lyricsHtmlOutput += headerToRepeat; } // Rev.13では不要
             }
         });
 
         return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${songInfo.title || '歌詞'} - 歌詞</title><style>
             body { font-family: 'MS Mincho', 'Hiragino Mincho ProN', Meiryo, sans-serif; margin: 20mm; font-size: 12pt; background-color: #fff; color: #000; }
-            .main-header-info h1, .repeated-header-info h1 { text-align: center; font-weight: bold; }
-            .main-header-info .song-info, .repeated-header-info .song-info { text-align: right; } 
-            .main-header-info .song-info p, .repeated-header-info .song-info p { margin: 3px 0; }
-            .main-header-info h1 { font-size: 20pt; margin-bottom: 15px; }
-            .main-header-info .song-info { margin-bottom: 25px; font-size: 10pt; }
-            .repeated-header-info { margin-top: 1em; padding-top: 1em; border-top: 1px dashed #ccc; page-break-before: avoid; page-break-after: avoid;}
-            .repeated-header-info h1 { font-size: 16pt; margin-bottom: 5px; }
-            .repeated-header-info .song-info { font-size: 9pt; margin-bottom: 1em; }
+            .main-header-info h1 { font-size: 20pt; text-align: center; margin-bottom: 15px; font-weight: bold; }
+            .main-header-info .song-info { text-align: right; margin-bottom: 25px; font-size: 10pt; } 
+            .main-header-info .song-info p { margin: 3px 0; }
+            /* .repeated-header-info スタイルはRev.13では不要 */
             .lyrics { margin-top: 20px; text-align: left; font-size: ${currentFontSize}pt; line-height: 2.2; column-count: 1; }
             ruby { display: ruby; ruby-position: over !important; line-height: initial; }
             ruby rt { font-size: 0.55em; opacity: 0.95; user-select: none; }
@@ -367,13 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     margin: 0 !important; padding: 0 !important; border: none !important;
                     visibility: visible !important; content: ""; 
                 }
-                .repeated-header-info { 
-                    padding-top: 0.5em !important; margin-bottom: 0.5em !important;
-                    border-top: 1px dotted #999 !important;
-                }
-                 .repeated-header-info h1 { font-size: 14pt !important; } 
-                 .repeated-header-info .song-info { font-size: 8pt !important; text-align: right !important; } 
-                 .repeated-header-info .song-info p { margin: 1px 0 !important; }
+                /* .repeated-header-info の印刷スタイルはRev.13では不要 */
             }
             .print-page-break-element { display: none; } 
         </style></head><body>${mainHeaderHtml}<div class="lyrics">${lyricsHtmlOutput}</div></body></html>`;
@@ -429,21 +408,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         history.forEach((item) => {
             const li = document.createElement('li');
-            // ★修正1: 読み込み履歴のクリック動作修正
-            li.addEventListener('click', (event) => {
+            li.addEventListener('click', (event) => { // li全体へのクリックイベントリスナー
+                let targetElement = event.target;
                 // クリックされた要素が外部リンク(Aタグ)か削除ボタン(BUTTONタグ)そのものであるか、
                 // またはそれらの親要素である場合（例：アイコン内をクリック）は、再読み込みを抑制する
-                let target = event.target;
-                let isActionClick = false;
-                while(target && target !== li) {
-                    if (target.classList.contains('history-item-external-url') || target.classList.contains('history-delete-btn')) {
-                        isActionClick = true;
-                        break;
+                let isActionElementClick = false;
+                while(targetElement && targetElement !== li) { // クリックされた要素からliまで遡る
+                    if (targetElement.classList.contains('history-item-external-url') || 
+                        targetElement.classList.contains('history-delete-btn')) {
+                        isActionElementClick = true;
+                        break; 
                     }
-                    target = target.parentElement;
+                    targetElement = targetElement.parentElement;
                 }
 
-                if (!isActionClick) {
+                if (!isActionElementClick) { // アクション要素以外がクリックされた場合のみ再読み込み
                     urlInputEl.value = item.url;
                     if (typeof gtag === 'function') {
                         gtag('event', 'load_from_history', {
@@ -468,8 +447,8 @@ document.addEventListener('DOMContentLoaded', () => {
             externalUrlLink.target = '_blank';
             externalUrlLink.textContent = `(${item.url})`; 
             externalUrlLink.title = `元のページを開く: ${item.url}`;
-            externalUrlLink.onclick = (e) => { // This click is specific to the link
-                e.stopPropagation(); // Prevent li's click event
+            externalUrlLink.onclick = (e) => { // 外部リンクのクリックは常に伝播を止める
+                e.stopPropagation(); 
                 if (typeof gtag === 'function') {
                     gtag('event', 'open_external_from_history', {
                         'event_category': 'history_interaction', 'event_label': item.url.substring(0,100)
@@ -484,8 +463,8 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteBtn.textContent = '削除';
             deleteBtn.classList.add('history-delete-btn');
             deleteBtn.dataset.url = item.url;
-            deleteBtn.onclick = (e) => { // This click is specific to the delete button
-                e.stopPropagation(); // Prevent li's click event
+            deleteBtn.onclick = (e) => { // 削除ボタンのクリックも常に伝播を止める
+                e.stopPropagation(); 
                 deleteHistoryItem(item.url);
             };
             
