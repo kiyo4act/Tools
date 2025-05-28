@@ -32,12 +32,6 @@ h3 {
     margin-top: 25px; 
     margin-bottom: 10px; 
 }
-/* Specific h3 inside url-fetch-container-wrapper */
-.url-fetch-container-wrapper > h3 {
-    margin-top: 0; /* Remove top margin if it's the first child of wrapper */
-    margin-bottom: 15px; /* Space before the container */
-}
-
 
 .version-info {
     text-align: center;
@@ -70,10 +64,10 @@ textarea {
 }
 /* Section common styles */
 .controls-section, 
-.url-fetch-container-wrapper, 
+.section-wrapper, /* ★修正: 新しいラッパーの共通スタイル */
 .history-container-wrapper, 
 .update-history-wrapper,
-.instructions,
+.instructions, 
 .troubleshooting-section { 
     margin-bottom: 20px; 
     padding: 15px; 
@@ -83,24 +77,34 @@ textarea {
 }
 .history-container-wrapper, 
 .update-history-wrapper,
-.troubleshooting-section { /* Accordion wrappers have no internal padding for the toggle button */
+.troubleshooting-section { 
     padding: 0; 
 }
-.url-fetch-container-wrapper { /* Specific padding for URL fetch wrapper */
-    padding-bottom: 15px; /* Ensure padding for privacy note */
+.section-wrapper > h3 { /* ★修正: ラッパー内のh3のスタイル */
+    margin-top: 0; /* ラッパーのパディングがあるので上マージン不要 */
+    margin-bottom: 15px;
+    text-align: left; /* セクションタイトルは左揃えに */
+    padding-left: 5px; /* 少しインデント */
+    font-size: 1.2em; /* 少し大きく */
 }
 
 
+.url-fetch-container-inner { /* ★修正: URL入力部分を囲む内側ラッパー */
+    background-color: #fff; /* 内側は白い背景 */
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 15px; /* 下のプライバシーノートとの間隔 */
+}
 .url-fetch-container {
     display: flex; 
     align-items: center; 
     flex-wrap: wrap; 
     gap: 10px;
-    /* Removed background, border, padding as these are on the wrapper */
-    margin-bottom: 10px; 
+    /* 背景や枠線は .url-fetch-container-inner で制御 */
 }
 
-.history-container-wrapper + .url-fetch-container-wrapper > h3, /* h3 after history */
+.history-container-wrapper + .section-wrapper > h3, 
 .troubleshooting-section + .history-container-wrapper { 
     margin-top: 20px; 
 }
@@ -220,13 +224,13 @@ iframe#outputFrameEl {
     margin-top: 0;
 }
 .instructions ol.steps li {
-    margin-bottom: 1.2em; /* Increased margin */
+    margin-bottom: 1.2em; 
 }
 .instructions ol.steps li small.step-note {
     display: block;
     font-size: 0.9em;
     color: #555;
-    margin-top: 0.4em; /* Increased margin */
+    margin-top: 0.4em; 
 }
 .instructions ul li span.important-note { 
     display: block; 
@@ -383,9 +387,9 @@ iframe#outputFrameEl {
 .privacy-note { 
     font-size: 0.85em;
     color: #555; 
-    padding: 10px; 
-    background-color: #e9f5fd; 
-    border: 1px solid #bce8f1; 
+    padding: 10px 0; /* ★修正: ラッパーの外に出したのでパディング調整 */
+    /* background-color: #e9f5fd;  Removed, wrapper has background */
+    /* border: 1px solid #bce8f1; Removed */
     border-radius: 4px; 
     margin-top: 10px; 
     display: flex;
@@ -399,6 +403,7 @@ iframe#outputFrameEl {
     color: #007bff; 
     flex-shrink: 0;
 }
+
 
 /* Update History Specific Styles */
 .update-history-wrapper {
