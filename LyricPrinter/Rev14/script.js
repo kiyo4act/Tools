@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const outputFrameEl = document.getElementById('outputFrameEl');
     const fontSizeSliderEl = document.getElementById('fontSizeSliderEl');
     const fontSizeValueDisplayEl = document.getElementById('fontSizeValueDisplayEl');
-    const addHeaderOnPageBreakEl = document.getElementById('addHeaderOnPageBreakEl'); // New checkbox
+    const addHeaderOnPageBreakEl = document.getElementById('addHeaderOnPageBreakEl');
     const urlInputEl = document.getElementById('urlInputEl');
     const fetchUrlBtnEl = document.getElementById('fetchUrlBtnEl');
     const urlStatusEl = document.getElementById('urlStatusEl');
@@ -52,13 +52,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 'event_category': 'controls', 'event_label': 'lyrics_font_size', 'value': parseInt(newSize)
             });
         }
-        // Update preview if it exists
         if (outputFrameEl.contentDocument && outputFrameEl.contentDocument.body && outputFrameEl.contentDocument.body.innerHTML) {
-            displayFullPreview(); // Re-render preview to apply font size and header option
+            displayFullPreview();
         }
     });
 
-    // Listener for the new checkbox
     if (addHeaderOnPageBreakEl) {
         addHeaderOnPageBreakEl.addEventListener('change', () => {
             if (typeof gtag === 'function') {
@@ -67,21 +65,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     'event_label': addHeaderOnPageBreakEl.checked ? 'enable' : 'disable'
                 });
             }
-            // Update preview if it exists
             if (outputFrameEl.contentDocument && outputFrameEl.contentDocument.body && outputFrameEl.contentDocument.body.innerHTML) {
-                displayFullPreview(); // Re-render preview to apply header option
+                displayFullPreview();
             }
         });
     }
 
-
-    // Accordion toggle logic - ensure this targets the correct elements
     function setupAccordionToggle(toggleButton, contentElement) {
         if (toggleButton && contentElement) {
             toggleButton.addEventListener('click', () => {
                 const isOpen = contentElement.classList.toggle('open');
-                toggleButton.classList.toggle('open', isOpen); // Sync button state
-                // GA4 Event
+                toggleButton.classList.toggle('open', isOpen);
                 const eventName = contentElement.id === 'historyContentEl' ? 'toggle_history_view' : 'toggle_update_history_view';
                 if (typeof gtag === 'function') {
                     gtag('event', eventName, {
@@ -222,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function getHeaderHtmlForPreview() {
-        if (!addHeaderOnPageBreakEl.checked) return ''; // Return empty if option is off
+        if (!addHeaderOnPageBreakEl.checked) return '';
         return `<div class="repeated-header-info-preview"><h1>${songInfo.title || 'タイトル不明'}</h1><p>アーティスト: ${songInfo.artist || 'アーティスト不明'}</p></div>`;
     }
 
@@ -232,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         originalLyricsLines.forEach((line, index) => {
             if (index > 0 && pageBreakAfterLineStates[index - 1]) {
-                lyricsHtmlForPreview += getHeaderHtmlForPreview(); // Use the function here
+                lyricsHtmlForPreview += getHeaderHtmlForPreview();
             }
             lyricsHtmlForPreview += `<span class="lyric-line-content">${line}</span>`;
 
@@ -331,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getHeaderHtmlForFinalOutput() {
-        if (!addHeaderOnPageBreakEl.checked) return ''; // Return empty if option is off
+        if (!addHeaderOnPageBreakEl.checked) return '';
         return `<div class="repeated-header-info"><h1>${songInfo.title || 'タイトル不明'}</h1><div class="song-info"><p>アーティスト: ${songInfo.artist || 'アーティスト不明'}</p><p>作詞: ${songInfo.lyricist || '作詞者不明'}</p><p>作曲: ${songInfo.composer || '作曲者不明'}</p><p>リリース日: ${songInfo.releaseDate || 'リリース日不明'}</p></div></div>`;
     }
 
@@ -341,7 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         originalLyricsLines.forEach((line, index) => {
             if (index > 0 && pageBreakAfterLineStates[index - 1]) {
-                lyricsHtmlOutput += getHeaderHtmlForFinalOutput(); // Use the function here
+                lyricsHtmlOutput += getHeaderHtmlForFinalOutput();
             }
             lyricsHtmlOutput += line;
 
@@ -441,6 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const textContentDiv = document.createElement('div');
             textContentDiv.className = 'history-item-text-content';
+            // CLICK EVENT FOR RE-LOADING FROM HISTORY
             textContentDiv.onclick = () => {
                 urlInputEl.value = item.url;
                 if (typeof gtag === 'function') {
@@ -463,13 +458,15 @@ document.addEventListener('DOMContentLoaded', () => {
             externalUrlLink.target = '_blank';
             externalUrlLink.textContent = `(${item.url})`;
             externalUrlLink.title = `元のページを開く: ${item.url}`;
+            // CLICK EVENT FOR OPENING EXTERNAL URL
             externalUrlLink.onclick = (e) => {
-                e.stopPropagation();
+                e.stopPropagation(); // IMPORTANT: Prevents textContentDiv's click event
                 if (typeof gtag === 'function') {
                     gtag('event', 'open_external_from_history', {
                         'event_category': 'history_interaction', 'event_label': item.url.substring(0,100)
                     });
                 }
+                // Default <a> tag behavior (opening link) will proceed
             };
 
             textContentDiv.appendChild(titleArtistSpan);
@@ -480,7 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteBtn.classList.add('history-delete-btn');
             deleteBtn.dataset.url = item.url;
             deleteBtn.onclick = (e) => {
-                e.stopPropagation();
+                e.stopPropagation(); // IMPORTANT: Prevents textContentDiv's click event
                 deleteHistoryItem(item.url);
             };
 
