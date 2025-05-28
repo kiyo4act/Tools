@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateHistoryToggleBtnEl = document.getElementById('updateHistoryToggleBtnEl');
     const updateHistoryContentEl = document.getElementById('updateHistoryContentEl');
     const repeatHeaderCheckboxEl = document.getElementById('repeatHeaderCheckboxEl');
+    const troubleshootingToggleBtnEl = document.getElementById('troubleshootingToggleBtnEl');
+    const troubleshootingContentEl = document.getElementById('troubleshootingContentEl');
 
     let songInfo = {};
     let originalLyricsLines = []; 
@@ -73,29 +75,26 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (historyToggleBtnEl) {
-        historyToggleBtnEl.addEventListener('click', () => {
-            historyContentEl.classList.toggle('open');
-            historyToggleBtnEl.classList.toggle('open');
-            if (typeof gtag === 'function') {
-                gtag('event', 'toggle_history_view', {
-                    'event_category': 'ui_interaction', 'event_label': historyContentEl.classList.contains('open') ? 'open' : 'close'
-                });
-            }
-        });
+    // アコーディオンのトグル処理を共通化する関数
+    function setupAccordionToggle(toggleButton, contentElement, eventName) {
+        if (toggleButton && contentElement) {
+            toggleButton.addEventListener('click', () => {
+                contentElement.classList.toggle('open');
+                toggleButton.classList.toggle('open');
+                if (typeof gtag === 'function') {
+                    gtag('event', eventName, { // GAイベント名を引数で受け取る
+                        'event_category': 'ui_interaction',
+                        'event_label': contentElement.classList.contains('open') ? 'open' : 'close'
+                    });
+                }
+            });
+        }
     }
-    if (updateHistoryToggleBtnEl) {
-        updateHistoryToggleBtnEl.addEventListener('click', () => {
-            updateHistoryContentEl.classList.toggle('open');
-            updateHistoryToggleBtnEl.classList.toggle('open');
-             if (typeof gtag === 'function') {
-                gtag('event', 'toggle_update_history_view', {
-                    'event_category': 'ui_interaction',
-                    'event_label': updateHistoryContentEl.classList.contains('open') ? 'open' : 'close'
-                });
-            }
-        });
-    }
+
+    setupAccordionToggle(historyToggleBtnEl, historyContentEl, 'toggle_history_view');
+    setupAccordionToggle(updateHistoryToggleBtnEl, updateHistoryContentEl, 'toggle_update_history_view');
+    setupAccordionToggle(troubleshootingToggleBtnEl, troubleshootingContentEl, 'toggle_troubleshooting_view');
+
 
     fetchUrlBtnEl.addEventListener('click', async () => {
         const targetUrl = urlInputEl.value.trim();
@@ -347,21 +346,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${songInfo.title || '歌詞'} - 歌詞</title><style>
             body { font-family: 'MS Mincho', 'Hiragino Mincho ProN', Meiryo, sans-serif; margin: 20mm; font-size: 12pt; background-color: #fff; color: #000; }
-            /* Common Header Styles */
             .main-header-info h1, .repeated-header-info h1 { text-align: center; font-weight: bold; }
-            .main-header-info .song-info, .repeated-header-info .song-info { text-align: right; } /* ★修正2: 繰り返しヘッダーも右揃えに */
+            .main-header-info .song-info, .repeated-header-info .song-info { text-align: right; } 
             .main-header-info .song-info p, .repeated-header-info .song-info p { margin: 3px 0; }
-
-            /* Main Header Specific Styles */
             .main-header-info h1 { font-size: 20pt; margin-bottom: 15px; }
             .main-header-info .song-info { margin-bottom: 25px; font-size: 10pt; }
-            
-            /* Repeated Header Specific Styles */
             .repeated-header-info { margin-top: 1em; padding-top: 1em; border-top: 1px dashed #ccc; page-break-before: avoid; page-break-after: avoid;}
             .repeated-header-info h1 { font-size: 16pt; margin-bottom: 5px; }
             .repeated-header-info .song-info { font-size: 9pt; margin-bottom: 1em; }
-            /* .repeated-header-info .song-info p は共通スタイルでOK */
-
             .lyrics { margin-top: 20px; text-align: left; font-size: ${currentFontSize}pt; line-height: 2.2; column-count: 1; }
             ruby { display: ruby; ruby-position: over !important; line-height: initial; }
             ruby rt { font-size: 0.55em; opacity: 0.95; user-select: none; }
@@ -381,7 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     border-top: 1px dotted #999 !important;
                 }
                  .repeated-header-info h1 { font-size: 14pt !important; } 
-                 .repeated-header-info .song-info { font-size: 8pt !important; text-align: right !important; } /* ★修正2: 印刷時も右揃え */
+                 .repeated-header-info .song-info { font-size: 8pt !important; text-align: right !important; } 
                  .repeated-header-info .song-info p { margin: 1px 0 !important; }
             }
             .print-page-break-element { display: none; } 
