@@ -27,11 +27,12 @@ h2 {
     margin-bottom: 15px;
 }
 h3 { 
-    text-align: center; 
+    text-align: center;
     color: #333;
     margin-top: 25px; 
     margin-bottom: 10px; 
 }
+
 
 .version-info {
     text-align: center;
@@ -42,14 +43,13 @@ h3 {
 }
 
 .tool-description {
-    text-align: left; 
+    text-align: center;
     font-size: 0.95em;
     color: #555;
     margin-bottom: 25px;
-    padding: 15px; 
+    padding: 10px;
     background-color: #f8f9fa;
-    border-left: 4px solid #007bff; 
-    border-radius: 4px;
+    border-left: 3px solid #007bff;
 }
 
 textarea {
@@ -63,105 +63,35 @@ textarea {
     font-size: 0.9em;
 }
 
-/* Section common styles */
-.controls-section, 
-.section-wrapper, 
-.history-container-wrapper, 
-.update-history-wrapper,
-.instructions, 
-.troubleshooting-section { 
+.controls-section, .url-fetch-container, .history-container-wrapper, .update-history-wrapper { /* Added .update-history-wrapper */
     margin-bottom: 20px; 
-}
-
-.history-container-wrapper, 
-.update-history-wrapper,
-.troubleshooting-section { 
-    padding: 0; 
-    background-color: #f9f9f9; 
+    padding: 10px;
+    background-color: #f9f9f9;
     border: 1px solid #eee;
     border-radius: 4px;
 }
-.section-wrapper { /* General wrapper for URL fetch section */
-    padding: 15px; 
-    background-color: #f0f2f5; 
-    border: 1px solid #e0e6ed;
-    border-radius: 4px;
+.history-container-wrapper, .update-history-wrapper { /* Specific for wrappers */
+    padding: 0; 
 }
 
-.url-fetch-section-wrapper > h3.section-title-centered {
-    margin-top: 0; 
-    margin-bottom: 15px;
-    text-align: center; 
-    padding-left: 0; 
-    font-size: 1.2em;
-    color: #333; 
-}
-.url-fetch-controls-area { 
-    background-color: #ffffff; 
-    padding: 15px;
-    border: 1px solid #dddddd; 
-    border-radius: 4px;
-}
-.url-fetch-container { 
+
+.url-fetch-container {
     display: flex; 
     align-items: center; 
     flex-wrap: wrap; 
     gap: 10px;
 }
-.privacy-note.attached-to-controls { 
-    font-size: 0.85em;
-    color: #555; 
-    padding: 10px 0 0 0; 
-    background-color: transparent; 
-    border: none; 
-    border-top: 1px solid #e0e6ed; 
-    margin-top: 15px; 
-    display: flex;
-    align-items: center;
-    line-height: 1.4;
-}
-.privacy-icon { 
-    width: 1.1em; 
-    height: 1.1em;
-    margin-right: 0.6em;
-    color: #007bff; 
-    flex-shrink: 0;
-}
 
-
-.history-container-wrapper + .section-wrapper, 
-.troubleshooting-section + .history-container-wrapper { 
+.history-container-wrapper + h3 { 
     margin-top: 20px; 
 }
-.section-wrapper + h3 { 
-     margin-top: 25px; 
-}
 
 
-.controls-section { 
-    padding: 15px; 
-    background-color: #f9f9f9;
-    border: 1px solid #eee;
-    border-radius: 4px;
-}
 .controls-section label, .url-fetch-container label {
     margin-right: 5px;
     font-weight: bold;
     flex-shrink: 0; 
 }
-.controls-section .control-option { 
-    margin-top: 10px;
-    display: flex;
-    align-items: center;
-}
-.controls-section .control-option:first-child {
-    margin-top: 0;
-}
-.controls-section .control-option label { 
-    font-weight: normal;
-    margin-left: 5px;
-}
-
 
 .controls-section input[type="range"] {
     width: 200px;
@@ -220,7 +150,6 @@ button.control-btn, button.history-delete-btn {
 button.history-delete-btn {
     background-color: #dc3545;
     flex-shrink: 0; 
-    margin-left: auto; 
 }
 
 button.control-btn:hover, button.history-delete-btn:hover {
@@ -244,54 +173,8 @@ iframe#outputFrameEl {
     overflow: auto;     
     display: block;   
 }
-.instructions { 
-    background-color: #e9ecef; 
-    border-radius: 4px; 
-    font-size: 0.9em; 
-    padding: 15px; 
-}
-.instructions p strong {
-    display: block;
-    margin-bottom: 0.5em;
-    font-size: 1.1em;
-}
-.instructions ol.steps {
-    padding-left: 20px;
-    margin-top: 0;
-}
-.instructions ol.steps li {
-    margin-bottom: 1.2em; 
-}
-.instructions ol.steps li small.step-note {
-    display: block;
-    font-size: 0.9em;
-    color: #555;
-    margin-top: 0.4em; 
-}
-.instructions ul li span.important-note { 
-    display: block; 
-    margin-top: 8px; 
-    font-weight: bold;
-    color: #c00; 
-    font-size: 0.9em;
-}
-.troubleshooting-section { 
-    padding: 0;
-    background-color: #f9f9f9;
-    border: 1px solid #eee;
-    border-radius: 4px;
-}
-.troubleshooting-section ul {
-    list-style-type: disc;
-    padding-left: 25px;
-    margin-top: 5px;
-    font-size: 0.9em;
-}
-.troubleshooting-section ul li {
-    margin-bottom: 0.75em;
-}
-
-
+.instructions { background-color: #e9ecef; padding: 15px; border-radius: 4px; margin-bottom: 25px; font-size: 0.9em; }
+.instructions ul { padding-left: 20px; }
 .status-message { 
     font-size: 0.9em;
     flex-grow: 1;
@@ -317,26 +200,27 @@ iframe#outputFrameEl {
     font-size: 0.8em;
 }
 
-/* --- Accordion Styles (Common for History, Update History, Troubleshooting) --- */
+/* --- Accordion Styles (Common for History & Update History) --- */
 .accordion-toggle { 
     cursor: pointer;
     user-select: none;
     padding: 12px 15px;
-    background-color: #f0f2f5; 
+    background-color: #f0f2f5; /* Slightly different background for distinction */
     border-bottom: 1px solid #d1d9e0;
     border-radius: 4px; 
-    font-size: 1.0em; 
+    font-size: 1.0em; /* Slightly smaller for sub-sections */
     font-weight: bold;
     display: flex;
     justify-content: space-between;
     align-items: center;
     transition: background-color 0.2s, border-radius 0.35s ease-out;
-    margin-top: 0; 
+    margin-top: 0; /* Remove default h3 margin if it's a toggle */
     margin-bottom: 0;
 }
-.accordion-toggle.open { 
+.accordion-toggle.open { /* Style when accordion is open */
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
+    /* border-bottom: 1px solid #d1d9e0; */ /* Kept for consistency */
 }
 .accordion-toggle:hover {
     background-color: #e4e8eb;
@@ -350,7 +234,7 @@ iframe#outputFrameEl {
 .accordion-toggle.open .accordion-icon {
     transform: rotate(-180deg);
 }
-.accordion-content { 
+.accordion-content { /* Common style for accordion content panels */
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.35s ease-out, padding-top 0.35s ease-out, padding-bottom 0.35s ease-out, border-top-width 0.35s ease-out;
@@ -361,7 +245,7 @@ iframe#outputFrameEl {
     padding-bottom: 0;
     border-top: none; 
     border-radius: 0 0 4px 4px;
-    border-left: 1px solid #eee; 
+    border-left: 1px solid #eee; /* Match wrapper border */
     border-right: 1px solid #eee;
     border-bottom: 1px solid #eee;
 }
@@ -384,7 +268,7 @@ iframe#outputFrameEl {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 8px; 
+    padding: 10px 8px; 
     border-bottom: 1px solid #f0f0f0;
     transition: background-color 0.2s;
     cursor: pointer; 
@@ -397,11 +281,10 @@ iframe#outputFrameEl {
 }
 .history-item-text-content { 
     flex-grow: 1;
-    margin-right: 15px; 
+    margin-right: 10px;
     overflow: hidden; 
     display: flex; 
     flex-direction: column; 
-    gap: 5px; 
 }
 .history-item-title-artist { 
     font-weight: 600; 
@@ -412,7 +295,6 @@ iframe#outputFrameEl {
     white-space: nowrap;
     font-size: 0.95em;
     line-height: 1.3;
-    margin-left: 5px; 
 }
 .history-item-external-url { 
     font-size: 0.8em; 
@@ -423,31 +305,22 @@ iframe#outputFrameEl {
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 1.2;
-    margin-left: 5px; 
 }
 .history-item-external-url:hover {
     text-decoration: underline;
 }
 
-
 /* Update History Specific Styles */
 .update-history-wrapper {
-     margin-top: 30px; 
-     margin-bottom: 20px; 
-     padding:0; 
-     background-color: #f9f9f9;
-     border: 1px solid #eee;
-     border-radius: 4px;
+     margin-top: 30px; /* More space before update history */
 }
-#updateHistoryContentEl ul { 
-    list-style-type: none; 
-    padding-left: 0; 
+#updateHistoryContentEl ul {
+    list-style-type: disc;
+    padding-left: 20px;
     font-size: 0.9em;
-    margin-bottom: 10px; 
 }
-#updateHistoryContentEl > ul > li { 
-    margin-bottom: 10px; 
-    padding-left: 0;
+#updateHistoryContentEl li {
+    margin-bottom: 8px;
 }
 #updateHistoryContentEl .version-date {
     font-weight: bold;
@@ -456,26 +329,9 @@ iframe#outputFrameEl {
 #updateHistoryContentEl .version-rev {
     font-style: italic;
     color: #555;
-    font-size: 0.9em;
 }
 #updateHistoryContentEl .change-list {
-    list-style-type: disc; 
-    padding-left: 20px; 
-    margin-top: 5px;
-    font-size: 0.95em; 
-    color: #444;
-}
-#updateHistoryContentEl .change-list li {
-    margin-bottom: 4px;
-    padding-left: 0;
-    border-bottom: none; 
-}
-#updateHistoryContentEl .change-list li:hover {
-    background-color: transparent; 
-    cursor: default;
-}
-
-/* Styles for repeated header in print/download (defined in script.js) */
-.repeated-header-info {
-    /* Styles are primarily injected by script.js for the final output */
+    list-style-type: circle;
+    padding-left: 20px;
+    margin-top: 4px;
 }
