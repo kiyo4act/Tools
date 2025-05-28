@@ -63,16 +63,26 @@ textarea {
     font-family: monospace;
     font-size: 0.9em;
 }
-
-.controls-section, .url-fetch-container, .history-container-wrapper, .update-history-wrapper { 
+/* Section common styles */
+.controls-section, 
+.url-fetch-container-wrapper, /* Wrapper for URL fetch and privacy note */
+.history-container-wrapper, 
+.update-history-wrapper,
+.instructions, /* Instructions and Troubleshooting now share some base styling */
+.troubleshooting-section { 
     margin-bottom: 20px; 
-    padding: 10px;
+    padding: 15px; /* Consistent padding for sections */
     background-color: #f9f9f9;
     border: 1px solid #eee;
     border-radius: 4px;
 }
-.history-container-wrapper, .update-history-wrapper { 
+.history-container-wrapper, 
+.update-history-wrapper,
+.troubleshooting-section { /* Accordion wrappers have no internal padding */
     padding: 0; 
+}
+.url-fetch-container-wrapper { /* Specific padding for URL fetch wrapper */
+    padding-bottom: 5px; /* Reduce bottom padding if privacy note is inside */
 }
 
 
@@ -81,9 +91,14 @@ textarea {
     align-items: center; 
     flex-wrap: wrap; 
     gap: 10px;
+    padding: 0; /* Remove padding if wrapper has it */
+    border: none; /* Remove border if wrapper has it */
+    background-color: transparent; /* Transparent if wrapper has background */
+    margin-bottom: 10px; /* Space before privacy note */
 }
 
-.history-container-wrapper + h3 { 
+.history-container-wrapper + h3, /* h3 after history */
+.troubleshooting-section + .history-container-wrapper { /* history after troubleshooting */
     margin-top: 20px; 
 }
 
@@ -187,15 +202,48 @@ iframe#outputFrameEl {
     overflow: auto;     
     display: block;   
 }
-.instructions { background-color: #e9ecef; padding: 15px; border-radius: 4px; margin-bottom: 25px; font-size: 0.9em; }
-.instructions ul { padding-left: 20px; }
-.instructions ul li span.important-note { 
+.instructions { 
+    background-color: #e9ecef; 
+    /* padding: 15px; Moved to common section style */
+    border-radius: 4px; 
+    /* margin-bottom: 25px; Moved to common section style */
+    font-size: 0.9em; 
+}
+.instructions p strong {
+    display: block;
+    margin-bottom: 0.5em;
+    font-size: 1.1em;
+}
+.instructions ol.steps {
+    padding-left: 20px;
+    margin-top: 0;
+}
+.instructions ol.steps li {
+    margin-bottom: 1em; /* 余白を設ける */
+}
+.instructions ol.steps li small.step-note {
+    display: block;
+    font-size: 0.9em;
+    color: #555;
+    margin-top: 0.3em;
+}
+.instructions ul li span.important-note { /* 「使い方」内の注意書き */
     display: block; 
     margin-top: 8px; 
     font-weight: bold;
     color: #c00; 
     font-size: 0.9em;
 }
+.troubleshooting-section ul {
+    list-style-type: disc;
+    padding-left: 25px;
+    margin-top: 5px;
+    font-size: 0.9em;
+}
+.troubleshooting-section ul li {
+    margin-bottom: 0.75em;
+}
+
 
 .status-message { 
     font-size: 0.9em;
@@ -222,7 +270,7 @@ iframe#outputFrameEl {
     font-size: 0.8em;
 }
 
-/* --- Accordion Styles (Common for History & Update History) --- */
+/* --- Accordion Styles (Common for History, Update History, Troubleshooting) --- */
 .accordion-toggle { 
     cursor: pointer;
     user-select: none;
@@ -289,7 +337,7 @@ iframe#outputFrameEl {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 8px; 
+    padding: 12px 8px; /* ★修正2: パディング調整 */
     border-bottom: 1px solid #f0f0f0;
     transition: background-color 0.2s;
     cursor: pointer; 
@@ -302,11 +350,11 @@ iframe#outputFrameEl {
 }
 .history-item-text-content { 
     flex-grow: 1;
-    margin-right: 10px; 
+    margin-right: 15px; /* ★修正2: 削除ボタンとの間隔を広げる */
     overflow: hidden; 
     display: flex; 
     flex-direction: column; 
-    gap: 2px; 
+    gap: 4px; /* ★修正2: 曲名とURLの間の隙間を少し広げる */
 }
 .history-item-title-artist { 
     font-weight: 600; 
@@ -331,21 +379,22 @@ iframe#outputFrameEl {
 .history-item-external-url:hover {
     text-decoration: underline;
 }
-.privacy-note-history { 
+.privacy-note { /* ★修正5: プライバシー注釈スタイル (URL読み込みセクション用) */
     font-size: 0.85em;
-    color: #666;
-    padding: 8px 15px;
-    background-color: #f0f8ff; 
-    border-top: 1px solid #d1e7fd;
-    border-radius: 0 0 4px 4px; 
-    margin-top: 0; 
+    color: #555; /* 少し濃いめのグレー */
+    padding: 10px; /* 上下左右のパディング */
+    background-color: #e9f5fd; /* 薄い水色系 */
+    border: 1px solid #bce8f1; /* 水色系の枠線 */
+    border-radius: 4px; 
+    margin-top: 10px; /* 上の要素との間隔 */
     display: flex;
     align-items: center;
+    line-height: 1.4;
 }
 .privacy-icon { 
-    width: 1em;
-    height: 1em;
-    margin-right: 0.5em;
+    width: 1.1em; /* 少し大きく */
+    height: 1.1em;
+    margin-right: 0.6em;
     color: #007bff; 
     flex-shrink: 0;
 }
