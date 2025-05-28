@@ -28,30 +28,48 @@
         </p>
 
         <div class="instructions">
-             <p><strong>使い方:</strong></p>
-            <ul>
-                <li>主に「URLから歌詞ページのHTMLを読み込む」セクションに <code>utaten.com</code> の歌詞ページのURLを入力し、「読み込み実行」ボタンを押して使用します。
-                    (URL読み込みがうまくいかない場合は、別の「プロキシ」を選択して再度お試しください。)</li>
-                <li>読み込みに成功したURLは、次回以降簡単に再アクセスできるよう「読み込み履歴」に保存されます。</li>
-                <li>歌詞フォントサイズや、改ページごとのヘッダー情報表示（各ページの先頭に曲名などを表示するかどうか）を調整できます。</li>
-                <li>「整形を初期化」ボタンで整形処理を実行し、プレビューを表示します。プレビュー内のボタンで改行・空白・改ページを細かく調整できます。</li>
-                <li>「生成HTMLをダウンロード」で整形後のHTMLファイルを保存したり、「印刷」ボタンで直接印刷したりできます。</li>
-                <li>URLからの読み込みがどうしても機能しない場合に限り、「歌詞ページのHTML」入力欄に手動でHTMLソースを貼り付けて利用することも可能です。</li>
-                <li><span class="important-note">注意: 印刷時の改ページがChromeで期待通りに動作しない場合、Firefoxなど別のブラウザでお試しいただくと正常に動作することがあります。</span></li>
-            </ul>
+            <p><strong>基本的な使い方</strong></p>
+            <ol class="steps">
+                <li>
+                    <strong>歌詞ページのURLを入力して読み込む:</strong><br>
+                    下の「URLから歌詞ページのHTMLを読み込む」セクションに、整形したい <code>utaten.com</code> の歌詞ページのURLを入力し、「読み込み実行」ボタンを押します。
+                    <small class="step-note">読み込みに成功したURLは、次回以降「読み込み履歴」から簡単に再アクセスできます。</small>
+                </li>
+                <li>
+                    <strong>表示を調整してプレビューする:</strong><br>
+                    URL読み込みに成功すると、自動的に整形処理が実行され、プレビューが表示されます。<br>
+                    「歌詞フォントサイズ」スライダーや「各ページにヘッダー情報（曲名等）を表示する」チェックボックスで表示を調整できます。<br>
+                    プレビュー内の各コントロールボタン（改行削除/追加、空白追加/削除、改ページ追加/削除）を使って、さらに細かく表示を調整できます。
+                </li>
+                <li>
+                    <strong>出力する:</strong><br>
+                    調整後、「生成HTMLをダウンロード」ボタンで整形後のHTMLファイルを保存するか、「印刷」ボタンで直接印刷します。
+                </li>
+            </ol>
         </div>
+
+        <div class="troubleshooting-section">
+            <h3 id="troubleshootingToggleBtnEl" class="accordion-toggle">困った時は <span class="accordion-icon">&#9660;</span></h3>
+            <div id="troubleshootingContentEl" class="accordion-content">
+                <ul>
+                    <li><strong>URLからの読み込みがうまくいかない場合:</strong><br>
+                        「プロキシ」の選択肢を変更して、再度「読み込み実行」をお試しください。プロキシサービスや対象サイトの状況により、一時的に読み込めないことがあります。</li>
+                    <li><strong>どうしてもURLから読み込めない場合:</strong><br>
+                        「歌詞ページのHTML」入力欄に、ブラウザで表示した歌詞ページのHTMLソース（特に歌詞が表示されている中心部分）を手動でコピー＆ペーストして「整形を初期化」ボタンを押すことでも利用可能です。</li>
+                    <li><strong>印刷時の改ページが期待通りに動作しない場合 (特にChromeブラウザ):</strong><br>
+                        Firefoxなど、別のブラウザで印刷を試すと正常に動作することがあります。</li>
+                    <li><strong>表示や設定を最初の状態に戻したい場合:</strong><br>
+                        「整形を初期化」ボタンを押すと、プレビュー内の改行・空白・改ページの設定がリセットされます。（URL入力やフォントサイズ設定は維持されます。）</li>
+                </ul>
+            </div>
+        </div>
+
 
         <div class="history-container-wrapper">
             <h3 id="historyToggleBtnEl" class="accordion-toggle">読み込み履歴 <span class="accordion-icon">&#9660;</span></h3>
             <div id="historyContentEl" class="history-content">
                 <ul id="historyListEl"></ul>
             </div>
-            <p class="privacy-note-history">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="privacy-icon">
-                    <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
-                </svg>
-                安全: 読み込み履歴はあなたのブラウザ内にのみ保存され、他の誰にも公開されたり、サーバーに送信されたりすることはありません。
-            </p>
         </div>
         
         <h3>URLから歌詞ページのHTMLを読み込む</h3>
@@ -64,6 +82,12 @@
             <div class="loader" id="urlLoaderEl"></div>
             <div id="urlStatusEl" class="status-message"></div>
         </div>
+        <p class="privacy-note">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="privacy-icon">
+                <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
+            </svg>
+            安全: 入力されたURLや読み込み履歴はあなたのブラウザ内にのみ保存され、他の誰にも公開されたり、サーバーに送信されたりすることはありません。
+        </p>
 
         <h3>歌詞ページのHTML</h3>
         <textarea id="htmlInputEl" placeholder="ここにHTMLを貼り付けるか、上記URLから読み込んでください..."></textarea>
@@ -99,8 +123,8 @@
                         <ul class="change-list">
                             <li>改ページごとにヘッダー情報（曲名等）を再表示するオプション機能を追加。</li>
                             <li>印刷時の改ページに関する注意書きを「使い方」に追加。</li>
-                            <li>「使い方」の表現を調整、読み込み履歴のプライバシーに関する注釈を追加。</li>
-                            <li>読み込み履歴の表示スタイルを調整。</li>
+                            <li>「使い方」セクションの構成変更と表現調整、プロキシ等に関する情報を「困った時は」に集約。</li>
+                            <li>読み込み履歴アイテム内の余白調整、プライバシー注釈をURL読み込みセクションに移動。</li>
                         </ul>
                     </li>
                     <li>
