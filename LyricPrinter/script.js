@@ -431,13 +431,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const li = document.createElement('li');
             li.onclick = (event) => {
                 let targetElement = event.target;
+                // Check if the click originated from the external link or delete button itself,
+                // or if the parent of the clicked element is one of those.
+                let isActionElementClick = false;
                 while (targetElement && targetElement !== li) {
                     if (targetElement.classList.contains('history-item-external-url') || 
                         targetElement.classList.contains('history-delete-btn')) {
-                        return; 
+                        isActionElementClick = true;
+                        break; 
                     }
                     targetElement = targetElement.parentElement;
                 }
+                if (isActionElementClick) {
+                    return; // Do not trigger re-fetch if an action element was clicked
+                }
+
                 urlInputEl.value = item.url;
                 if (typeof gtag === 'function') {
                     gtag('event', 'load_from_history', {
