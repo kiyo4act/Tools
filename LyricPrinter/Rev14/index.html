@@ -39,7 +39,7 @@
                     <li>
                         <strong>表示を調整してプレビューする:</strong>
                         <p>URL読み込みに成功すると、自動的に整形処理が実行され、プレビューが表示されます。<br>
-                        「歌詞フォントサイズ」スライダーや、「改ページ時にヘッダーを挿入」チェックボックス（チェック時、プレビューでは「改ページ指示箇所（ヘッダー付き）」と表示）で表示を調整できます。<br>
+                        「歌詞フォントサイズ」スライダーや、「改ページ時にヘッダー情報（曲名など）を挿入」チェックボックス（チェック時、プレビューでは「改ページ指示箇所（ヘッダー付き）」と表示）で表示を調整できます。<br>
                         プレビュー内の各コントロールボタン（改行削除/追加、空白追加/削除、改ページ追加/削除）を使って、さらに細かく表示を調整できます。</p>
                     </li>
                     <li>
@@ -105,7 +105,7 @@
             <input type="range" id="fontSizeSliderEl" min="8" max="28" value="20">
             <span class="control-spacer"></span>
             <label for="addHeaderOnPageBreakEl" class="checkbox-label">
-                <input type="checkbox" id="addHeaderOnPageBreakEl" checked> 改ページ時にヘッダーを挿入
+                <input type="checkbox" id="addHeaderOnPageBreakEl" checked> 改ページ時にヘッダー情報（曲名など）を挿入
             </label>
         </div>
 
@@ -127,18 +127,26 @@
                     <li>
                         <span class="version-date">2025年5月28日</span> <span class="version-rev">(Rev. 14)</span>
                         <ul class="change-list">
-                            <li>改ページプレビューの表示を「改ページ指示箇所」とし、ヘッダー挿入オプションに応じて「（ヘッダー付き）」を追記するように変更。</li>
-                            <li>「改ページ時にヘッダーを挿入」の文言を修正。</li>
-                            <li>「読み込み履歴」アコーディオンをデフォルトで開くように変更。</li>
-                            <li>安全性注記のレスポンシブ対応（狭い画面で「安全」と説明文が改行される問題の修正、区切り線の追加）。(以前のRev.14の変更点)</li>
-                            <li>鍵アイコンをFontAwesomeのアイコンに変更。(以前のRev.14の変更点)</li>
-                            <li>「読み込み履歴」アコーディオンが動作しない不具合を修正。(以前のRev.14の変更点)</li>
-                            <li>改ページ時にヘッダー情報を挿入するかを選択できるオプションを追加（デフォルトON）。(以前のRev.14の変更点)</li>
-                            <li>使い方説明を「基本的な使い方」と「困った時は」に分割し、内容とデザインを更新。(以前のRev.14の変更点)</li>
-                            <li>読み込み履歴のクリック動作を改善（URL文字列以外は履歴読み込み）。(以前のRev.14の変更点)</li>
-                            <li>読み込み履歴のアイテム内テキストの間隔を調整。(以前のRev.14の変更点)</li>
-                            <li>URL読み込み欄に安全性に関する注記（鍵アイコン付き）を追加。(以前のRev.14の変更点)</li>
-                            <li>プレビュー及び最終出力で「改ページ追加」時にヘッダー情報（曲名・アーティスト名等）を改ページ後にも表示する機能を追加。(以前のRev.14の変更点)</li>
+                            <li>UI改善:
+                                <ul>
+                                    <li>使い方説明を「基本的な使い方」と「困った時は」に分割し再構成。</li>
+                                    <li>読み込み履歴のクリック操作を改善（URL文字列以外は履歴読み込み、アイテム内テキスト間隔調整）。</li>
+                                    <li>URL読み込み欄に安全性に関する注記（鍵アイコン付き、レスポンシブ対応）を追加。</li>
+                                    <li>「読み込み履歴」アコーディオンをデフォルトで開くように変更。</li>
+                                </ul>
+                            </li>
+                            <li>機能追加・変更:
+                                <ul>
+                                    <li>改ページ時にヘッダー情報（曲名など）を挿入するオプションを追加（デフォルトON）。</li>
+                                    <li>上記オプションに応じて、プレビュー時の改ページ指示箇所の表示テキストを変更。</li>
+                                </ul>
+                            </li>
+                             <li>不具合修正:
+                                <ul>
+                                    <li>「読み込み履歴」アコーディオンが動作しない問題を修正。</li>
+                                    <li>ヘッダー挿入オプションのラベル文言の重複表示を修正。</li>
+                                </ul>
+                            </li>
                         </ul>
                     </li>
                     <li>
@@ -151,32 +159,28 @@
                     <li>
                         <span class="version-date">2025年5月26日</span> <span class="version-rev">(Rev. 12)</span>
                         <ul class="change-list">
-                            <li>Google Analytics (GA4) との連携機能を追加 (測定ID: G-WWQTE7VWKG)。主要操作のイベントトラッキングを実装。</li>
-                            <li>（旧）更新履歴をアコーディオン形式で追加。（Rev.13でHTML直書きに変更）</li>
-                            <li>読み込み履歴アコーディオンの上下の隙間を調整。</li>
+                            <li>Google Analytics (GA4) との連携機能を追加。</li>
+                            <li>旧更新履歴をアコーディオン形式で追加（Rev.13でHTML直書きに変更）。</li>
                         </ul>
                     </li>
                     <li>
                         <span class="version-date">2025年5月26日</span> <span class="version-rev">(Rev. 11)</span>
                         <ul class="change-list">
-                            <li>「整形後プレビュー」画面の下方向への手動リサイズ機能を追加。</li>
-                            <li>読み込み履歴のクリック動作を改善（項目全体で再読み込み、URL部分のみ外部リンク化）。</li>
-                            <li>履歴に表示されるURLを、表示領域に余裕がある場合は省略しないようにCSSで調整。</li>
+                            <li>プレビュー画面の手動リサイズ機能追加。</li>
+                            <li>読み込み履歴のクリック動作改善、URL表示CSS調整。</li>
                         </ul>
                     </li>
                      <li>
                         <span class="version-date">2025年5月26日</span> <span class="version-rev">(Rev. 10)</span>
                         <ul class="change-list">
-                            <li>UIテキスト変更（「HTML断片」→「歌詞ページのHTML」など）。</li>
-                            <li>読み込み履歴の見た目を改善。</li>
-                            <li>読み込み履歴をアコーディオン化し、URL入力欄の上に配置。</li>
-                            <li>URL読み込み成功時に自動でプレビューを生成、「整形して表示」ボタンを「整形を初期化」に変更。</li>
+                            <li>UIテキスト変更、読み込み履歴の見た目改善・アコーディオン化。</li>
+                            <li>URL読み込み成功時の自動プレビュー生成、「整形して表示」ボタン名称変更。</li>
                         </ul>
                     </li>
                     <li>
                         <span class="version-date">2025年5月26日</span> <span class="version-rev">(Rev. 1-9)</span>
                         <ul class="change-list">
-                            <li>基本機能開発、UI改善、バグ修正、GA4連携準備など。(詳細は<a href="https://github.com/your-username/your-repo/blob/main/README.md#%E6%9B%B4%E6%96%B0%E5%B1%A5%E6%AD%B4" target="_blank" rel="noopener noreferrer">README</a>参照)</li>
+                            <li>基本機能開発、UI改善、バグ修正など。(詳細は<a href="https://github.com/your-username/your-repo/blob/main/README.md#%E6%9B%B4%E6%96%B0%E5%B1%A5%E6%AD%B4" target="_blank" rel="noopener noreferrer">README</a>参照)</li>
                         </ul>
                     </li>
                 </ul>
