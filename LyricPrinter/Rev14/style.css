@@ -32,7 +32,7 @@ h3 {
     margin-top: 25px;
     margin-bottom: 10px;
 }
-/* Usage Section h4 */
+
 .usage-section h4 {
     font-size: 1.2em;
     color: #0056b3;
@@ -91,24 +91,24 @@ textarea {
     flex-wrap: wrap;
     gap: 10px;
 }
-/* Safety Notice Styles */
+
 .safety-notice {
     display: flex;
     align-items: center;
-    background-color: #e6f7ff; /* Light blue background */
-    border: 1px solid #91d5ff; /* Blue border */
-    color: #0050b3; /* Darker blue text for contrast */
+    background-color: #e6f7ff;
+    border: 1px solid #91d5ff;
+    color: #0050b3;
     padding: 10px 15px;
     border-radius: 4px;
-    margin-top: 10px; /* Space from URL input */
-    margin-bottom: 20px; /* Space before next section */
+    margin-top: 10px;
+    margin-bottom: 20px;
     font-size: 0.9em;
 }
 
 .safety-icon {
-    font-size: 1.2em; /* Larger icon */
+    font-size: 1.1em; /* FontAwesomeは少し小さめでも良いかも */
     margin-right: 10px;
-    color: #08979c; /* Teal color for icon */
+    color: #08979c;
 }
 .safety-text-strong {
     font-weight: bold;
@@ -125,7 +125,21 @@ textarea {
     margin-right: 5px;
     font-weight: bold;
     flex-shrink: 0;
+    vertical-align: middle; /* チェックボックスとの縦位置合わせ */
 }
+.controls-section .checkbox-label { /* チェックボックス用ラベルの微調整 */
+    font-weight: normal;
+    margin-left: 5px;
+}
+.controls-section input[type="checkbox"] {
+    vertical-align: middle;
+    margin-right: 3px;
+}
+.control-spacer { /* フォントサイズとチェックボックスの間のスペース */
+    display: inline-block;
+    width: 20px;
+}
+
 
 .controls-section input[type="range"] {
     width: 200px;
@@ -207,13 +221,13 @@ iframe#outputFrameEl {
     overflow: auto;
     display: block;
 }
-/* Instructions styling */
+
 .instructions {
-    background-color: #f8f9fa; /* Light grey background */
-    padding: 15px 20px; /* More padding */
-    border-radius: 6px; /* Slightly more rounded corners */
-    margin-bottom: 30px; /* More space below */
-    border: 1px solid #e0e0e0; /* Subtle border */
+    background-color: #f8f9fa;
+    padding: 15px 20px;
+    border-radius: 6px;
+    margin-bottom: 30px;
+    border: 1px solid #e0e0e0;
 }
 
 .instructions .usage-section {
@@ -224,28 +238,28 @@ iframe#outputFrameEl {
 }
 
 .instructions ol, .instructions ul {
-    padding-left: 25px; /* Indent lists */
+    padding-left: 25px;
     margin-top: 5px;
 }
 .instructions li {
-    margin-bottom: 12px; /* Space between list items */
+    margin-bottom: 12px;
 }
 .instructions strong {
-    color: #333; /* Darker color for emphasis */
-    font-weight: 600; /* Slightly bolder */
+    color: #333;
+    font-weight: 600;
 }
 .instructions p {
-    margin-top: 4px; /* Space between heading and paragraph */
+    margin-top: 4px;
     margin-bottom: 8px;
     font-size: 0.95em;
-    color: #444; /* Slightly darker text for readability */
+    color: #444;
 }
 .instructions small {
     font-size: 0.85em;
     color: #666;
 }
 .troubleshooting-guide h4 {
-    color: #c82333; /* Reddish color for troubleshooting */
+    color: #c82333;
     border-bottom-color: #dc3545;
 }
 
@@ -318,7 +332,7 @@ iframe#outputFrameEl {
 .accordion-toggle.open .accordion-icon {
     transform: rotate(-180deg);
 }
-.accordion-content {
+.accordion-content { /* Common style for accordion content panels */
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.35s ease-out, padding-top 0.35s ease-out, padding-bottom 0.35s ease-out, border-top-width 0.35s ease-out;
@@ -329,17 +343,18 @@ iframe#outputFrameEl {
     padding-bottom: 0;
     border-top: none;
     border-radius: 0 0 4px 4px;
-    border-left: 1px solid #eee;
+    border-left: 1px solid #eee; /* Match wrapper border */
     border-right: 1px solid #eee;
     border-bottom: 1px solid #eee;
 }
 .accordion-content.open {
-    max-height: 250px;
+    max-height: 250px; /* Adjust as needed */
     overflow-y: auto;
     padding-top: 10px;
     padding-bottom: 10px;
     border-top: 1px solid #d1d9e0;
 }
+
 
 /* History List Specific Styles */
 #historyListEl {
@@ -355,7 +370,6 @@ iframe#outputFrameEl {
     padding: 10px 8px;
     border-bottom: 1px solid #f0f0f0;
     transition: background-color 0.2s;
-    /* cursor: pointer;  Removed from li, will be on textContentDiv */
 }
 #historyListEl li:hover {
     background-color: #f1f9ff;
@@ -369,8 +383,8 @@ iframe#outputFrameEl {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    gap: 4px; /* Added gap for spacing between title/artist and URL */
-    cursor: pointer; /* Add cursor pointer here for reload action */
+    gap: 4px;
+    cursor: pointer;
 }
 .history-item-title-artist {
     font-weight: 600;
@@ -391,7 +405,7 @@ iframe#outputFrameEl {
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 1.2;
-    cursor: alias; /* Indicate it's a link */
+    cursor: alias;
 }
 .history-item-external-url:hover {
     text-decoration: underline;
