@@ -6,25 +6,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const outputFrameEl = document.getElementById('outputFrameEl');
     const fontSizeSliderEl = document.getElementById('fontSizeSliderEl');
     const fontSizeValueDisplayEl = document.getElementById('fontSizeValueDisplayEl');
+    const addHeaderOnPageBreakEl = document.getElementById('addHeaderOnPageBreakEl');
     const urlInputEl = document.getElementById('urlInputEl');
     const fetchUrlBtnEl = document.getElementById('fetchUrlBtnEl');
     const urlStatusEl = document.getElementById('urlStatusEl');
     const urlLoaderEl = document.getElementById('urlLoaderEl');
     const historyListEl = document.getElementById('historyListEl');
     const proxySelectEl = document.getElementById('proxySelectEl');
-    const historyToggleBtnEl = document.getElementById('historyToggleBtnEl'); 
-    const historyContentEl = document.getElementById('historyContentEl'); 
+    const historyToggleBtnEl = document.getElementById('historyToggleBtnEl');
+    const historyContentEl = document.getElementById('historyContentEl');
     const updateHistoryToggleBtnEl = document.getElementById('updateHistoryToggleBtnEl');
     const updateHistoryContentEl = document.getElementById('updateHistoryContentEl');
 
     let songInfo = {};
-    let originalLyricsLines = []; 
-    let normalLineBreakStates = []; 
+    let originalLyricsLines = [];
+    let normalLineBreakStates = [];
     let pageBreakAfterLineStates = [];
     let addSpaceOnBrRemovalStates = [];
 
     const MAX_HISTORY_ITEMS = 15;
-    const HISTORY_STORAGE_KEY = 'lyricsToolUrlHistory_v2'; 
+    const HISTORY_STORAGE_KEY = 'lyricsToolUrlHistory_v2';
 
     const proxies = [
         { name: "Proxy 1 (codetabs)", idName: "codetabs", buildUrl: (targetUrl) => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(targetUrl)}` },
@@ -38,9 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
             option.textContent = proxy.name;
             proxySelectEl.appendChild(option);
         });
-        proxySelectEl.value = "0"; 
+        proxySelectEl.value = "0";
     }
-    
+
     fontSizeValueDisplayEl.textContent = fontSizeSliderEl.value;
 
     fontSizeSliderEl.addEventListener('input', (event) => {
@@ -52,35 +53,47 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
         if (outputFrameEl.contentDocument && outputFrameEl.contentDocument.body && outputFrameEl.contentDocument.body.innerHTML) {
-            const iframeDoc = outputFrameEl.contentDocument;
-            const lyricsEl = iframeDoc.querySelector('.lyrics');
-            if (lyricsEl) { lyricsEl.style.fontSize = newSize + 'pt'; }
+            displayFullPreview();
         }
     });
-    
-    if (historyToggleBtnEl) {
-        historyToggleBtnEl.addEventListener('click', () => {
-            historyContentEl.classList.toggle('open');
-            historyToggleBtnEl.classList.toggle('open');
+
+    if (addHeaderOnPageBreakEl) {
+        // HTML側で直接正しい文言を記述するため、JavaScriptでのラベルテキスト変更処理は削除
+        addHeaderOnPageBreakEl.addEventListener('change', () => {
             if (typeof gtag === 'function') {
-                gtag('event', 'toggle_history_view', {
-                    'event_category': 'ui_interaction', 'event_label': historyContentEl.classList.contains('open') ? 'open' : 'close'
+                gtag('event', 'toggle_header_on_page_break', {
+                    'event_category': 'controls',
+                    'event_label': addHeaderOnPageBreakEl.checked ? 'enable' : 'disable'
                 });
+            }
+            if (outputFrameEl.contentDocument && outputFrameEl.contentDocument.body && outputFrameEl.contentDocument.body.innerHTML) {
+                displayFullPreview();
             }
         });
     }
-    if (updateHistoryToggleBtnEl) { // 更新履歴アコーディオンの制御
-        updateHistoryToggleBtnEl.addEventListener('click', () => {
-            updateHistoryContentEl.classList.toggle('open');
-            updateHistoryToggleBtnEl.classList.toggle('open');
-             if (typeof gtag === 'function') {
-                gtag('event', 'toggle_update_history_view', {
-                    'event_category': 'ui_interaction',
-                    'event_label': updateHistoryContentEl.classList.contains('open') ? 'open' : 'close'
-                });
+
+    function setupAccordionToggle(toggleButton, contentElement, defaultOpen = false) {
+        if (toggleButton && contentElement) {
+            if (defaultOpen) {
+                contentElement.classList.add('open');
+                toggleButton.classList.add('open');
             }
-        });
+            toggleButton.addEventListener('click', () => {
+                const isOpen = contentElement.classList.toggle('open');
+                toggleButton.classList.toggle('open', isOpen);
+                const eventName = contentElement.id === 'historyContentEl' ? 'toggle_history_view' : 'toggle_update_history_view';
+                if (typeof gtag === 'function') {
+                    gtag('event', eventName, {
+                        'event_category': 'ui_interaction',
+                        'event_label': isOpen ? 'open' : 'close'
+                    });
+                }
+            });
+        }
     }
+
+    setupAccordionToggle(historyToggleBtnEl, historyContentEl, true); // Default open for history
+    setupAccordionToggle(updateHistoryToggleBtnEl, updateHistoryContentEl, false); // Default closed for update history
 
 
     fetchUrlBtnEl.addEventListener('click', async () => {
@@ -103,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
         urlStatusEl.textContent = '読み込み中...';
         urlStatusEl.className = 'status-message';
         fetchUrlBtnEl.disabled = true;
-        
+
         const selectedProxyIndex = parseInt(proxySelectEl.value);
         const selectedProxy = proxies[selectedProxyIndex];
         const proxyUrl = selectedProxy.buildUrl(targetUrl);
@@ -113,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 'event_category': 'lyrics_source', 'event_label': targetUrl.substring(0, 100), 'proxy_used': selectedProxy.idName
             });
         }
-        
+
         try {
             const response = await fetch(proxyUrl);
             if (!response.ok) {
@@ -143,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'proxy_used': selectedProxy.idName, 'song_title': title.substring(0,100)
                 });
             }
-            
+
             urlStatusEl.textContent = 'HTML読み込み成功。自動的に整形・プレビューします。';
             urlStatusEl.className = 'status-message success';
             generatePreviewBtnEl.click();
@@ -165,14 +178,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     generatePreviewBtnEl.addEventListener('click', () => {
         const rawHtml = htmlInputEl.value;
-        if (!rawHtml.trim()) { alert('歌詞ページのHTMLを入力してください。'); return; }
+        if (!rawHtml.trim()) {
+            urlStatusEl.textContent = '歌詞ページのHTMLを入力してください。';
+            urlStatusEl.className = 'status-message error';
+            return;
+        }
         const parser = new DOMParser();
         const doc = parser.parseFromString(rawHtml, 'text/html');
 
         songInfo.title = (doc.querySelector('h2.newLyricTitle__main')?.textContent.replace('歌詞', '').trim()) || "タイトル不明";
         songInfo.artist = (doc.querySelector('div.lyricData__main h3 a')?.textContent.trim()) || "アーティスト不明";
         songInfo.releaseDate = (doc.querySelector('dd.newLyricWork__date')?.textContent.replace('リリース', '').trim()) || "リリース日不明";
-        
+
         let lyricist = "作詞者不明"; let composer = "作曲者不明";
         doc.querySelectorAll('dl.newLyricWork dt.newLyricWork__title').forEach(dt => {
             const dd = dt.nextElementSibling;
@@ -186,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let rawLyricsHtml = doc.querySelector('div.hiragana')?.innerHTML || "<p>歌詞が見つかりません。</p>";
         rawLyricsHtml = rawLyricsHtml.replace(/<span class="ruby"><span class="rb">([^<]+)<\/span><span class="rt">([^<]+)<\/span><\/span>/g, '<ruby>$1<rt>$2</rt></ruby>');
-        
+
         originalLyricsLines = rawLyricsHtml.split(/<br\s*\/?>/i).map(line => line.trim());
         normalLineBreakStates = Array(originalLyricsLines.length - 1).fill(true);
         pageBreakAfterLineStates = Array(originalLyricsLines.length -1).fill(false);
@@ -203,13 +220,16 @@ document.addEventListener('DOMContentLoaded', () => {
         printBtnEl.disabled = false;
     });
 
+
     function displayFullPreview() {
         const currentFontSize = fontSizeSliderEl.value;
         let lyricsHtmlForPreview = '';
+        const insertHeader = addHeaderOnPageBreakEl.checked;
+
         originalLyricsLines.forEach((line, index) => {
             lyricsHtmlForPreview += `<span class="lyric-line-content">${line}</span>`;
 
-            if (index < originalLyricsLines.length - 1) { 
+            if (index < originalLyricsLines.length - 1) {
                 const isEffectivelyEmptyLine = line.replace(/<[^>]+>/g, '').trim() === '';
 
                 if (isEffectivelyEmptyLine) {
@@ -220,10 +240,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
-                if (normalLineBreakStates[index]) { 
+                if (normalLineBreakStates[index]) {
                     lyricsHtmlForPreview += `<button class="control-btn remove-br-btn" data-line-index="${index}">改行削除</button>`;
                     lyricsHtmlForPreview += `<br data-br-index="${index}">`;
-                } else { 
+                } else {
                     lyricsHtmlForPreview += `<button class="control-btn restore-br-btn" data-line-index="${index}">改行追加</button>`;
                     if (addSpaceOnBrRemovalStates[index]) {
                         lyricsHtmlForPreview += `<button class="control-btn toggle-space-btn" data-line-index="${index}" data-action="remove_space">空白削除</button>`;
@@ -234,7 +254,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 if (pageBreakAfterLineStates[index]) {
-                    lyricsHtmlForPreview += `<div class="page-break-preview-indicator">-- 改ページ指示箇所 --</div>`;
+                    const indicatorText = insertHeader ? "改ページ指示箇所（ヘッダー付き）" : "改ページ指示箇所";
+                    lyricsHtmlForPreview += `<div class="page-break-preview-indicator">${indicatorText}</div>`;
                 }
             }
         });
@@ -253,21 +274,21 @@ document.addEventListener('DOMContentLoaded', () => {
             .br-placeholder.space-added::before { content: " "; white-space: pre; }
             .page-break-preview-indicator { text-align:center; color:blue; font-size:0.8em; border-top:1px dashed blue; margin: 5px 0; padding: 2px 0; user-select: none;}
         </style></head><body><h1>${songInfo.title}</h1><div class="song-info"><p>アーティスト: ${songInfo.artist}</p><p>作詞: ${songInfo.lyricist}</p><p>作曲: ${songInfo.composer}</p><p>リリース日: ${songInfo.releaseDate}</p></div><div class="lyrics">${lyricsHtmlForPreview}</div></body></html>`;
-        
+
         const iframeDoc = outputFrameEl.contentDocument || outputFrameEl.contentWindow.document;
         iframeDoc.open();
         iframeDoc.write(previewContent);
         iframeDoc.close();
-        
+
         setTimeout(() => {
-            if (iframeDoc.body) { 
+            if (iframeDoc.body) {
                 attachControlListeners(iframeDoc);
             }
         }, 100);
     }
-    
+
     function attachControlListeners(iframeDoc) {
-        if (!iframeDoc || !iframeDoc.body) return; 
+        if (!iframeDoc || !iframeDoc.body) return;
         iframeDoc.querySelectorAll('.remove-br-btn').forEach(b => b.onclick = () => toggleNormalBreak(parseInt(b.dataset.lineIndex), false));
         iframeDoc.querySelectorAll('.restore-br-btn').forEach(b => b.onclick = () => toggleNormalBreak(parseInt(b.dataset.lineIndex), true));
         iframeDoc.querySelectorAll('.add-pb-btn').forEach(b => b.onclick = () => togglePageBreak(parseInt(b.dataset.lineIndex), true));
@@ -299,18 +320,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function getHeaderHtmlForFinalOutput() {
+        if (!addHeaderOnPageBreakEl.checked) return '';
+        return `<div class="repeated-header-info"><h1>${songInfo.title || 'タイトル不明'}</h1><div class="song-info"><p>アーティスト: ${songInfo.artist || 'アーティスト不明'}</p><p>作詞: ${songInfo.lyricist || '作詞者不明'}</p><p>作曲: ${songInfo.composer || '作曲者不明'}</p><p>リリース日: ${songInfo.releaseDate || 'リリース日不明'}</p></div></div>`;
+    }
+
     function generateFinalHtmlForOutput() {
         const currentFontSize = fontSizeSliderEl.value;
         let lyricsHtmlOutput = '';
+
         originalLyricsLines.forEach((line, index) => {
-            lyricsHtmlOutput += line; 
-            
+            if (index > 0 && pageBreakAfterLineStates[index - 1]) {
+                lyricsHtmlOutput += getHeaderHtmlForFinalOutput();
+            }
+            lyricsHtmlOutput += line;
+
             if (index < normalLineBreakStates.length) {
-                if (normalLineBreakStates[index]) { 
+                if (normalLineBreakStates[index]) {
                     lyricsHtmlOutput += '<br>';
-                } else { 
+                } else {
                     if (addSpaceOnBrRemovalStates[index]) {
-                        lyricsHtmlOutput += ' '; 
+                        lyricsHtmlOutput += ' ';
                     }
                 }
             }
@@ -326,16 +356,22 @@ document.addEventListener('DOMContentLoaded', () => {
             .lyrics { margin-top: 20px; text-align: left; font-size: ${currentFontSize}pt; line-height: 2.2; column-count: 1; }
             ruby { display: ruby; ruby-position: over !important; line-height: initial; }
             ruby rt { font-size: 0.55em; opacity: 0.95; user-select: none; }
+            .repeated-header-info { margin-bottom: 15px; }
+            .repeated-header-info h1 { font-size: 16pt; text-align: center; margin-bottom: 8px; font-weight: bold; }
+            .repeated-header-info .song-info { text-align: right; margin-bottom: 10px; font-size: 9pt; }
+            .repeated-header-info .song-info p { margin: 2px 0; }
             @media print {
                 body { margin: 15mm; font-size: 11pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                 h1 { font-size: 18pt; }
                 .song-info { font-size: 9pt; }
                 .lyrics { font-size: ${Math.max(8, parseInt(currentFontSize) - 1)}pt; line-height: 2.0; }
-                .print-page-break-element { 
-                    page-break-after: always !important; 
+                .repeated-header-info h1 { font-size: 14pt; }
+                .repeated-header-info .song-info { font-size: 8pt; }
+                .print-page-break-element {
+                    page-break-after: always !important;
                     display: block !important; height: 0 !important; line-height: 0 !important; font-size: 0 !important;
                     margin: 0 !important; padding: 0 !important; border: none !important;
-                    visibility: visible !important; content: ""; 
+                    visibility: visible !important; content: "";
                 }
             }
             .print-page-break-element { display: none; }
@@ -379,7 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     }
-    function renderHistory() { 
+    function renderHistory() {
         if (!historyListEl) return;
         historyListEl.innerHTML = '';
         const history = getHistory();
@@ -392,12 +428,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         history.forEach((item) => {
             const li = document.createElement('li');
-            li.onclick = (event) => {
-                if (event.target.classList.contains('history-item-external-url') || 
-                    event.target.classList.contains('history-delete-btn') ||
-                    (event.target.parentElement && event.target.parentElement.classList.contains('history-delete-btn'))) {
-                    return; 
-                }
+
+            const textContentDiv = document.createElement('div');
+            textContentDiv.className = 'history-item-text-content';
+            textContentDiv.onclick = () => {
                 urlInputEl.value = item.url;
                 if (typeof gtag === 'function') {
                     gtag('event', 'load_from_history', {
@@ -406,23 +440,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 fetchUrlBtnEl.click();
             };
-            
-            const textContentDiv = document.createElement('div');
-            textContentDiv.className = 'history-item-text-content';
+
 
             const titleArtistSpan = document.createElement('span');
             titleArtistSpan.className = 'history-item-title-artist';
             titleArtistSpan.textContent = `${item.title}：${item.artist || '不明'}`;
             titleArtistSpan.title = `クリックして再読み込み: ${item.title}`;
-            
+
             const externalUrlLink = document.createElement('a');
             externalUrlLink.href = item.url;
             externalUrlLink.className = 'history-item-external-url';
             externalUrlLink.target = '_blank';
-            externalUrlLink.textContent = `(${item.url})`; 
+            externalUrlLink.textContent = `(${item.url})`;
             externalUrlLink.title = `元のページを開く: ${item.url}`;
             externalUrlLink.onclick = (e) => {
-                e.stopPropagation(); 
+                e.stopPropagation();
                 if (typeof gtag === 'function') {
                     gtag('event', 'open_external_from_history', {
                         'event_category': 'history_interaction', 'event_label': item.url.substring(0,100)
@@ -438,10 +470,10 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteBtn.classList.add('history-delete-btn');
             deleteBtn.dataset.url = item.url;
             deleteBtn.onclick = (e) => {
-                e.stopPropagation(); 
+                e.stopPropagation();
                 deleteHistoryItem(item.url);
             };
-            
+
             li.appendChild(textContentDiv);
             li.appendChild(deleteBtn);
             historyListEl.appendChild(li);
@@ -449,7 +481,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     downloadHtmlBtnEl.addEventListener('click', () => {
-        if (!songInfo.title) { alert('先に「整形を初期化」を実行してください。'); return; }
+        if (!songInfo.title) {
+            urlStatusEl.textContent = '先に「整形を初期化」を実行してください。';
+            urlStatusEl.className = 'status-message error';
+            return;
+        }
         const finalHtmlContent = generateFinalHtmlForOutput();
         if (typeof gtag === 'function') {
             gtag('event', 'download_html', {
@@ -466,7 +502,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     printBtnEl.addEventListener('click', () => {
-        if (!songInfo.title) { alert('先に「整形を初期化」を実行してください。'); return; }
+        if (!songInfo.title) {
+            urlStatusEl.textContent = '先に「整形を初期化」を実行してください。';
+            urlStatusEl.className = 'status-message error';
+            return;
+        }
         const finalHtmlContent = generateFinalHtmlForOutput();
         if (typeof gtag === 'function') {
             gtag('event', 'print_html', {
@@ -475,13 +515,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const printWindow = window.open('', '_blank', 'width=800,height=600');
         if (!printWindow) {
-            alert("印刷ウィンドウを開けませんでした。ポップアップブロッカーを確認してください。");
+            urlStatusEl.textContent = "印刷ウィンドウを開けませんでした。ポップアップブロッカーを確認してください。";
+            urlStatusEl.className = 'status-message error';
             return;
         }
         printWindow.document.open();
         printWindow.document.write(finalHtmlContent);
         printWindow.document.close();
-        
+
         const attemptPrint = () => {
             try {
                 if (!printWindow || printWindow.closed) { return; }
@@ -493,9 +534,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (printWindow.document.readyState === "complete") { attemptPrint(); }
         else { printWindow.onload = attemptPrint; setTimeout(attemptPrint, 700); }
     });
-    
+
     // Initial setup on page load
     populateProxies();
     renderHistory();
-    // renderUpdateHistory(); // HTML直書きにしたのでJSからの呼び出しは不要
 });
