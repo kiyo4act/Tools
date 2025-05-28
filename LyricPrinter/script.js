@@ -16,8 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const historyContentEl = document.getElementById('historyContentEl'); 
     const updateHistoryToggleBtnEl = document.getElementById('updateHistoryToggleBtnEl');
     const updateHistoryContentEl = document.getElementById('updateHistoryContentEl');
+    const repeatHeaderCheckboxEl = document.getElementById('repeatHeaderCheckboxEl'); // 新機能UI
 
-    let songInfo = {};
+    let songInfo = {}; // 曲名、アーティスト名などを保持
     let originalLyricsLines = []; 
     let normalLineBreakStates = []; 
     let pageBreakAfterLineStates = [];
@@ -58,6 +59,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
+    if (repeatHeaderCheckboxEl) {
+        repeatHeaderCheckboxEl.addEventListener('change', () => {
+            if (typeof gtag === 'function') {
+                gtag('event', 'toggle_repeat_header', {
+                    'event_category': 'controls',
+                    'event_label': repeatHeaderCheckboxEl.checked ? 'on' : 'off'
+                });
+            }
+            if (songInfo.title && originalLyricsLines.length > 0) { // 既にプレビューが表示されていれば更新
+                 displayFullPreview(); 
+            }
+        });
+    }
+
     if (historyToggleBtnEl) {
         historyToggleBtnEl.addEventListener('click', () => {
             historyContentEl.classList.toggle('open');
@@ -69,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    if (updateHistoryToggleBtnEl) { // 更新履歴アコーディオンの制御
+    if (updateHistoryToggleBtnEl) {
         updateHistoryToggleBtnEl.addEventListener('click', () => {
             updateHistoryContentEl.classList.toggle('open');
             updateHistoryToggleBtnEl.classList.toggle('open');
@@ -81,7 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-
 
     fetchUrlBtnEl.addEventListener('click', async () => {
         const targetUrl = urlInputEl.value.trim();
@@ -205,6 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displayFullPreview() {
         const currentFontSize = fontSizeSliderEl.value;
+        const shouldRepeatHeader = repeatHeaderCheckboxEl.checked;
         let lyricsHtmlForPreview = '';
         originalLyricsLines.forEach((line, index) => {
             lyricsHtmlForPreview += `<span class="lyric-line-content">${line}</span>`;
@@ -234,25 +249,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 if (pageBreakAfterLineStates[index]) {
-                    lyricsHtmlForPreview += `<div class="page-break-preview-indicator">-- 改ページ指示箇所 --</div>`;
+                    lyricsHtmlForPreview += `<div class="page-break-preview-indicator">-- 改ページ指示箇所 ${shouldRepeatHeader ? "(+ヘッダー再表示)" : ""} --</div>`;
                 }
             }
         });
+        
+        const previewHeaderHtml = `<h1>${songInfo.title || 'タイトル不明'}</h1><div class="song-info"><p>アーティスト: ${songInfo.artist || '不明'}</p><p>作詞: ${songInfo.lyricist || '不明'}</p><p>作曲: ${songInfo.composer || '不明'}</p><p>リリース日: ${songInfo.releaseDate || '不明'}</p></div>`;
+        const previewStyles = `body { font-family: 'MS Mincho', 'Hiragino Mincho ProN', Meiryo, sans-serif; margin: 10px; font-size: 12pt; } h1 { font-size: 18pt; text-align: center; margin-bottom: 10px; font-weight: bold; } .song-info { text-align: right; margin-bottom: 20px; font-size: 9pt; } .song-info p { margin: 2px 0; } .lyrics { margin-top: 15px; text-align: left; font-size: ${currentFontSize}pt; line-height: 2.2; } ruby { display: ruby; ruby-position: over !important; line-height: initial; } ruby rt { font-size: 0.55em; opacity: 0.95; user-select: none; } .lyric-line-content { display: inline; } button.control-btn { padding:1px 4px; font-size:0.75em; margin-left:5px; background-color:#6c757d; color:white; border:none; border-radius:3px; cursor:pointer; vertical-align: baseline;} button.control-btn:hover { background-color:#5a6268; } .br-placeholder.no-space {} .br-placeholder.space-added::before { content: " "; white-space: pre; } .page-break-preview-indicator { text-align:center; color:blue; font-size:0.8em; border-top:1px dashed blue; margin: 5px 0; padding: 2px 0; user-select: none;}`;
 
-        const previewContent = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${songInfo.title} - プレビュー</title><style>
-            body { font-family: 'MS Mincho', 'Hiragino Mincho ProN', Meiryo, sans-serif; margin: 10px; font-size: 12pt; }
-            h1 { font-size: 18pt; text-align: center; margin-bottom: 10px; font-weight: bold; }
-            .song-info { text-align: right; margin-bottom: 20px; font-size: 9pt; } .song-info p { margin: 2px 0; }
-            .lyrics { margin-top: 15px; text-align: left; font-size: ${currentFontSize}pt; line-height: 2.2; }
-            ruby { display: ruby; ruby-position: over !important; line-height: initial; }
-            ruby rt { font-size: 0.55em; opacity: 0.95; user-select: none; }
-            .lyric-line-content { display: inline; }
-            button.control-btn { padding:1px 4px; font-size:0.75em; margin-left:5px; background-color:#6c757d; color:white; border:none; border-radius:3px; cursor:pointer; vertical-align: baseline;}
-            button.control-btn:hover { background-color:#5a6268; }
-            .br-placeholder.no-space { /* Empty */ }
-            .br-placeholder.space-added::before { content: " "; white-space: pre; }
-            .page-break-preview-indicator { text-align:center; color:blue; font-size:0.8em; border-top:1px dashed blue; margin: 5px 0; padding: 2px 0; user-select: none;}
-        </style></head><body><h1>${songInfo.title}</h1><div class="song-info"><p>アーティスト: ${songInfo.artist}</p><p>作詞: ${songInfo.lyricist}</p><p>作曲: ${songInfo.composer}</p><p>リリース日: ${songInfo.releaseDate}</p></div><div class="lyrics">${lyricsHtmlForPreview}</div></body></html>`;
+        const previewContent = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${songInfo.title || 'プレビュー'} - プレビュー</title><style>${previewStyles}</style></head><body>${previewHeaderHtml}<div class="lyrics">${lyricsHtmlForPreview}</div></body></html>`;
         
         const iframeDoc = outputFrameEl.contentDocument || outputFrameEl.contentWindow.document;
         iframeDoc.open();
@@ -301,11 +306,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function generateFinalHtmlForOutput() {
         const currentFontSize = fontSizeSliderEl.value;
+        const shouldRepeatHeader = repeatHeaderCheckboxEl.checked;
+
+        const getHeaderHtml = () => {
+            if (!songInfo.title && !songInfo.artist && !songInfo.lyricist && !songInfo.composer && !songInfo.releaseDate) return '';
+            return `
+                <div class="repeated-header-info">
+                    <h1>${songInfo.title || ''}</h1>
+                    <div class="song-info">
+                        <p>アーティスト: ${songInfo.artist || '不明'}</p>
+                        <p>作詞: ${songInfo.lyricist || '不明'} / 作曲: ${songInfo.composer || '不明'}</p>
+                        <p>リリース日: ${songInfo.releaseDate || '不明'}</p>
+                    </div>
+                </div>`;
+        };
+        const headerToRepeat = shouldRepeatHeader ? getHeaderHtml() : '';
+        const mainHeaderHtml = getHeaderHtml().replace('class="repeated-header-info"', 'class="main-header-info"'); // メインヘッダーは別クラスでも良い
+
         let lyricsHtmlOutput = '';
         originalLyricsLines.forEach((line, index) => {
             lyricsHtmlOutput += line; 
             
-            if (index < normalLineBreakStates.length) {
+            if (index < normalLineBreakStates.length) { // 最終行セグメントの後には改行/空白制御は不要
                 if (normalLineBreakStates[index]) { 
                     lyricsHtmlOutput += '<br>';
                 } else { 
@@ -314,22 +336,34 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             }
+            // この行の後 (およびその行の改行/空白の後) に改ページが指示されている場合
             if (index < pageBreakAfterLineStates.length && pageBreakAfterLineStates[index]) {
                 lyricsHtmlOutput += '<div class="print-page-break-element"></div>';
+                if (shouldRepeatHeader) { 
+                    lyricsHtmlOutput += headerToRepeat;
+                }
             }
         });
 
-        return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${songInfo.title} - 歌詞</title><style>
+        return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${songInfo.title || '歌詞'} - 歌詞</title><style>
             body { font-family: 'MS Mincho', 'Hiragino Mincho ProN', Meiryo, sans-serif; margin: 20mm; font-size: 12pt; background-color: #fff; color: #000; }
-            h1 { font-size: 20pt; text-align: center; margin-bottom: 15px; font-weight: bold; }
-            .song-info { text-align: right; margin-bottom: 25px; font-size: 10pt; } .song-info p { margin: 3px 0; }
+            /* Main Header Styles */
+            .main-header-info h1, .repeated-header-info h1 { font-size: 20pt; text-align: center; margin-bottom: 15px; font-weight: bold; }
+            .main-header-info .song-info, .repeated-header-info .song-info { text-align: right; margin-bottom: 25px; font-size: 10pt; }
+            .main-header-info .song-info p, .repeated-header-info .song-info p { margin: 3px 0; }
+            /* Repeated Header Specific Adjustments (if any, besides those by !important) */
+            .repeated-header-info { margin-top: 1em; padding-top: 1em; border-top: 1px dashed #ccc; page-break-before: avoid; page-break-after: avoid;}
+            .repeated-header-info h1 { font-size: 16pt !important; margin-bottom: 5px !important; text-align:center !important; }
+            .repeated-header-info .song-info { font-size: 9pt !important; text-align:center !important; margin-bottom: 1em !important; }
+            .repeated-header-info .song-info p { margin: 1px 0 !important; }
+
             .lyrics { margin-top: 20px; text-align: left; font-size: ${currentFontSize}pt; line-height: 2.2; column-count: 1; }
             ruby { display: ruby; ruby-position: over !important; line-height: initial; }
             ruby rt { font-size: 0.55em; opacity: 0.95; user-select: none; }
             @media print {
                 body { margin: 15mm; font-size: 11pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                h1 { font-size: 18pt; }
-                .song-info { font-size: 9pt; }
+                .main-header-info h1 { font-size: 18pt; } 
+                .main-header-info .song-info { font-size: 9pt; } 
                 .lyrics { font-size: ${Math.max(8, parseInt(currentFontSize) - 1)}pt; line-height: 2.0; }
                 .print-page-break-element { 
                     page-break-after: always !important; 
@@ -337,9 +371,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     margin: 0 !important; padding: 0 !important; border: none !important;
                     visibility: visible !important; content: ""; 
                 }
+                .repeated-header-info { 
+                    padding-top: 0.5em !important; margin-bottom: 0.5em !important;
+                    border-top: 1px dotted #999 !important;
+                }
+                 .repeated-header-info h1 { font-size: 14pt !important; } 
+                 .repeated-header-info .song-info { font-size: 8pt !important; } 
             }
-            .print-page-break-element { display: none; }
-        </style></head><body><h1>${songInfo.title}</h1><div class="song-info"><p>アーティスト: ${songInfo.artist}</p><p>作詞: ${songInfo.lyricist}</p><p>作曲: ${songInfo.composer}</p><p>リリース日: ${songInfo.releaseDate}</p></div><div class="lyrics">${lyricsHtmlOutput}</div></body></html>`;
+            .print-page-break-element { display: none; } 
+        </style></head><body>${mainHeaderHtml}<div class="lyrics">${lyricsHtmlOutput}</div></body></html>`;
     }
 
     function getHistory() {
@@ -449,7 +489,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     downloadHtmlBtnEl.addEventListener('click', () => {
-        if (!songInfo.title) { alert('先に「整形を初期化」を実行してください。'); return; }
+        if (!songInfo.title && !songInfo.artist) { alert('先に「整形を初期化」を実行してください。'); return; }
         const finalHtmlContent = generateFinalHtmlForOutput();
         if (typeof gtag === 'function') {
             gtag('event', 'download_html', {
@@ -466,7 +506,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     printBtnEl.addEventListener('click', () => {
-        if (!songInfo.title) { alert('先に「整形を初期化」を実行してください。'); return; }
+        if (!songInfo.title && !songInfo.artist) { alert('先に「整形を初期化」を実行してください。'); return; }
         const finalHtmlContent = generateFinalHtmlForOutput();
         if (typeof gtag === 'function') {
             gtag('event', 'print_html', {
@@ -494,8 +534,6 @@ document.addEventListener('DOMContentLoaded', () => {
         else { printWindow.onload = attemptPrint; setTimeout(attemptPrint, 700); }
     });
     
-    // Initial setup on page load
     populateProxies();
     renderHistory();
-    // renderUpdateHistory(); // HTML直書きにしたのでJSからの呼び出しは不要
 });
