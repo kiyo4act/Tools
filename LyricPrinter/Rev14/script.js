@@ -58,17 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (addHeaderOnPageBreakEl) {
-        // Update checkbox label text
-        const label = document.querySelector(`label[for="${addHeaderOnPageBreakEl.id}"]`);
-        if (label) {
-            // Get the text node, excluding the input element itself
-            const textNode = Array.from(label.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
-            if (textNode) {
-                textNode.textContent = " 改ページ時にヘッダーを挿入"; // "など" を削除
-            }
-        }
-
-
+        // HTML側で直接正しい文言を記述するため、JavaScriptでのラベルテキスト変更処理は削除
         addHeaderOnPageBreakEl.addEventListener('change', () => {
             if (typeof gtag === 'function') {
                 gtag('event', 'toggle_header_on_page_break', {
@@ -230,7 +220,6 @@ document.addEventListener('DOMContentLoaded', () => {
         printBtnEl.disabled = false;
     });
 
-    // Removed getHeaderHtmlForPreview as it's no longer used for inserting actual header in preview
 
     function displayFullPreview() {
         const currentFontSize = fontSizeSliderEl.value;
@@ -238,13 +227,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const insertHeader = addHeaderOnPageBreakEl.checked;
 
         originalLyricsLines.forEach((line, index) => {
-            // No actual header insertion in preview anymore
             lyricsHtmlForPreview += `<span class="lyric-line-content">${line}</span>`;
 
             if (index < originalLyricsLines.length - 1) {
                 const isEffectivelyEmptyLine = line.replace(/<[^>]+>/g, '').trim() === '';
 
-                if (isEffectivelyEmptyLine) { // Only show page break controls on effectively empty lines
+                if (isEffectivelyEmptyLine) {
                     if (pageBreakAfterLineStates[index]) {
                         lyricsHtmlForPreview += `<button class="control-btn remove-pb-btn" data-line-index="${index}">改ページ削除</button>`;
                     } else {
@@ -265,7 +253,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         lyricsHtmlForPreview += `<span class="br-placeholder no-space" data-br-index="${index}"></span>`;
                     }
                 }
-                 // Display page break indicator text based on checkbox
                 if (pageBreakAfterLineStates[index]) {
                     const indicatorText = insertHeader ? "改ページ指示箇所（ヘッダー付き）" : "改ページ指示箇所";
                     lyricsHtmlForPreview += `<div class="page-break-preview-indicator">${indicatorText}</div>`;
@@ -286,7 +273,6 @@ document.addEventListener('DOMContentLoaded', () => {
             .br-placeholder.no-space { /* Empty */ }
             .br-placeholder.space-added::before { content: " "; white-space: pre; }
             .page-break-preview-indicator { text-align:center; color:blue; font-size:0.8em; border-top:1px dashed blue; margin: 5px 0; padding: 2px 0; user-select: none;}
-            /* .repeated-header-info-preview style is no longer needed here as actual header is not shown in preview */
         </style></head><body><h1>${songInfo.title}</h1><div class="song-info"><p>アーティスト: ${songInfo.artist}</p><p>作詞: ${songInfo.lyricist}</p><p>作曲: ${songInfo.composer}</p><p>リリース日: ${songInfo.releaseDate}</p></div><div class="lyrics">${lyricsHtmlForPreview}</div></body></html>`;
 
         const iframeDoc = outputFrameEl.contentDocument || outputFrameEl.contentWindow.document;
