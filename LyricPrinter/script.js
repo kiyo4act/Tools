@@ -16,9 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const historyContentEl = document.getElementById('historyContentEl'); 
     const updateHistoryToggleBtnEl = document.getElementById('updateHistoryToggleBtnEl');
     const updateHistoryContentEl = document.getElementById('updateHistoryContentEl');
-    const repeatHeaderCheckboxEl = document.getElementById('repeatHeaderCheckboxEl'); // 新機能UI
+    const repeatHeaderCheckboxEl = document.getElementById('repeatHeaderCheckboxEl');
 
-    let songInfo = {}; // 曲名、アーティスト名などを保持
+    let songInfo = {};
     let originalLyricsLines = []; 
     let normalLineBreakStates = []; 
     let pageBreakAfterLineStates = [];
@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'event_label': repeatHeaderCheckboxEl.checked ? 'on' : 'off'
                 });
             }
-            if (songInfo.title && originalLyricsLines.length > 0) { // 既にプレビューが表示されていれば更新
+            if (songInfo.title && originalLyricsLines.length > 0) {
                  displayFullPreview(); 
             }
         });
@@ -308,10 +308,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentFontSize = fontSizeSliderEl.value;
         const shouldRepeatHeader = repeatHeaderCheckboxEl.checked;
 
-        const getHeaderHtml = () => {
+        const getHeaderHtml = (isMainHeader = false) => { // メインヘッダーか繰り返しヘッダーかを区別
             if (!songInfo.title && !songInfo.artist && !songInfo.lyricist && !songInfo.composer && !songInfo.releaseDate) return '';
+            const headerClass = isMainHeader ? "main-header-info" : "repeated-header-info";
+            // スタイルはCSSクラスで制御するため、ここではクラス名のみ付与
             return `
-                <div class="repeated-header-info">
+                <div class="${headerClass}">
                     <h1>${songInfo.title || ''}</h1>
                     <div class="song-info">
                         <p>アーティスト: ${songInfo.artist || '不明'}</p>
@@ -320,14 +322,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>`;
         };
-        const headerToRepeat = shouldRepeatHeader ? getHeaderHtml() : '';
-        const mainHeaderHtml = getHeaderHtml().replace('class="repeated-header-info"', 'class="main-header-info"'); // メインヘッダーは別クラスでも良い
+        const headerToRepeat = shouldRepeatHeader ? getHeaderHtml(false) : ''; // 繰り返しヘッダー
+        const mainHeaderHtml = getHeaderHtml(true); // メインヘッダー
 
         let lyricsHtmlOutput = '';
         originalLyricsLines.forEach((line, index) => {
             lyricsHtmlOutput += line; 
             
-            if (index < normalLineBreakStates.length) { // 最終行セグメントの後には改行/空白制御は不要
+            if (index < normalLineBreakStates.length) {
                 if (normalLineBreakStates[index]) { 
                     lyricsHtmlOutput += '<br>';
                 } else { 
@@ -336,7 +338,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             }
-            // この行の後 (およびその行の改行/空白の後) に改ページが指示されている場合
             if (index < pageBreakAfterLineStates.length && pageBreakAfterLineStates[index]) {
                 lyricsHtmlOutput += '<div class="print-page-break-element"></div>';
                 if (shouldRepeatHeader) { 
@@ -347,15 +348,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>${songInfo.title || '歌詞'} - 歌詞</title><style>
             body { font-family: 'MS Mincho', 'Hiragino Mincho ProN', Meiryo, sans-serif; margin: 20mm; font-size: 12pt; background-color: #fff; color: #000; }
-            /* Main Header Styles */
-            .main-header-info h1, .repeated-header-info h1 { font-size: 20pt; text-align: center; margin-bottom: 15px; font-weight: bold; }
-            .main-header-info .song-info, .repeated-header-info .song-info { text-align: right; margin-bottom: 25px; font-size: 10pt; }
+            /* Common Header Styles */
+            .main-header-info h1, .repeated-header-info h1 { text-align: center; font-weight: bold; }
+            .main-header-info .song-info, .repeated-header-info .song-info { text-align: right; } /* ★修正2: 繰り返しヘッダーも右揃えに */
             .main-header-info .song-info p, .repeated-header-info .song-info p { margin: 3px 0; }
-            /* Repeated Header Specific Adjustments (if any, besides those by !important) */
+
+            /* Main Header Specific Styles */
+            .main-header-info h1 { font-size: 20pt; margin-bottom: 15px; }
+            .main-header-info .song-info { margin-bottom: 25px; font-size: 10pt; }
+            
+            /* Repeated Header Specific Styles */
             .repeated-header-info { margin-top: 1em; padding-top: 1em; border-top: 1px dashed #ccc; page-break-before: avoid; page-break-after: avoid;}
-            .repeated-header-info h1 { font-size: 16pt !important; margin-bottom: 5px !important; text-align:center !important; }
-            .repeated-header-info .song-info { font-size: 9pt !important; text-align:center !important; margin-bottom: 1em !important; }
-            .repeated-header-info .song-info p { margin: 1px 0 !important; }
+            .repeated-header-info h1 { font-size: 16pt; margin-bottom: 5px; }
+            .repeated-header-info .song-info { font-size: 9pt; margin-bottom: 1em; }
+            .repeated-header-info .song-info p { margin: 1px 0; }
 
             .lyrics { margin-top: 20px; text-align: left; font-size: ${currentFontSize}pt; line-height: 2.2; column-count: 1; }
             ruby { display: ruby; ruby-position: over !important; line-height: initial; }
@@ -376,7 +382,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     border-top: 1px dotted #999 !important;
                 }
                  .repeated-header-info h1 { font-size: 14pt !important; } 
-                 .repeated-header-info .song-info { font-size: 8pt !important; } 
+                 .repeated-header-info .song-info { font-size: 8pt !important; text-align: right !important; } /* ★修正2: 印刷時も右揃え */
+                 .repeated-header-info .song-info p { margin: 1px 0 !important; }
             }
             .print-page-break-element { display: none; } 
         </style></head><body>${mainHeaderHtml}<div class="lyrics">${lyricsHtmlOutput}</div></body></html>`;
@@ -432,12 +439,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         history.forEach((item) => {
             const li = document.createElement('li');
+            // ★修正1: 読み込み履歴のクリック動作修正
             li.onclick = (event) => {
-                if (event.target.classList.contains('history-item-external-url') || 
-                    event.target.classList.contains('history-delete-btn') ||
-                    (event.target.parentElement && event.target.parentElement.classList.contains('history-delete-btn'))) {
-                    return; 
+                // クリックされた要素が外部リンク(Aタグ)か削除ボタン(BUTTONタグ)で、かつそれらが特定のクラスを持つ場合のみ、
+                // li全体のクリックイベント（再読み込み）を抑制する。
+                let targetElement = event.target;
+                while (targetElement && targetElement !== li) {
+                    if (targetElement.classList.contains('history-item-external-url') || 
+                        targetElement.classList.contains('history-delete-btn')) {
+                        return; // 外部リンクまたは削除ボタン自体のクリックなので、liのイベントは発火させない
+                    }
+                    targetElement = targetElement.parentElement;
                 }
+                // 上記以外（例: .history-item-title-artist や li の余白など）のクリックで再読み込み
                 urlInputEl.value = item.url;
                 if (typeof gtag === 'function') {
                     gtag('event', 'load_from_history', {
@@ -462,7 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
             externalUrlLink.textContent = `(${item.url})`; 
             externalUrlLink.title = `元のページを開く: ${item.url}`;
             externalUrlLink.onclick = (e) => {
-                e.stopPropagation(); 
+                e.stopPropagation(); // li のクリックイベントを発火させない
                 if (typeof gtag === 'function') {
                     gtag('event', 'open_external_from_history', {
                         'event_category': 'history_interaction', 'event_label': item.url.substring(0,100)
@@ -478,7 +492,7 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteBtn.classList.add('history-delete-btn');
             deleteBtn.dataset.url = item.url;
             deleteBtn.onclick = (e) => {
-                e.stopPropagation(); 
+                e.stopPropagation(); // li のクリックイベントを発火させない
                 deleteHistoryItem(item.url);
             };
             
