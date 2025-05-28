@@ -28,42 +28,16 @@
         </p>
 
         <div class="instructions">
-             <p><strong>基本的な使い方</strong></p>
-            <ol class="steps">
-                <li>
-                    <strong>歌詞ページのURLを入力して読み込む:</strong><br>
-                    下の「URLから歌詞ページのHTMLを読み込む」セクションに、整形したい <code>utaten.com</code> の歌詞ページのURLを入力し、「読み込み実行」ボタンを押します。
-                    <small class="step-note">読み込みに成功したURLは、次回以降「読み込み履歴」から簡単に再アクセスできます。</small>
-                </li>
-                <li>
-                    <strong>表示を調整してプレビューする:</strong><br>
-                    URL読み込みに成功すると、自動的に整形処理が実行され、プレビューが表示されます。<br>
-                    「歌詞フォントサイズ」スライダーで表示を調整できます。<br>
-                    プレビュー内の各コントロールボタン（改行削除/追加、空白追加/削除、改ページ追加/削除）を使って、さらに細かく表示を調整できます。
-                </li>
-                <li>
-                    <strong>出力する:</strong><br>
-                    調整後、「生成HTMLをダウンロード」ボタンで整形後のHTMLファイルを保存するか、「印刷」ボタンで直接印刷します。
-                </li>
-            </ol>
+             <p><strong>使い方:</strong></p>
+            <ul>
+                <li>方法1: 下の「URLから歌詞ページのHTMLを読み込む」セクションに <code>utaten.com</code> のURLを入力し、「読み込み実行」ボタンを押してください。成功したURLは履歴に保存されます。プロキシの選択も可能です。</li>
+                <li>方法2: 「歌詞ページのHTML」入力欄にHTMLを直接貼り付けます。</li>
+                <li>読み込み履歴（アコーディオンで開閉）からURLを選択して再読み込みできます。履歴の主要部分クリックで再読み込み、URL部分クリックで元ページを開きます。</li>
+                <li>歌詞フォントサイズをスライダーで調整します。</li>
+                <li>「整形を初期化」でプレビューを生成。プレビュー内のボタンで改行・空白・改ページを調整できます。</li>
+                <li>「生成HTMLをダウンロード」でファイルを保存、または「印刷」ボタンで直接印刷できます。</li>
+            </ul>
         </div>
-
-        <div class="troubleshooting-section">
-            <h3 id="troubleshootingToggleBtnEl" class="accordion-toggle">困った時は <span class="accordion-icon">&#9660;</span></h3>
-            <div id="troubleshootingContentEl" class="accordion-content">
-                <ul>
-                    <li><strong>URLからの読み込みがうまくいかない場合:</strong><br>
-                        「プロキシ」の選択肢を変更して、再度「読み込み実行」をお試しください。プロキシサービスや対象サイトの状況により、一時的に読み込めないことがあります。</li>
-                    <li><strong>どうしてもURLから読み込めない場合:</strong><br>
-                        「歌詞ページのHTML」入力欄に、ブラウザで表示した歌詞ページのHTMLソース（特に歌詞が表示されている中心部分）を手動でコピー＆ペーストして「整形を初期化」ボタンを押すことでも利用可能です。</li>
-                    <li><strong>印刷時の改ページが期待通りに動作しない場合 (特にChromeブラウザ):</strong><br>
-                        Firefoxなど、別のブラウザで印刷を試すと正常に動作することがあります。</li>
-                    <li><strong>表示や設定を最初の状態に戻したい場合:</strong><br>
-                        「整形を初期化」ボタンを押すと、プレビュー内の改行・空白・改ページの設定がリセットされます。（URL入力やフォントサイズ設定は維持されます。）</li>
-                </ul>
-            </div>
-        </div>
-
 
         <div class="history-container-wrapper">
             <h3 id="historyToggleBtnEl" class="accordion-toggle">読み込み履歴 <span class="accordion-icon">&#9660;</span></h3>
@@ -72,37 +46,24 @@
             </div>
         </div>
         
-        <div class="section-wrapper url-fetch-section-wrapper">
-            <h3 class="section-title-centered">URLから歌詞ページのHTMLを読み込む</h3>
-            <div class="url-fetch-controls-area">
-                <div class="url-fetch-container">
-                    <label for="proxySelectEl">プロキシ:</label>
-                    <select id="proxySelectEl"></select>
-                    <label for="urlInputEl">URL:</label>
-                    <input type="text" id="urlInputEl" placeholder="https://utaten.com/lyric/xxxxxx/">
-                    <button id="fetchUrlBtnEl">読み込み実行</button>
-                    <div class="loader" id="urlLoaderEl"></div>
-                    <div id="urlStatusEl" class="status-message"></div>
-                </div>
-            </div>
-            <p class="privacy-note attached-to-controls">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="privacy-icon">
-                    <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
-                </svg>
-                安全: 入力されたURLや読み込み履歴はあなたのブラウザ内にのみ保存され、サーバーに送信されることはありません。
-            </p>
+        <h3>URLから歌詞ページのHTMLを読み込む</h3>
+        <div class="url-fetch-container">
+            <label for="proxySelectEl">プロキシ:</label>
+            <select id="proxySelectEl"></select>
+            <label for="urlInputEl">URL:</label>
+            <input type="text" id="urlInputEl" placeholder="https://utaten.com/lyric/xxxxxx/">
+            <button id="fetchUrlBtnEl">読み込み実行</button>
+            <div class="loader" id="urlLoaderEl"></div>
+            <div id="urlStatusEl" class="status-message"></div>
         </div>
-
 
         <h3>歌詞ページのHTML</h3>
         <textarea id="htmlInputEl" placeholder="ここにHTMLを貼り付けるか、上記URLから読み込んでください..."></textarea>
 
         <div class="controls-section">
-            <div>
-                <label for="fontSizeSliderEl">歌詞フォントサイズ: <span id="fontSizeValueDisplayEl">20</span>pt</label>
-                <input type="range" id="fontSizeSliderEl" min="8" max="28" value="20">
-            </div>
-            </div>
+            <label for="fontSizeSliderEl">歌詞フォントサイズ: <span id="fontSizeValueDisplayEl">20</span>pt</label>
+            <input type="range" id="fontSizeSliderEl" min="8" max="28" value="20">
+        </div>
         
         <div class="action-buttons">
             <button id="generatePreviewBtnEl">整形を初期化</button>
@@ -124,14 +85,13 @@
                         <ul class="change-list">
                             <li>ツールタイトル、バージョン情報、説明、更新履歴の管理をHTML直書きに変更。</li>
                             <li>JavaScriptから上記静的テキスト設定処理を削除。</li>
-                            <li>README.mdの更新（AIへの指示明確化、プロンプトテンプレート修正）。</li>
                         </ul>
                     </li>
                     <li>
                         <span class="version-date">2025年5月26日</span> <span class="version-rev">(Rev. 12)</span>
                         <ul class="change-list">
                             <li>Google Analytics (GA4) との連携機能を追加 (測定ID: G-WWQTE7VWKG)。主要操作のイベントトラッキングを実装。</li>
-                            <li>更新履歴をアコーディオン形式で追加。（Rev.13でHTML直書きに変更）</li>
+                            <li>（旧）更新履歴をアコーディオン形式で追加。（Rev.13でHTML直書きに変更）</li>
                             <li>読み込み履歴アコーディオンの上下の隙間を調整。</li>
                         </ul>
                     </li>
@@ -152,10 +112,10 @@
                             <li>URL読み込み成功時に自動でプレビューを生成、「整形して表示」ボタンを「整形を初期化」に変更。</li>
                         </ul>
                     </li>
-                     <li>
+                    <li>
                         <span class="version-date">2025年5月26日</span> <span class="version-rev">(Rev. 1-9)</span>
                         <ul class="change-list">
-                            <li>各種機能開発、UI改善、バグ修正など。(詳細は<a href="https://github.com/your-username/your-repo/blob/main/README.md#%E6%9B%B4%E6%96%B0%E5%B1%A5%E6%AD%B4" target="_blank" rel="noopener noreferrer">README</a>参照)</li>
+                            <li>基本機能開発、UI改善、バグ修正、GA4連携準備など。(詳細は<a href="https://github.com/your-username/your-repo/blob/main/README.md#%E6%9B%B4%E6%96%B0%E5%B1%A5%E6%AD%B4" target="_blank" rel="noopener noreferrer">README</a>参照)</li>
                         </ul>
                     </li>
                 </ul>
