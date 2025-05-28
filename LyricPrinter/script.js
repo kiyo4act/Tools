@@ -17,8 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateHistoryToggleBtnEl = document.getElementById('updateHistoryToggleBtnEl');
     const updateHistoryContentEl = document.getElementById('updateHistoryContentEl');
     const repeatHeaderCheckboxEl = document.getElementById('repeatHeaderCheckboxEl');
-    const troubleshootingToggleBtnEl = document.getElementById('troubleshootingToggleBtnEl');
-    const troubleshootingContentEl = document.getElementById('troubleshootingContentEl');
+    const troubleshootingToggleBtnEl = document.getElementById('troubleshootingToggleBtnEl'); 
+    const troubleshootingContentEl = document.getElementById('troubleshootingContentEl'); 
 
     let songInfo = {};
     let originalLyricsLines = []; 
@@ -75,14 +75,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // アコーディオンのトグル処理を共通化する関数
     function setupAccordionToggle(toggleButton, contentElement, eventName) {
-        if (toggleButton && contentElement) {
+        if (toggleButton && contentElement) { 
             toggleButton.addEventListener('click', () => {
                 contentElement.classList.toggle('open');
                 toggleButton.classList.toggle('open');
                 if (typeof gtag === 'function') {
-                    gtag('event', eventName, { // GAイベント名を引数で受け取る
+                    gtag('event', eventName, { 
                         'event_category': 'ui_interaction',
                         'event_label': contentElement.classList.contains('open') ? 'open' : 'close'
                     });
