@@ -62,49 +62,72 @@ textarea {
     font-family: monospace;
     font-size: 0.9em;
 }
+
 /* Section common styles */
 .controls-section, 
-.section-wrapper, /* ★修正: 新しいラッパーの共通スタイル */
+.section-wrapper, /* General wrapper for sections like URL fetch */
 .history-container-wrapper, 
 .update-history-wrapper,
 .instructions, 
 .troubleshooting-section { 
     margin-bottom: 20px; 
     padding: 15px; 
-    background-color: #f9f9f9;
+    background-color: #f9f9f9; /* Light gray background for the whole section */
     border: 1px solid #eee;
     border-radius: 4px;
 }
 .history-container-wrapper, 
 .update-history-wrapper,
-.troubleshooting-section { 
+.troubleshooting-section { /* Accordion wrappers have no internal padding for the toggle button */
     padding: 0; 
 }
-.section-wrapper > h3 { /* ★修正: ラッパー内のh3のスタイル */
-    margin-top: 0; /* ラッパーのパディングがあるので上マージン不要 */
+
+/* Specific wrapper for URL fetch section to contain title, controls, and privacy note */
+.url-fetch-section-wrapper { /* This class is on the .section-wrapper for URL fetch */
+    /* Common section styles are already applied by .section-wrapper */
+}
+.url-fetch-section-wrapper > h3 {
+    margin-top: 0; /* Remove top margin as it's the first child */
     margin-bottom: 15px;
-    text-align: left; /* セクションタイトルは左揃えに */
-    padding-left: 5px; /* 少しインデント */
-    font-size: 1.2em; /* 少し大きく */
+    text-align: left;
+    padding-left: 0; /* No extra indent if wrapper has padding */
+    font-size: 1.2em;
 }
-
-
-.url-fetch-container-inner { /* ★修正: URL入力部分を囲む内側ラッパー */
-    background-color: #fff; /* 内側は白い背景 */
+.url-fetch-controls-area { /* Inner area for form controls, with a different background */
+    background-color: #ffffff; /* White background for form controls area */
     padding: 15px;
-    border: 1px solid #ddd;
+    border: 1px solid #dddddd; /* Slightly darker border */
     border-radius: 4px;
-    margin-bottom: 15px; /* 下のプライバシーノートとの間隔 */
+    margin-bottom: 15px; /* Space before privacy note */
 }
-.url-fetch-container {
+.url-fetch-container { /* Flex container for inputs and button */
     display: flex; 
     align-items: center; 
     flex-wrap: wrap; 
     gap: 10px;
-    /* 背景や枠線は .url-fetch-container-inner で制御 */
 }
 
-.history-container-wrapper + .section-wrapper > h3, 
+.privacy-note { /* Moved outside .url-fetch-controls-area, but inside .url-fetch-section-wrapper */
+    font-size: 0.85em;
+    color: #555; 
+    padding: 10px 0 0 0; /* Padding top, no side padding if wrapper has it */
+    background-color: transparent; /* Transparent as wrapper has background */
+    border: none; 
+    margin-top: 0; /* No top margin if directly after controls area */
+    display: flex;
+    align-items: center;
+    line-height: 1.4;
+}
+.privacy-icon { 
+    width: 1.1em; 
+    height: 1.1em;
+    margin-right: 0.6em;
+    color: #007bff; 
+    flex-shrink: 0;
+}
+
+
+.history-container-wrapper + .section-wrapper > h3, /* h3 for URL fetch after history */
 .troubleshooting-section + .history-container-wrapper { 
     margin-top: 20px; 
 }
@@ -186,6 +209,7 @@ button.control-btn, button.history-delete-btn {
 button.history-delete-btn {
     background-color: #dc3545;
     flex-shrink: 0; 
+    margin-left: auto; /* ★修正2: 削除ボタンを右端に寄せる */
 }
 
 button.control-btn:hover, button.history-delete-btn:hover {
@@ -359,7 +383,7 @@ iframe#outputFrameEl {
     overflow: hidden; 
     display: flex; 
     flex-direction: column; 
-    gap: 4px; 
+    gap: 5px; /* ★修正2: 曲名/アーティストとURLの間の隙間を調整 */
 }
 .history-item-title-artist { 
     font-weight: 600; 
@@ -370,6 +394,7 @@ iframe#outputFrameEl {
     white-space: nowrap;
     font-size: 0.95em;
     line-height: 1.3;
+    margin-left: 5px; /* ★修正2: 左側に少し余白 */
 }
 .history-item-external-url { 
     font-size: 0.8em; 
@@ -380,28 +405,10 @@ iframe#outputFrameEl {
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 1.2;
+    margin-left: 5px; /* ★修正2: 左側に少し余白 */
 }
 .history-item-external-url:hover {
     text-decoration: underline;
-}
-.privacy-note { 
-    font-size: 0.85em;
-    color: #555; 
-    padding: 10px 0; /* ★修正: ラッパーの外に出したのでパディング調整 */
-    /* background-color: #e9f5fd;  Removed, wrapper has background */
-    /* border: 1px solid #bce8f1; Removed */
-    border-radius: 4px; 
-    margin-top: 10px; 
-    display: flex;
-    align-items: center;
-    line-height: 1.4;
-}
-.privacy-icon { 
-    width: 1.1em; 
-    height: 1.1em;
-    margin-right: 0.6em;
-    color: #007bff; 
-    flex-shrink: 0;
 }
 
 
