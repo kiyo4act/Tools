@@ -308,10 +308,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentFontSize = fontSizeSliderEl.value;
         const shouldRepeatHeader = repeatHeaderCheckboxEl.checked;
 
-        const getHeaderHtml = (isMainHeader = false) => { // メインヘッダーか繰り返しヘッダーかを区別
+        const getHeaderHtml = (isMainHeader = false) => {
             if (!songInfo.title && !songInfo.artist && !songInfo.lyricist && !songInfo.composer && !songInfo.releaseDate) return '';
             const headerClass = isMainHeader ? "main-header-info" : "repeated-header-info";
-            // スタイルはCSSクラスで制御するため、ここではクラス名のみ付与
             return `
                 <div class="${headerClass}">
                     <h1>${songInfo.title || ''}</h1>
@@ -322,8 +321,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </div>`;
         };
-        const headerToRepeat = shouldRepeatHeader ? getHeaderHtml(false) : ''; // 繰り返しヘッダー
-        const mainHeaderHtml = getHeaderHtml(true); // メインヘッダー
+        const headerToRepeat = shouldRepeatHeader ? getHeaderHtml(false) : '';
+        const mainHeaderHtml = getHeaderHtml(true);
 
         let lyricsHtmlOutput = '';
         originalLyricsLines.forEach((line, index) => {
@@ -361,7 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .repeated-header-info { margin-top: 1em; padding-top: 1em; border-top: 1px dashed #ccc; page-break-before: avoid; page-break-after: avoid;}
             .repeated-header-info h1 { font-size: 16pt; margin-bottom: 5px; }
             .repeated-header-info .song-info { font-size: 9pt; margin-bottom: 1em; }
-            .repeated-header-info .song-info p { margin: 1px 0; }
+            /* .repeated-header-info .song-info p は共通スタイルでOK */
 
             .lyrics { margin-top: 20px; text-align: left; font-size: ${currentFontSize}pt; line-height: 2.2; column-count: 1; }
             ruby { display: ruby; ruby-position: over !important; line-height: initial; }
@@ -439,19 +438,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         history.forEach((item) => {
             const li = document.createElement('li');
-            // ★修正1: 読み込み履歴のクリック動作修正
             li.onclick = (event) => {
-                // クリックされた要素が外部リンク(Aタグ)か削除ボタン(BUTTONタグ)で、かつそれらが特定のクラスを持つ場合のみ、
-                // li全体のクリックイベント（再読み込み）を抑制する。
                 let targetElement = event.target;
                 while (targetElement && targetElement !== li) {
                     if (targetElement.classList.contains('history-item-external-url') || 
                         targetElement.classList.contains('history-delete-btn')) {
-                        return; // 外部リンクまたは削除ボタン自体のクリックなので、liのイベントは発火させない
+                        return; 
                     }
                     targetElement = targetElement.parentElement;
                 }
-                // 上記以外（例: .history-item-title-artist や li の余白など）のクリックで再読み込み
                 urlInputEl.value = item.url;
                 if (typeof gtag === 'function') {
                     gtag('event', 'load_from_history', {
@@ -476,7 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
             externalUrlLink.textContent = `(${item.url})`; 
             externalUrlLink.title = `元のページを開く: ${item.url}`;
             externalUrlLink.onclick = (e) => {
-                e.stopPropagation(); // li のクリックイベントを発火させない
+                e.stopPropagation(); 
                 if (typeof gtag === 'function') {
                     gtag('event', 'open_external_from_history', {
                         'event_category': 'history_interaction', 'event_label': item.url.substring(0,100)
@@ -492,7 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteBtn.classList.add('history-delete-btn');
             deleteBtn.dataset.url = item.url;
             deleteBtn.onclick = (e) => {
-                e.stopPropagation(); // li のクリックイベントを発火させない
+                e.stopPropagation(); 
                 deleteHistoryItem(item.url);
             };
             
