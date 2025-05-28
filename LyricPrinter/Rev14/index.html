@@ -34,17 +34,17 @@
                 <ol>
                     <li>
                         <strong>歌詞ページのURLを入力して読み込む:</strong>
-                        <p>下の「URLから歌詞ページのHTMLを読み込む」セクションに、整形したい <code>utaten.com</code> の歌詞ページのURLを入力し、「読み込み実行」ボタンを押します。<br><small>読み込みに成功したURLは、次回以降「読み込み履歴」から簡単に再アクセスできます。</small></p>
+                        <p>下の「URLから歌詞ページのHTMLを読み込む」セクションに、整形したい <code>utaten.com</code> の歌詞ページのURLを入力し、「読み込み実行」ボタンを押します。<br><small>読み込みに成功したURLは、次回以降「読み込み履歴」（デフォルトで開いています）から簡単に再アクセスできます。</small></p>
                     </li>
                     <li>
                         <strong>表示を調整してプレビューする:</strong>
                         <p>URL読み込みに成功すると、自動的に整形処理が実行され、プレビューが表示されます。<br>
-                        「歌詞フォントサイズ」スライダーや、「改ページ時にヘッダーを挿入」チェックボックスで表示を調整できます。<br>
+                        「歌詞フォントサイズ」スライダーや、「改ページ時にヘッダーを挿入」チェックボックス（チェック時、プレビューでは「改ページ指示箇所（ヘッダー付き）」と表示）で表示を調整できます。<br>
                         プレビュー内の各コントロールボタン（改行削除/追加、空白追加/削除、改ページ追加/削除）を使って、さらに細かく表示を調整できます。</p>
                     </li>
                     <li>
                         <strong>出力する:</strong>
-                        <p>調整後、「生成HTMLをダウンロード」ボタンで整形後のHTMLファイルを保存するか、「印刷」ボタンで直接印刷します。</p>
+                        <p>調整後、「生成HTMLをダウンロード」ボタンで整形後のHTMLファイルを保存するか、「印刷」ボタンで直接印刷します。（この際、ヘッダー挿入オプションがONであれば、改ページ箇所にヘッダーが挿入されます。）</p>
                     </li>
                 </ol>
             </div>
@@ -73,8 +73,8 @@
         </div>
 
         <div class="history-container-wrapper">
-            <h3 id="historyToggleBtnEl" class="accordion-toggle">読み込み履歴 <span class="accordion-icon">&#9660;</span></h3>
-            <div id="historyContentEl" class="history-content accordion-content">
+            <h3 id="historyToggleBtnEl" class="accordion-toggle open">読み込み履歴 <span class="accordion-icon">&#9660;</span></h3>
+            <div id="historyContentEl" class="history-content accordion-content open">
                 <ul id="historyListEl"></ul>
             </div>
         </div>
@@ -127,7 +127,10 @@
                     <li>
                         <span class="version-date">2025年5月28日</span> <span class="version-rev">(Rev. 14)</span>
                         <ul class="change-list">
-                            <li>安全性注記のレスポンシブ対応（狭い画面で「安全」と説明文が改行される問題の修正、区切り線の追加）。</li>
+                            <li>改ページプレビューの表示を「改ページ指示箇所」とし、ヘッダー挿入オプションに応じて「（ヘッダー付き）」を追記するように変更。</li>
+                            <li>「改ページ時にヘッダーを挿入」の文言を修正。</li>
+                            <li>「読み込み履歴」アコーディオンをデフォルトで開くように変更。</li>
+                            <li>安全性注記のレスポンシブ対応（狭い画面で「安全」と説明文が改行される問題の修正、区切り線の追加）。(以前のRev.14の変更点)</li>
                             <li>鍵アイコンをFontAwesomeのアイコンに変更。(以前のRev.14の変更点)</li>
                             <li>「読み込み履歴」アコーディオンが動作しない不具合を修正。(以前のRev.14の変更点)</li>
                             <li>改ページ時にヘッダー情報を挿入するかを選択できるオプションを追加（デフォルトON）。(以前のRev.14の変更点)</li>
