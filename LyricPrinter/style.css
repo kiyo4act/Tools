@@ -71,7 +71,6 @@ textarea {
 .instructions, 
 .troubleshooting-section { 
     margin-bottom: 20px; 
-    /* padding, background-color, border are set by more specific rules or removed for wrappers */
 }
 
 .history-container-wrapper, 
@@ -82,18 +81,17 @@ textarea {
     border: 1px solid #eee;
     border-radius: 4px;
 }
-
-/* URL Fetch Section Specific Styling */
-.url-fetch-section-wrapper { 
-    padding: 15px; /* Add padding to the outer wrapper */
-    background-color: #f0f2f5; /* Light background for the entire section */
+.section-wrapper { /* General wrapper, e.g., for URL fetch section */
+    padding: 15px; /* Outer padding for the section */
+    background-color: #f0f2f5; /* Light distinct background for the entire section wrapper */
     border: 1px solid #e0e6ed;
     border-radius: 4px;
 }
-.url-fetch-section-wrapper > h3.section-title-centered { /* ★修正1: タイトル中央揃え */
+
+.url-fetch-section-wrapper > h3.section-title-centered {
     margin-top: 0; 
     margin-bottom: 15px;
-    text-align: center; /* Center the title */
+    text-align: center; 
     padding-left: 0; 
     font-size: 1.2em;
     color: #333; 
@@ -103,7 +101,7 @@ textarea {
     padding: 15px;
     border: 1px solid #dddddd; 
     border-radius: 4px;
-    /* margin-bottom: 10px; Removed, privacy note will be attached */
+    /* margin-bottom: 0; if privacy note is directly attached */
 }
 .url-fetch-container { 
     display: flex; 
@@ -111,19 +109,17 @@ textarea {
     flex-wrap: wrap; 
     gap: 10px;
 }
-.privacy-note.attached-to-controls { /* ★修正2: プライバシーノートのスタイルと配置 */
+.privacy-note.attached-to-controls { 
     font-size: 0.85em;
     color: #555; 
-    padding: 10px 15px; 
-    background-color: #e9f5fd; 
-    border: 1px solid #bce8f1; 
-    border-top: none; /* Remove top border to "attach" */
-    border-radius: 0 0 4px 4px; 
-    margin-top: -1px; /* Overlap with bottom border of controls-area */
+    padding: 10px 0; /* Padding top/bottom, no side padding if wrapper has it */
+    background-color: transparent; /* Transparent background */
+    border: none; 
+    border-top: 1px solid #e0e6ed; /* Separator line */
+    margin-top: 15px; /* Space from controls area */
     display: flex;
     align-items: center;
     line-height: 1.4;
-    position: relative; /* For z-index if needed, though likely not */
 }
 .privacy-icon { 
     width: 1.1em; 
@@ -134,12 +130,11 @@ textarea {
 }
 
 
-/* Spacing between sections */
-.history-container-wrapper + .section-wrapper, /* URL fetch section after history */
+.history-container-wrapper + .section-wrapper, 
 .troubleshooting-section + .history-container-wrapper { 
     margin-top: 20px; 
 }
-.url-fetch-section-wrapper + h3 { /* h3 for "歌詞ページのHTML" after URL fetch section */
+.section-wrapper + h3 { /* h3 for "歌詞ページのHTML" after URL fetch section */
      margin-top: 25px; 
 }
 
