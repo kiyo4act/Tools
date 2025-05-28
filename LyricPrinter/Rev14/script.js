@@ -58,6 +58,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (addHeaderOnPageBreakEl) {
+        // Update checkbox label text
+        const label = document.querySelector(`label[for="${addHeaderOnPageBreakEl.id}"]`);
+        if (label) {
+            // Get the text node, excluding the input element itself
+            const textNode = Array.from(label.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
+            if (textNode) {
+                textNode.textContent = " 改ページ時にヘッダーを挿入"; // "など" を削除
+            }
+        }
+
+
         addHeaderOnPageBreakEl.addEventListener('change', () => {
             if (typeof gtag === 'function') {
                 gtag('event', 'toggle_header_on_page_break', {
@@ -71,8 +82,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function setupAccordionToggle(toggleButton, contentElement) {
+    function setupAccordionToggle(toggleButton, contentElement, defaultOpen = false) {
         if (toggleButton && contentElement) {
+            if (defaultOpen) {
+                contentElement.classList.add('open');
+                toggleButton.classList.add('open');
+            }
             toggleButton.addEventListener('click', () => {
                 const isOpen = contentElement.classList.toggle('open');
                 toggleButton.classList.toggle('open', isOpen);
@@ -87,8 +102,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    setupAccordionToggle(historyToggleBtnEl, historyContentEl);
-    setupAccordionToggle(updateHistoryToggleBtnEl, updateHistoryContentEl);
+    setupAccordionToggle(historyToggleBtnEl, historyContentEl, true); // Default open for history
+    setupAccordionToggle(updateHistoryToggleBtnEl, updateHistoryContentEl, false); // Default closed for update history
 
 
     fetchUrlBtnEl.addEventListener('click', async () => {
@@ -215,26 +230,21 @@ document.addEventListener('DOMContentLoaded', () => {
         printBtnEl.disabled = false;
     });
 
-    function getHeaderHtmlForPreview() {
-        if (!addHeaderOnPageBreakEl.checked) return '';
-        return `<div class="repeated-header-info-preview"><h1>${songInfo.title || 'タイトル不明'}</h1><p>アーティスト: ${songInfo.artist || 'アーティスト不明'}</p></div>`;
-    }
+    // Removed getHeaderHtmlForPreview as it's no longer used for inserting actual header in preview
 
     function displayFullPreview() {
         const currentFontSize = fontSizeSliderEl.value;
         let lyricsHtmlForPreview = '';
+        const insertHeader = addHeaderOnPageBreakEl.checked;
 
         originalLyricsLines.forEach((line, index) => {
-            if (index > 0 && pageBreakAfterLineStates[index - 1]) {
-                lyricsHtmlForPreview += getHeaderHtmlForPreview();
-            }
+            // No actual header insertion in preview anymore
             lyricsHtmlForPreview += `<span class="lyric-line-content">${line}</span>`;
-
 
             if (index < originalLyricsLines.length - 1) {
                 const isEffectivelyEmptyLine = line.replace(/<[^>]+>/g, '').trim() === '';
 
-                if (isEffectivelyEmptyLine) {
+                if (isEffectivelyEmptyLine) { // Only show page break controls on effectively empty lines
                     if (pageBreakAfterLineStates[index]) {
                         lyricsHtmlForPreview += `<button class="control-btn remove-pb-btn" data-line-index="${index}">改ページ削除</button>`;
                     } else {
@@ -255,8 +265,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         lyricsHtmlForPreview += `<span class="br-placeholder no-space" data-br-index="${index}"></span>`;
                     }
                 }
-                if (pageBreakAfterLineStates[index] && !isEffectivelyEmptyLine) {
-                    lyricsHtmlForPreview += `<div class="page-break-preview-indicator">-- 改ページ指示箇所 --</div>`;
+                 // Display page break indicator text based on checkbox
+                if (pageBreakAfterLineStates[index]) {
+                    const indicatorText = insertHeader ? "改ページ指示箇所（ヘッダー付き）" : "改ページ指示箇所";
+                    lyricsHtmlForPreview += `<div class="page-break-preview-indicator">${indicatorText}</div>`;
                 }
             }
         });
@@ -274,9 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .br-placeholder.no-space { /* Empty */ }
             .br-placeholder.space-added::before { content: " "; white-space: pre; }
             .page-break-preview-indicator { text-align:center; color:blue; font-size:0.8em; border-top:1px dashed blue; margin: 5px 0; padding: 2px 0; user-select: none;}
-            .repeated-header-info-preview { font-size: ${Math.max(8, parseInt(currentFontSize) - 4)}pt; color: #555; border: 1px dashed #ccc; padding: 5px; margin: 10px 0; background-color: #f9f9f9; }
-            .repeated-header-info-preview h1 { font-size: 1.2em; margin:0 0 5px 0; text-align: left; font-weight: bold;}
-            .repeated-header-info-preview p { font-size: 0.9em; margin: 0; text-align: left;}
+            /* .repeated-header-info-preview style is no longer needed here as actual header is not shown in preview */
         </style></head><body><h1>${songInfo.title}</h1><div class="song-info"><p>アーティスト: ${songInfo.artist}</p><p>作詞: ${songInfo.lyricist}</p><p>作曲: ${songInfo.composer}</p><p>リリース日: ${songInfo.releaseDate}</p></div><div class="lyrics">${lyricsHtmlForPreview}</div></body></html>`;
 
         const iframeDoc = outputFrameEl.contentDocument || outputFrameEl.contentWindow.document;
@@ -435,7 +445,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const textContentDiv = document.createElement('div');
             textContentDiv.className = 'history-item-text-content';
-            // CLICK EVENT FOR RE-LOADING FROM HISTORY
             textContentDiv.onclick = () => {
                 urlInputEl.value = item.url;
                 if (typeof gtag === 'function') {
@@ -458,15 +467,13 @@ document.addEventListener('DOMContentLoaded', () => {
             externalUrlLink.target = '_blank';
             externalUrlLink.textContent = `(${item.url})`;
             externalUrlLink.title = `元のページを開く: ${item.url}`;
-            // CLICK EVENT FOR OPENING EXTERNAL URL
             externalUrlLink.onclick = (e) => {
-                e.stopPropagation(); // IMPORTANT: Prevents textContentDiv's click event
+                e.stopPropagation();
                 if (typeof gtag === 'function') {
                     gtag('event', 'open_external_from_history', {
                         'event_category': 'history_interaction', 'event_label': item.url.substring(0,100)
                     });
                 }
-                // Default <a> tag behavior (opening link) will proceed
             };
 
             textContentDiv.appendChild(titleArtistSpan);
@@ -477,7 +484,7 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteBtn.classList.add('history-delete-btn');
             deleteBtn.dataset.url = item.url;
             deleteBtn.onclick = (e) => {
-                e.stopPropagation(); // IMPORTANT: Prevents textContentDiv's click event
+                e.stopPropagation();
                 deleteHistoryItem(item.url);
             };
 
