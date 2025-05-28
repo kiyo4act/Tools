@@ -27,7 +27,7 @@ h2 {
     margin-bottom: 15px;
 }
 h3 { 
-    text-align: center;
+    text-align: center; /* Default h3 to center */
     color: #333;
     margin-top: 25px; 
     margin-bottom: 10px; 
@@ -65,7 +65,7 @@ textarea {
 
 /* Section common styles */
 .controls-section, 
-.section-wrapper, /* General wrapper for sections */
+.section-wrapper, 
 .history-container-wrapper, 
 .update-history-wrapper,
 .instructions, 
@@ -76,50 +76,54 @@ textarea {
 
 .history-container-wrapper, 
 .update-history-wrapper,
-.troubleshooting-section { /* Accordion wrappers have no internal padding for the toggle button */
+.troubleshooting-section { 
     padding: 0; 
-    background-color: #f9f9f9; /* Accordion wrappers get the light gray */
+    background-color: #f9f9f9; 
     border: 1px solid #eee;
     border-radius: 4px;
 }
 
 /* URL Fetch Section Specific Styling */
-.url-fetch-section-wrapper { /* This is the outer .section-wrapper for URL fetch */
-    padding: 0; /* No padding, relies on inner elements or default block spacing */
-    background-color: transparent; /* No background for the outermost wrapper */
-    border: none; /* No border for the outermost wrapper */
+.url-fetch-section-wrapper { 
+    padding: 15px; /* Add padding to the outer wrapper */
+    background-color: #f0f2f5; /* Light background for the entire section */
+    border: 1px solid #e0e6ed;
+    border-radius: 4px;
 }
-.url-fetch-section-wrapper > h3 {
-    margin-top: 0; /* Reset top margin if it's the first child of this wrapper */
-    margin-bottom: 10px; /* Space before the controls area */
-    text-align: left;
+.url-fetch-section-wrapper > h3.section-title-centered { /* ★修正1: タイトル中央揃え */
+    margin-top: 0; 
+    margin-bottom: 15px;
+    text-align: center; /* Center the title */
     padding-left: 0; 
     font-size: 1.2em;
-    color: #333; /* Ensure title color is consistent */
+    color: #333; 
 }
-.url-fetch-controls-area { /* Inner area for form controls - THIS GETS THE BACKGROUND */
-    background-color: #f9f9f9; /* Light gray background for controls */
+.url-fetch-controls-area { 
+    background-color: #ffffff; 
     padding: 15px;
-    border: 1px solid #eee; /* Border for the controls area */
+    border: 1px solid #dddddd; 
     border-radius: 4px;
-    margin-bottom: 10px; /* Space before privacy note */
+    /* margin-bottom: 10px; Removed, privacy note will be attached */
 }
-.url-fetch-container { /* Flex container for inputs and button */
+.url-fetch-container { 
     display: flex; 
     align-items: center; 
     flex-wrap: wrap; 
     gap: 10px;
 }
-.privacy-note { /* Placed after .url-fetch-controls-area, within .url-fetch-section-wrapper */
+.privacy-note.attached-to-controls { /* ★修正2: プライバシーノートのスタイルと配置 */
     font-size: 0.85em;
     color: #555; 
-    padding: 10px 0 0 0; /* Padding top, no side padding */
-    margin-top: 0; 
+    padding: 10px 15px; 
+    background-color: #e9f5fd; 
+    border: 1px solid #bce8f1; 
+    border-top: none; /* Remove top border to "attach" */
+    border-radius: 0 0 4px 4px; 
+    margin-top: -1px; /* Overlap with bottom border of controls-area */
     display: flex;
     align-items: center;
     line-height: 1.4;
-    background-color: transparent; /* No background for privacy note itself */
-    border: none;
+    position: relative; /* For z-index if needed, though likely not */
 }
 .privacy-icon { 
     width: 1.1em; 
@@ -131,16 +135,16 @@ textarea {
 
 
 /* Spacing between sections */
-.history-container-wrapper + .url-fetch-section-wrapper, 
+.history-container-wrapper + .section-wrapper, /* URL fetch section after history */
 .troubleshooting-section + .history-container-wrapper { 
     margin-top: 20px; 
 }
 .url-fetch-section-wrapper + h3 { /* h3 for "歌詞ページのHTML" after URL fetch section */
-     margin-top: 25px; /* Standard h3 top margin */
+     margin-top: 25px; 
 }
 
 
-.controls-section { /* This section keeps its original styling */
+.controls-section { 
     padding: 15px; 
     background-color: #f9f9f9;
     border: 1px solid #eee;
@@ -250,7 +254,7 @@ iframe#outputFrameEl {
     background-color: #e9ecef; 
     border-radius: 4px; 
     font-size: 0.9em; 
-    padding: 15px; /* Ensure instructions section has its padding */
+    padding: 15px; 
 }
 .instructions p strong {
     display: block;
@@ -277,7 +281,7 @@ iframe#outputFrameEl {
     color: #c00; 
     font-size: 0.9em;
 }
-.troubleshooting-section { /* This is an accordion wrapper */
+.troubleshooting-section { 
     padding: 0;
     background-color: #f9f9f9;
     border: 1px solid #eee;
