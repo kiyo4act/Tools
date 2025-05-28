@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const outputFrameEl = document.getElementById('outputFrameEl');
     const fontSizeSliderEl = document.getElementById('fontSizeSliderEl');
     const fontSizeValueDisplayEl = document.getElementById('fontSizeValueDisplayEl');
+    const addHeaderOnPageBreakEl = document.getElementById('addHeaderOnPageBreakEl'); // New checkbox
     const urlInputEl = document.getElementById('urlInputEl');
     const fetchUrlBtnEl = document.getElementById('fetchUrlBtnEl');
     const urlStatusEl = document.getElementById('urlStatusEl');
@@ -51,41 +52,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 'event_category': 'controls', 'event_label': 'lyrics_font_size', 'value': parseInt(newSize)
             });
         }
+        // Update preview if it exists
         if (outputFrameEl.contentDocument && outputFrameEl.contentDocument.body && outputFrameEl.contentDocument.body.innerHTML) {
-            const iframeDoc = outputFrameEl.contentDocument;
-            const lyricsEl = iframeDoc.querySelector('.lyrics');
-            if (lyricsEl) { lyricsEl.style.fontSize = newSize + 'pt'; }
-            // Update font size for repeated headers in preview as well
-            iframeDoc.querySelectorAll('.repeated-header-info-preview').forEach(header => {
-                 // Adjust as needed, maybe slightly smaller than main lyrics
-                header.style.fontSize = Math.max(8, parseInt(newSize) - 4) + 'pt';
-            });
+            displayFullPreview(); // Re-render preview to apply font size and header option
         }
     });
 
-    if (historyToggleBtnEl) {
-        historyToggleBtnEl.addEventListener('click', () => {
-            historyContentEl.classList.toggle('open');
-            historyToggleBtnEl.classList.toggle('open');
+    // Listener for the new checkbox
+    if (addHeaderOnPageBreakEl) {
+        addHeaderOnPageBreakEl.addEventListener('change', () => {
             if (typeof gtag === 'function') {
-                gtag('event', 'toggle_history_view', {
-                    'event_category': 'ui_interaction', 'event_label': historyContentEl.classList.contains('open') ? 'open' : 'close'
+                gtag('event', 'toggle_header_on_page_break', {
+                    'event_category': 'controls',
+                    'event_label': addHeaderOnPageBreakEl.checked ? 'enable' : 'disable'
                 });
+            }
+            // Update preview if it exists
+            if (outputFrameEl.contentDocument && outputFrameEl.contentDocument.body && outputFrameEl.contentDocument.body.innerHTML) {
+                displayFullPreview(); // Re-render preview to apply header option
             }
         });
     }
-    if (updateHistoryToggleBtnEl) {
-        updateHistoryToggleBtnEl.addEventListener('click', () => {
-            updateHistoryContentEl.classList.toggle('open');
-            updateHistoryToggleBtnEl.classList.toggle('open');
-             if (typeof gtag === 'function') {
-                gtag('event', 'toggle_update_history_view', {
-                    'event_category': 'ui_interaction',
-                    'event_label': updateHistoryContentEl.classList.contains('open') ? 'open' : 'close'
-                });
-            }
-        });
+
+
+    // Accordion toggle logic - ensure this targets the correct elements
+    function setupAccordionToggle(toggleButton, contentElement) {
+        if (toggleButton && contentElement) {
+            toggleButton.addEventListener('click', () => {
+                const isOpen = contentElement.classList.toggle('open');
+                toggleButton.classList.toggle('open', isOpen); // Sync button state
+                // GA4 Event
+                const eventName = contentElement.id === 'historyContentEl' ? 'toggle_history_view' : 'toggle_update_history_view';
+                if (typeof gtag === 'function') {
+                    gtag('event', eventName, {
+                        'event_category': 'ui_interaction',
+                        'event_label': isOpen ? 'open' : 'close'
+                    });
+                }
+            });
+        }
     }
+
+    setupAccordionToggle(historyToggleBtnEl, historyContentEl);
+    setupAccordionToggle(updateHistoryToggleBtnEl, updateHistoryContentEl);
 
 
     fetchUrlBtnEl.addEventListener('click', async () => {
@@ -171,7 +180,6 @@ document.addEventListener('DOMContentLoaded', () => {
     generatePreviewBtnEl.addEventListener('click', () => {
         const rawHtml = htmlInputEl.value;
         if (!rawHtml.trim()) {
-            // alert('歌詞ページのHTMLを入力してください。'); // Using custom modal or inline message is preferred
             urlStatusEl.textContent = '歌詞ページのHTMLを入力してください。';
             urlStatusEl.className = 'status-message error';
             return;
@@ -214,8 +222,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function getHeaderHtmlForPreview() {
-        // This function generates the HTML for the song information header used in previews.
-        return `<div class="repeated-header-info-preview"><h1>${songInfo.title}</h1><p>アーティスト: ${songInfo.artist}</p></div>`;
+        if (!addHeaderOnPageBreakEl.checked) return ''; // Return empty if option is off
+        return `<div class="repeated-header-info-preview"><h1>${songInfo.title || 'タイトル不明'}</h1><p>アーティスト: ${songInfo.artist || 'アーティスト不明'}</p></div>`;
     }
 
     function displayFullPreview() {
@@ -223,9 +231,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let lyricsHtmlForPreview = '';
 
         originalLyricsLines.forEach((line, index) => {
-            // Add repeated header if a page break was inserted BEFORE this line
             if (index > 0 && pageBreakAfterLineStates[index - 1]) {
-                lyricsHtmlForPreview += getHeaderHtmlForPreview();
+                lyricsHtmlForPreview += getHeaderHtmlForPreview(); // Use the function here
             }
             lyricsHtmlForPreview += `<span class="lyric-line-content">${line}</span>`;
 
@@ -254,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         lyricsHtmlForPreview += `<span class="br-placeholder no-space" data-br-index="${index}"></span>`;
                     }
                 }
-                if (pageBreakAfterLineStates[index] && !isEffectivelyEmptyLine) { // Also show indicator if PB on non-empty line
+                if (pageBreakAfterLineStates[index] && !isEffectivelyEmptyLine) {
                     lyricsHtmlForPreview += `<div class="page-break-preview-indicator">-- 改ページ指示箇所 --</div>`;
                 }
             }
@@ -324,9 +331,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getHeaderHtmlForFinalOutput() {
-        // Generates HTML for the song information header for the final downloadable/printable HTML.
-        // This can be styled differently if needed via the .repeated-header-info class in the final output.
-        return `<div class="repeated-header-info"><h1>${songInfo.title}</h1><div class="song-info"><p>アーティスト: ${songInfo.artist}</p><p>作詞: ${songInfo.lyricist}</p><p>作曲: ${songInfo.composer}</p><p>リリース日: ${songInfo.releaseDate}</p></div></div>`;
+        if (!addHeaderOnPageBreakEl.checked) return ''; // Return empty if option is off
+        return `<div class="repeated-header-info"><h1>${songInfo.title || 'タイトル不明'}</h1><div class="song-info"><p>アーティスト: ${songInfo.artist || 'アーティスト不明'}</p><p>作詞: ${songInfo.lyricist || '作詞者不明'}</p><p>作曲: ${songInfo.composer || '作曲者不明'}</p><p>リリース日: ${songInfo.releaseDate || 'リリース日不明'}</p></div></div>`;
     }
 
     function generateFinalHtmlForOutput() {
@@ -334,9 +340,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let lyricsHtmlOutput = '';
 
         originalLyricsLines.forEach((line, index) => {
-            // Add repeated header if a page break was inserted BEFORE this line
             if (index > 0 && pageBreakAfterLineStates[index - 1]) {
-                lyricsHtmlOutput += getHeaderHtmlForFinalOutput();
+                lyricsHtmlOutput += getHeaderHtmlForFinalOutput(); // Use the function here
             }
             lyricsHtmlOutput += line;
 
@@ -361,8 +366,8 @@ document.addEventListener('DOMContentLoaded', () => {
             .lyrics { margin-top: 20px; text-align: left; font-size: ${currentFontSize}pt; line-height: 2.2; column-count: 1; }
             ruby { display: ruby; ruby-position: over !important; line-height: initial; }
             ruby rt { font-size: 0.55em; opacity: 0.95; user-select: none; }
-            .repeated-header-info { margin-bottom: 15px; } /* Style for repeated headers in final output */
-            .repeated-header-info h1 { font-size: 16pt; text-align: center; margin-bottom: 8px; }
+            .repeated-header-info { margin-bottom: 15px; }
+            .repeated-header-info h1 { font-size: 16pt; text-align: center; margin-bottom: 8px; font-weight: bold; }
             .repeated-header-info .song-info { text-align: right; margin-bottom: 10px; font-size: 9pt; }
             .repeated-header-info .song-info p { margin: 2px 0; }
             @media print {
@@ -379,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     visibility: visible !important; content: "";
                 }
             }
-            .print-page-break-element { display: none; } /* Hide page break element in non-print view */
+            .print-page-break-element { display: none; }
         </style></head><body><h1>${songInfo.title}</h1><div class="song-info"><p>アーティスト: ${songInfo.artist}</p><p>作詞: ${songInfo.lyricist}</p><p>作曲: ${songInfo.composer}</p><p>リリース日: ${songInfo.releaseDate}</p></div><div class="lyrics">${lyricsHtmlOutput}</div></body></html>`;
     }
 
@@ -436,7 +441,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const textContentDiv = document.createElement('div');
             textContentDiv.className = 'history-item-text-content';
-            // Event listener for reloading from history
             textContentDiv.onclick = () => {
                 urlInputEl.value = item.url;
                 if (typeof gtag === 'function') {
@@ -460,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
             externalUrlLink.textContent = `(${item.url})`;
             externalUrlLink.title = `元のページを開く: ${item.url}`;
             externalUrlLink.onclick = (e) => {
-                e.stopPropagation(); // Prevent textContentDiv's click event
+                e.stopPropagation();
                 if (typeof gtag === 'function') {
                     gtag('event', 'open_external_from_history', {
                         'event_category': 'history_interaction', 'event_label': item.url.substring(0,100)
@@ -476,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteBtn.classList.add('history-delete-btn');
             deleteBtn.dataset.url = item.url;
             deleteBtn.onclick = (e) => {
-                e.stopPropagation(); // Prevent textContentDiv's click event
+                e.stopPropagation();
                 deleteHistoryItem(item.url);
             };
 
@@ -488,7 +492,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     downloadHtmlBtnEl.addEventListener('click', () => {
         if (!songInfo.title) {
-            // alert('先に「整形を初期化」を実行してください。');
             urlStatusEl.textContent = '先に「整形を初期化」を実行してください。';
             urlStatusEl.className = 'status-message error';
             return;
@@ -510,7 +513,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     printBtnEl.addEventListener('click', () => {
         if (!songInfo.title) {
-            // alert('先に「整形を初期化」を実行してください。');
             urlStatusEl.textContent = '先に「整形を初期化」を実行してください。';
             urlStatusEl.className = 'status-message error';
             return;
@@ -523,7 +525,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const printWindow = window.open('', '_blank', 'width=800,height=600');
         if (!printWindow) {
-            // alert("印刷ウィンドウを開けませんでした。ポップアップブロッカーを確認してください。");
             urlStatusEl.textContent = "印刷ウィンドウを開けませんでした。ポップアップブロッカーを確認してください。";
             urlStatusEl.className = 'status-message error';
             return;
