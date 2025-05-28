@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let normalLineBreakStates = [];
     let pageBreakAfterLineStates = [];
     let addSpaceOnBrRemovalStates = [];
+    let lastPreviewScrollY = 0; // Variable to store scroll position
 
     const MAX_HISTORY_ITEMS = 15;
     const HISTORY_STORAGE_KEY = 'lyricsToolUrlHistory_v2';
@@ -58,7 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (addHeaderOnPageBreakEl) {
-        // HTML側で直接正しい文言を記述するため、JavaScriptでのラベルテキスト変更処理は削除
         addHeaderOnPageBreakEl.addEventListener('change', () => {
             if (typeof gtag === 'function') {
                 gtag('event', 'toggle_header_on_page_break', {
@@ -92,8 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    setupAccordionToggle(historyToggleBtnEl, historyContentEl, true); // Default open for history
-    setupAccordionToggle(updateHistoryToggleBtnEl, updateHistoryContentEl, false); // Default closed for update history
+    setupAccordionToggle(historyToggleBtnEl, historyContentEl, true);
+    setupAccordionToggle(updateHistoryToggleBtnEl, updateHistoryContentEl, false);
 
 
     fetchUrlBtnEl.addEventListener('click', async () => {
@@ -116,6 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
         urlStatusEl.textContent = '読み込み中...';
         urlStatusEl.className = 'status-message';
         fetchUrlBtnEl.disabled = true;
+        lastPreviewScrollY = 0; // Reset scroll for new URL fetch
 
         const selectedProxyIndex = parseInt(proxySelectEl.value);
         const selectedProxy = proxies[selectedProxyIndex];
@@ -159,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             urlStatusEl.textContent = 'HTML読み込み成功。自動的に整形・プレビューします。';
             urlStatusEl.className = 'status-message success';
-            generatePreviewBtnEl.click();
+            generatePreviewBtnEl.click(); // This will call displayFullPreview
         } catch (error) {
             console.error('Fetch error:', error);
             urlStatusEl.textContent = `URL取得失敗: ${error.message}. 手動コピー＆ペーストしてください。`;
@@ -183,6 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
             urlStatusEl.className = 'status-message error';
             return;
         }
+        lastPreviewScrollY = 0; // Reset scroll for new preview generation
         const parser = new DOMParser();
         const doc = parser.parseFromString(rawHtml, 'text/html');
 
@@ -222,6 +224,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     function displayFullPreview() {
+        // Save current scroll position before re-rendering
+        if (outputFrameEl.contentWindow) {
+            lastPreviewScrollY = outputFrameEl.contentWindow.scrollY;
+        }
+
         const currentFontSize = fontSizeSliderEl.value;
         let lyricsHtmlForPreview = '';
         const insertHeader = addHeaderOnPageBreakEl.checked;
@@ -280,11 +287,17 @@ document.addEventListener('DOMContentLoaded', () => {
         iframeDoc.write(previewContent);
         iframeDoc.close();
 
+        // Restore scroll position after content is written and parsed
+        // Use setTimeout to allow the browser to render the new content first
         setTimeout(() => {
-            if (iframeDoc.body) {
-                attachControlListeners(iframeDoc);
+            if (outputFrameEl.contentWindow) {
+                outputFrameEl.contentWindow.scrollTo(0, lastPreviewScrollY);
             }
-        }, 100);
+            // Re-attach listeners to the new content
+            if (iframeDoc.body) { // Ensure body exists before attaching
+                 attachControlListeners(iframeDoc);
+            }
+        }, 0); // A timeout of 0 ms can be enough for the browser to process the write
     }
 
     function attachControlListeners(iframeDoc) {
@@ -304,19 +317,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function toggleNormalBreak(index, showBr) {
         if (index >= 0 && index < normalLineBreakStates.length) {
             normalLineBreakStates[index] = showBr;
-            displayFullPreview();
+            displayFullPreview(); // This will now preserve scroll
         }
     }
     function togglePageBreak(index, addPb) {
             if (index >= 0 && index < pageBreakAfterLineStates.length) {
             pageBreakAfterLineStates[index] = addPb;
-            displayFullPreview();
+            displayFullPreview(); // This will now preserve scroll
         }
     }
     function toggleSpaceState(index, addSpace) {
         if (index >= 0 && index < addSpaceOnBrRemovalStates.length) {
             addSpaceOnBrRemovalStates[index] = addSpace;
-            displayFullPreview();
+            displayFullPreview(); // This will now preserve scroll
         }
     }
 
