@@ -43,13 +43,14 @@ h3 {
 }
 
 .tool-description {
-    text-align: center;
+    text-align: left; 
     font-size: 0.95em;
     color: #555;
     margin-bottom: 25px;
-    padding: 10px;
+    padding: 15px; 
     background-color: #f8f9fa;
-    border-left: 3px solid #007bff;
+    border-left: 4px solid #007bff; 
+    border-radius: 4px;
 }
 
 textarea {
@@ -63,14 +64,14 @@ textarea {
     font-size: 0.9em;
 }
 
-.controls-section, .url-fetch-container, .history-container-wrapper, .update-history-wrapper { /* Added .update-history-wrapper */
+.controls-section, .url-fetch-container, .history-container-wrapper, .update-history-wrapper { 
     margin-bottom: 20px; 
     padding: 10px;
     background-color: #f9f9f9;
     border: 1px solid #eee;
     border-radius: 4px;
 }
-.history-container-wrapper, .update-history-wrapper { /* Specific for wrappers */
+.history-container-wrapper, .update-history-wrapper { 
     padding: 0; 
 }
 
@@ -82,7 +83,7 @@ textarea {
     gap: 10px;
 }
 
-.history-container-wrapper + h3 { 
+.history-container-wrapper + h3 { /* h3 following history wrapper */
     margin-top: 20px; 
 }
 
@@ -92,6 +93,19 @@ textarea {
     font-weight: bold;
     flex-shrink: 0; 
 }
+.controls-section .control-option { /* Spacing for options within controls */
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+}
+.controls-section .control-option:first-child {
+    margin-top: 0;
+}
+.controls-section .control-option label { /* Specific label styling for checkbox */
+    font-weight: normal;
+    margin-left: 5px;
+}
+
 
 .controls-section input[type="range"] {
     width: 200px;
@@ -175,6 +189,14 @@ iframe#outputFrameEl {
 }
 .instructions { background-color: #e9ecef; padding: 15px; border-radius: 4px; margin-bottom: 25px; font-size: 0.9em; }
 .instructions ul { padding-left: 20px; }
+.instructions ul li span.important-note { 
+    display: block; 
+    margin-top: 8px; /* Increased margin for better separation */
+    font-weight: bold;
+    color: #c00; 
+    font-size: 0.9em;
+}
+
 .status-message { 
     font-size: 0.9em;
     flex-grow: 1;
@@ -205,22 +227,21 @@ iframe#outputFrameEl {
     cursor: pointer;
     user-select: none;
     padding: 12px 15px;
-    background-color: #f0f2f5; /* Slightly different background for distinction */
+    background-color: #f0f2f5; 
     border-bottom: 1px solid #d1d9e0;
     border-radius: 4px; 
-    font-size: 1.0em; /* Slightly smaller for sub-sections */
+    font-size: 1.0em; 
     font-weight: bold;
     display: flex;
     justify-content: space-between;
     align-items: center;
     transition: background-color 0.2s, border-radius 0.35s ease-out;
-    margin-top: 0; /* Remove default h3 margin if it's a toggle */
+    margin-top: 0; 
     margin-bottom: 0;
 }
-.accordion-toggle.open { /* Style when accordion is open */
+.accordion-toggle.open { 
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
-    /* border-bottom: 1px solid #d1d9e0; */ /* Kept for consistency */
 }
 .accordion-toggle:hover {
     background-color: #e4e8eb;
@@ -234,7 +255,7 @@ iframe#outputFrameEl {
 .accordion-toggle.open .accordion-icon {
     transform: rotate(-180deg);
 }
-.accordion-content { /* Common style for accordion content panels */
+.accordion-content { 
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.35s ease-out, padding-top 0.35s ease-out, padding-bottom 0.35s ease-out, border-top-width 0.35s ease-out;
@@ -245,7 +266,7 @@ iframe#outputFrameEl {
     padding-bottom: 0;
     border-top: none; 
     border-radius: 0 0 4px 4px;
-    border-left: 1px solid #eee; /* Match wrapper border */
+    border-left: 1px solid #eee; 
     border-right: 1px solid #eee;
     border-bottom: 1px solid #eee;
 }
@@ -312,15 +333,22 @@ iframe#outputFrameEl {
 
 /* Update History Specific Styles */
 .update-history-wrapper {
-     margin-top: 30px; /* More space before update history */
+     margin-top: 30px; 
+     margin-bottom: 20px; 
+     padding:0; 
+     background-color: #f9f9f9;
+     border: 1px solid #eee;
+     border-radius: 4px;
 }
-#updateHistoryContentEl ul {
-    list-style-type: disc;
-    padding-left: 20px;
+#updateHistoryContentEl ul { 
+    list-style-type: none; 
+    padding-left: 0; 
     font-size: 0.9em;
+    margin-bottom: 10px; 
 }
-#updateHistoryContentEl li {
-    margin-bottom: 8px;
+#updateHistoryContentEl > ul > li { 
+    margin-bottom: 10px; 
+    padding-left: 0;
 }
 #updateHistoryContentEl .version-date {
     font-weight: bold;
@@ -329,9 +357,27 @@ iframe#outputFrameEl {
 #updateHistoryContentEl .version-rev {
     font-style: italic;
     color: #555;
+    font-size: 0.9em;
 }
 #updateHistoryContentEl .change-list {
-    list-style-type: circle;
-    padding-left: 20px;
-    margin-top: 4px;
+    list-style-type: disc; 
+    padding-left: 20px; 
+    margin-top: 5px;
+    font-size: 0.95em; 
+    color: #444;
+}
+#updateHistoryContentEl .change-list li {
+    margin-bottom: 4px;
+    padding-left: 0;
+    border-bottom: none; 
+}
+#updateHistoryContentEl .change-list li:hover {
+    background-color: transparent; 
+    cursor: default;
+}
+
+/* Styles for repeated header in print/download (defined in script.js) */
+/* These are fallback/base if script-injected styles need overriding */
+.repeated-header-info {
+    /* Styles are primarily injected by script.js for the final output */
 }
