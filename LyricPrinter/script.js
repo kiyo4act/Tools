@@ -33,6 +33,17 @@ document.addEventListener('DOMContentLoaded', () => {
         { name: "Proxy 2 (allorigins)", idName: "allorigins", buildUrl: (targetUrl) => `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}` }
     ];
 
+    // Initialize iframe src to prevent Firefox reload issue
+    if (outputFrameEl && !outputFrameEl.getAttribute('src')) {
+        outputFrameEl.setAttribute('src', 'about:blank');
+    }
+    // Alternatively, ensure it has some content initially
+    // const initialIframeDoc = outputFrameEl.contentDocument || outputFrameEl.contentWindow.document;
+    // initialIframeDoc.open();
+    // initialIframeDoc.write('<html><head><title>Preview</title></head><body></body></html>');
+    // initialIframeDoc.close();
+
+
     function populateProxies() {
         proxies.forEach((proxy, index) => {
             const option = document.createElement('option');
@@ -116,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
         urlStatusEl.textContent = '読み込み中...';
         urlStatusEl.className = 'status-message';
         fetchUrlBtnEl.disabled = true;
-        lastPreviewScrollY = 0; // Reset scroll for new URL fetch
+        lastPreviewScrollY = 0; 
 
         const selectedProxyIndex = parseInt(proxySelectEl.value);
         const selectedProxy = proxies[selectedProxyIndex];
@@ -160,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             urlStatusEl.textContent = 'HTML読み込み成功。自動的に整形・プレビューします。';
             urlStatusEl.className = 'status-message success';
-            generatePreviewBtnEl.click(); // This will call displayFullPreview
+            generatePreviewBtnEl.click(); 
         } catch (error) {
             console.error('Fetch error:', error);
             urlStatusEl.textContent = `URL取得失敗: ${error.message}. 手動コピー＆ペーストしてください。`;
@@ -184,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
             urlStatusEl.className = 'status-message error';
             return;
         }
-        lastPreviewScrollY = 0; // Reset scroll for new preview generation
+        lastPreviewScrollY = 0; 
         const parser = new DOMParser();
         const doc = parser.parseFromString(rawHtml, 'text/html');
 
@@ -224,7 +235,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     function displayFullPreview() {
-        // Save current scroll position before re-rendering
         if (outputFrameEl.contentWindow) {
             lastPreviewScrollY = outputFrameEl.contentWindow.scrollY;
         }
@@ -283,22 +293,37 @@ document.addEventListener('DOMContentLoaded', () => {
         </style></head><body><h1>${songInfo.title}</h1><div class="song-info"><p>アーティスト: ${songInfo.artist}</p><p>作詞: ${songInfo.lyricist}</p><p>作曲: ${songInfo.composer}</p><p>リリース日: ${songInfo.releaseDate}</p></div><div class="lyrics">${lyricsHtmlForPreview}</div></body></html>`;
 
         const iframeDoc = outputFrameEl.contentDocument || outputFrameEl.contentWindow.document;
+        // Ensure iframe is not trying to load parent page on write in Firefox
+        if (outputFrameEl.contentWindow && outputFrameEl.contentWindow.location.href !== 'about:blank' && (!outputFrameEl.src || outputFrameEl.src === window.location.href)) {
+             outputFrameEl.src = 'about:blank'; // Reset src before writing if it seems to be the parent
+             // Wait for src to take effect before writing
+             setTimeout(() => {
+                const freshIframeDoc = outputFrameEl.contentDocument || outputFrameEl.contentWindow.document;
+                freshIframeDoc.open();
+                freshIframeDoc.write(previewContent);
+                freshIframeDoc.close();
+                restoreScrollAndAttachListeners(freshIframeDoc);
+             }, 0);
+             return; // Exit to avoid double write
+        }
+
         iframeDoc.open();
         iframeDoc.write(previewContent);
         iframeDoc.close();
+        restoreScrollAndAttachListeners(iframeDoc);
+    }
 
-        // Restore scroll position after content is written and parsed
-        // Use setTimeout to allow the browser to render the new content first
-        setTimeout(() => {
+    function restoreScrollAndAttachListeners(docToUse) {
+         setTimeout(() => {
             if (outputFrameEl.contentWindow) {
                 outputFrameEl.contentWindow.scrollTo(0, lastPreviewScrollY);
             }
-            // Re-attach listeners to the new content
-            if (iframeDoc.body) { // Ensure body exists before attaching
-                 attachControlListeners(iframeDoc);
+            if (docToUse.body) { 
+                 attachControlListeners(docToUse);
             }
-        }, 0); // A timeout of 0 ms can be enough for the browser to process the write
+        }, 0);
     }
+
 
     function attachControlListeners(iframeDoc) {
         if (!iframeDoc || !iframeDoc.body) return;
@@ -317,19 +342,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function toggleNormalBreak(index, showBr) {
         if (index >= 0 && index < normalLineBreakStates.length) {
             normalLineBreakStates[index] = showBr;
-            displayFullPreview(); // This will now preserve scroll
+            displayFullPreview(); 
         }
     }
     function togglePageBreak(index, addPb) {
             if (index >= 0 && index < pageBreakAfterLineStates.length) {
             pageBreakAfterLineStates[index] = addPb;
-            displayFullPreview(); // This will now preserve scroll
+            displayFullPreview(); 
         }
     }
     function toggleSpaceState(index, addSpace) {
         if (index >= 0 && index < addSpaceOnBrRemovalStates.length) {
             addSpaceOnBrRemovalStates[index] = addSpace;
-            displayFullPreview(); // This will now preserve scroll
+            displayFullPreview(); 
         }
     }
 
