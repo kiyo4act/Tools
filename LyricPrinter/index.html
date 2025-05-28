@@ -28,7 +28,7 @@
         </p>
 
         <div class="instructions">
-            <p><strong>基本的な使い方</strong></p>
+             <p><strong>基本的な使い方</strong></p>
             <ol class="steps">
                 <li>
                     <strong>歌詞ページのURLを入力して読み込む:</strong><br>
@@ -67,27 +67,29 @@
 
         <div class="history-container-wrapper">
             <h3 id="historyToggleBtnEl" class="accordion-toggle">読み込み履歴 <span class="accordion-icon">&#9660;</span></h3>
-            <div id="historyContentEl" class="history-content">
+            <div id="historyContentEl" class="accordion-content">
                 <ul id="historyListEl"></ul>
             </div>
         </div>
         
-        <h3>URLから歌詞ページのHTMLを読み込む</h3>
-        <div class="url-fetch-container">
-            <label for="proxySelectEl">プロキシ:</label>
-            <select id="proxySelectEl"></select>
-            <label for="urlInputEl">URL:</label>
-            <input type="text" id="urlInputEl" placeholder="https://utaten.com/lyric/xxxxxx/">
-            <button id="fetchUrlBtnEl">読み込み実行</button>
-            <div class="loader" id="urlLoaderEl"></div>
-            <div id="urlStatusEl" class="status-message"></div>
+        <div class="url-fetch-container-wrapper">
+            <h3>URLから歌詞ページのHTMLを読み込む</h3>
+            <div class="url-fetch-container">
+                <label for="proxySelectEl">プロキシ:</label>
+                <select id="proxySelectEl"></select>
+                <label for="urlInputEl">URL:</label>
+                <input type="text" id="urlInputEl" placeholder="https://utaten.com/lyric/xxxxxx/">
+                <button id="fetchUrlBtnEl">読み込み実行</button>
+                <div class="loader" id="urlLoaderEl"></div>
+                <div id="urlStatusEl" class="status-message"></div>
+            </div>
+            <p class="privacy-note">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="privacy-icon">
+                    <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
+                </svg>
+                安全: 入力されたURLや読み込み履歴はあなたのブラウザ内にのみ保存され、サーバーに送信されることはありません。
+            </p>
         </div>
-        <p class="privacy-note">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="privacy-icon">
-                <path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" />
-            </svg>
-            安全: 入力されたURLや読み込み履歴はあなたのブラウザ内にのみ保存され、他の誰にも公開されたり、サーバーに送信されたりすることはありません。
-        </p>
 
         <h3>歌詞ページのHTML</h3>
         <textarea id="htmlInputEl" placeholder="ここにHTMLを貼り付けるか、上記URLから読み込んでください..."></textarea>
@@ -125,6 +127,7 @@
                             <li>印刷時の改ページに関する注意書きを「使い方」に追加。</li>
                             <li>「使い方」セクションの構成変更と表現調整、プロキシ等に関する情報を「困った時は」に集約。</li>
                             <li>読み込み履歴アイテム内の余白調整、プライバシー注釈をURL読み込みセクションに移動。</li>
+                             <li>アコーディオン動作の修正、URL読み込みセクションの背景スタイル復活。</li>
                         </ul>
                     </li>
                     <li>
