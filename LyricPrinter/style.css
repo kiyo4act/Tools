@@ -83,7 +83,7 @@ textarea {
     gap: 10px;
 }
 
-.history-container-wrapper + h3 { /* h3 following history wrapper */
+.history-container-wrapper + h3 { 
     margin-top: 20px; 
 }
 
@@ -93,7 +93,7 @@ textarea {
     font-weight: bold;
     flex-shrink: 0; 
 }
-.controls-section .control-option { /* Spacing for options within controls */
+.controls-section .control-option { 
     margin-top: 10px;
     display: flex;
     align-items: center;
@@ -101,7 +101,7 @@ textarea {
 .controls-section .control-option:first-child {
     margin-top: 0;
 }
-.controls-section .control-option label { /* Specific label styling for checkbox */
+.controls-section .control-option label { 
     font-weight: normal;
     margin-left: 5px;
 }
@@ -191,7 +191,7 @@ iframe#outputFrameEl {
 .instructions ul { padding-left: 20px; }
 .instructions ul li span.important-note { 
     display: block; 
-    margin-top: 8px; /* Increased margin for better separation */
+    margin-top: 8px; 
     font-weight: bold;
     color: #c00; 
     font-size: 0.9em;
@@ -302,10 +302,11 @@ iframe#outputFrameEl {
 }
 .history-item-text-content { 
     flex-grow: 1;
-    margin-right: 10px;
+    margin-right: 10px; 
     overflow: hidden; 
     display: flex; 
     flex-direction: column; 
+    gap: 2px; 
 }
 .history-item-title-artist { 
     font-weight: 600; 
@@ -330,6 +331,25 @@ iframe#outputFrameEl {
 .history-item-external-url:hover {
     text-decoration: underline;
 }
+.privacy-note-history { 
+    font-size: 0.85em;
+    color: #666;
+    padding: 8px 15px;
+    background-color: #f0f8ff; 
+    border-top: 1px solid #d1e7fd;
+    border-radius: 0 0 4px 4px; 
+    margin-top: 0; 
+    display: flex;
+    align-items: center;
+}
+.privacy-icon { 
+    width: 1em;
+    height: 1em;
+    margin-right: 0.5em;
+    color: #007bff; 
+    flex-shrink: 0;
+}
+
 
 /* Update History Specific Styles */
 .update-history-wrapper {
@@ -377,7 +397,6 @@ iframe#outputFrameEl {
 }
 
 /* Styles for repeated header in print/download (defined in script.js) */
-/* These are fallback/base if script-injected styles need overriding */
 .repeated-header-info {
     /* Styles are primarily injected by script.js for the final output */
 }
