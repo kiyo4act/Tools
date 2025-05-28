@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>歌詞ページ印刷用整形ツール</title>
-    <meta name="version" content="13"> 
-    <meta name="last-updated" content="2025-05-26">
+    <meta name="version" content="14"> 
+    <meta name="last-updated" content="2025-05-28">
     <meta name="description" content="指定された歌詞ページのURLまたはHTMLソースから、印刷に適した形式に整形するツールです。ルビ表示、フォントサイズ、改行、改ページなどを調整できます。">
     
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WWQTE7VWKG"></script>
@@ -20,7 +20,7 @@
 <body>
     <div class="container">
         <h1>歌詞ページ印刷用整形ツール</h1>
-        <p class="version-info">最終更新: 2025年5月26日 (Rev. 13)</p>
+        <p class="version-info">最終更新: 2025年5月28日 (Rev. 14)</p>
 
         <p class="tool-description">
             指定された歌詞ページのURLまたはHTMLソースから、印刷に適した形式に整形するツールです。<br>
@@ -31,11 +31,13 @@
              <p><strong>使い方:</strong></p>
             <ul>
                 <li>方法1: 下の「URLから歌詞ページのHTMLを読み込む」セクションに <code>utaten.com</code> のURLを入力し、「読み込み実行」ボタンを押してください。成功したURLは履歴に保存されます。プロキシの選択も可能です。</li>
-                <li>方法2: 「歌詞ページのHTML」入力欄にHTMLを直接貼り付けます。</li>
-                <li>読み込み履歴（アコーディオンで開閉）からURLを選択して再読み込みできます。履歴の主要部分クリックで再読み込み、URL部分クリックで元ページを開きます。</li>
-                <li>歌詞フォントサイズをスライダーで調整します。</li>
+                <li>方法2: 「歌詞ページのHTML」入力欄にHTML断片を直接貼り付けます。</li>
+                <li>読み込み履歴（アコーディオンで開閉）からURLを選択して再読み込みできます。</li>
+                <li>歌詞フォントサイズや、改ページごとのヘッダー情報表示を調整します。</li>
                 <li>「整形を初期化」でプレビューを生成。プレビュー内のボタンで改行・空白・改ページを調整できます。</li>
                 <li>「生成HTMLをダウンロード」でファイルを保存、または「印刷」ボタンで直接印刷できます。</li>
+                <li>詳細な更新履歴はこのページ下部のアコーディオン、または<a href="https://github.com/your-username/your-repo/blob/main/README.md" target="_blank" rel="noopener noreferrer">READMEファイル</a>をご確認ください。（READMEへのリンクは適宜修正してください）</li>
+                <li><span class="important-note">注意: 印刷時の改ページがChromeで期待通りに動作しない場合、Firefoxなど別のブラウザでお試しいただくと正常に動作することがあります。</span></li>
             </ul>
         </div>
 
@@ -61,8 +63,14 @@
         <textarea id="htmlInputEl" placeholder="ここにHTMLを貼り付けるか、上記URLから読み込んでください..."></textarea>
 
         <div class="controls-section">
-            <label for="fontSizeSliderEl">歌詞フォントサイズ: <span id="fontSizeValueDisplayEl">20</span>pt</label>
-            <input type="range" id="fontSizeSliderEl" min="8" max="28" value="20">
+            <div>
+                <label for="fontSizeSliderEl">歌詞フォントサイズ: <span id="fontSizeValueDisplayEl">20</span>pt</label>
+                <input type="range" id="fontSizeSliderEl" min="8" max="28" value="20">
+            </div>
+            <div class="control-option">
+                <input type="checkbox" id="repeatHeaderCheckboxEl" checked>
+                <label for="repeatHeaderCheckboxEl">各ページにヘッダー情報（曲名等）を表示する</label>
+            </div>
         </div>
         
         <div class="action-buttons">
@@ -80,6 +88,13 @@
             <h3 id="updateHistoryToggleBtnEl" class="accordion-toggle">ツールの更新履歴 <span class="accordion-icon">&#9660;</span></h3>
             <div id="updateHistoryContentEl" class="update-history-content accordion-content"> 
                 <ul>
+                    <li>
+                        <span class="version-date">2025年5月28日</span> <span class="version-rev">(Rev. 14)</span>
+                        <ul class="change-list">
+                            <li>改ページごとにヘッダー情報（曲名等）を再表示するオプション機能を追加。</li>
+                            <li>印刷時の改ページに関する注意書きを「使い方」に追加。</li>
+                        </ul>
+                    </li>
                     <li>
                         <span class="version-date">2025年5月26日</span> <span class="version-rev">(Rev. 13)</span>
                         <ul class="change-list">
@@ -112,10 +127,10 @@
                             <li>URL読み込み成功時に自動でプレビューを生成、「整形して表示」ボタンを「整形を初期化」に変更。</li>
                         </ul>
                     </li>
-                    <li>
+                     <li>
                         <span class="version-date">2025年5月26日</span> <span class="version-rev">(Rev. 1-9)</span>
                         <ul class="change-list">
-                            <li>基本機能開発、UI改善、バグ修正、GA4連携準備など。(詳細は<a href="https://github.com/your-username/your-repo/blob/main/README.md#%E6%9B%B4%E6%96%B0%E5%B1%A5%E6%AD%B4" target="_blank" rel="noopener noreferrer">README</a>参照)</li>
+                            <li>各種機能開発、UI改善、バグ修正など。(詳細は<a href="https://github.com/your-username/your-repo/blob/main/README.md#%E6%9B%B4%E6%96%B0%E5%B1%A5%E6%AD%B4" target="_blank" rel="noopener noreferrer">README</a>参照)</li>
                         </ul>
                     </li>
                 </ul>
