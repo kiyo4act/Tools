@@ -429,31 +429,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         history.forEach((item) => {
             const li = document.createElement('li');
-            li.onclick = (event) => {
-                let targetElement = event.target;
-                // Check if the click originated from the external link or delete button itself,
-                // or if the parent of the clicked element is one of those.
-                let isActionElementClick = false;
-                while (targetElement && targetElement !== li) {
-                    if (targetElement.classList.contains('history-item-external-url') || 
-                        targetElement.classList.contains('history-delete-btn')) {
-                        isActionElementClick = true;
-                        break; 
+            // ★修正1: 読み込み履歴のクリック動作修正
+            li.addEventListener('click', (event) => {
+                // クリックされた要素が外部リンク(Aタグ)か削除ボタン(BUTTONタグ)そのものであるか、
+                // またはそれらの親要素である場合（例：アイコン内をクリック）は、再読み込みを抑制する
+                let target = event.target;
+                let isActionClick = false;
+                while(target && target !== li) {
+                    if (target.classList.contains('history-item-external-url') || target.classList.contains('history-delete-btn')) {
+                        isActionClick = true;
+                        break;
                     }
-                    targetElement = targetElement.parentElement;
-                }
-                if (isActionElementClick) {
-                    return; // Do not trigger re-fetch if an action element was clicked
+                    target = target.parentElement;
                 }
 
-                urlInputEl.value = item.url;
-                if (typeof gtag === 'function') {
-                    gtag('event', 'load_from_history', {
-                        'event_category': 'history_interaction', 'event_label': item.title.substring(0,100)
-                    });
+                if (!isActionClick) {
+                    urlInputEl.value = item.url;
+                    if (typeof gtag === 'function') {
+                        gtag('event', 'load_from_history', {
+                            'event_category': 'history_interaction', 'event_label': item.title.substring(0,100)
+                        });
+                    }
+                    fetchUrlBtnEl.click();
                 }
-                fetchUrlBtnEl.click();
-            };
+            });
             
             const textContentDiv = document.createElement('div');
             textContentDiv.className = 'history-item-text-content';
@@ -469,8 +468,8 @@ document.addEventListener('DOMContentLoaded', () => {
             externalUrlLink.target = '_blank';
             externalUrlLink.textContent = `(${item.url})`; 
             externalUrlLink.title = `元のページを開く: ${item.url}`;
-            externalUrlLink.onclick = (e) => {
-                e.stopPropagation(); 
+            externalUrlLink.onclick = (e) => { // This click is specific to the link
+                e.stopPropagation(); // Prevent li's click event
                 if (typeof gtag === 'function') {
                     gtag('event', 'open_external_from_history', {
                         'event_category': 'history_interaction', 'event_label': item.url.substring(0,100)
@@ -485,8 +484,8 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteBtn.textContent = '削除';
             deleteBtn.classList.add('history-delete-btn');
             deleteBtn.dataset.url = item.url;
-            deleteBtn.onclick = (e) => {
-                e.stopPropagation(); 
+            deleteBtn.onclick = (e) => { // This click is specific to the delete button
+                e.stopPropagation(); // Prevent li's click event
                 deleteHistoryItem(item.url);
             };
             
