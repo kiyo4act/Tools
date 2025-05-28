@@ -27,7 +27,7 @@ h2 {
     margin-bottom: 15px;
 }
 h3 { 
-    text-align: center; /* Default h3 to center */
+    text-align: center; 
     color: #333;
     margin-top: 25px; 
     margin-bottom: 10px; 
@@ -81,9 +81,9 @@ textarea {
     border: 1px solid #eee;
     border-radius: 4px;
 }
-.section-wrapper { /* General wrapper, e.g., for URL fetch section */
-    padding: 15px; /* Outer padding for the section */
-    background-color: #f0f2f5; /* Light distinct background for the entire section wrapper */
+.section-wrapper { /* General wrapper for URL fetch section */
+    padding: 15px; 
+    background-color: #f0f2f5; 
     border: 1px solid #e0e6ed;
     border-radius: 4px;
 }
@@ -101,7 +101,6 @@ textarea {
     padding: 15px;
     border: 1px solid #dddddd; 
     border-radius: 4px;
-    /* margin-bottom: 0; if privacy note is directly attached */
 }
 .url-fetch-container { 
     display: flex; 
@@ -112,11 +111,11 @@ textarea {
 .privacy-note.attached-to-controls { 
     font-size: 0.85em;
     color: #555; 
-    padding: 10px 0; /* Padding top/bottom, no side padding if wrapper has it */
-    background-color: transparent; /* Transparent background */
+    padding: 10px 0 0 0; 
+    background-color: transparent; 
     border: none; 
-    border-top: 1px solid #e0e6ed; /* Separator line */
-    margin-top: 15px; /* Space from controls area */
+    border-top: 1px solid #e0e6ed; 
+    margin-top: 15px; 
     display: flex;
     align-items: center;
     line-height: 1.4;
@@ -134,7 +133,7 @@ textarea {
 .troubleshooting-section + .history-container-wrapper { 
     margin-top: 20px; 
 }
-.section-wrapper + h3 { /* h3 for "歌詞ページのHTML" after URL fetch section */
+.section-wrapper + h3 { 
      margin-top: 25px; 
 }
 
