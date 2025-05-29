@@ -45,7 +45,7 @@
     * **支援期間フィルター:**
         * 「支援開始日 (以降/以前)」: カレンダーから日付を選択します。
         * 「継続月数 (以上)」: 数値を入力します。
-        * 入力後、「フィルター適用」ボタンを押すとプレビューが更新されます。「フィルターリセット」で解除できます。
+        * これらのフィルターは入力/変更すると自動的に適用されます。「フィルター適用」ボタンは手動更新用、「フィルターリセット」で解除できます。
     * **ソート:** プレビューテーブルのヘッダー（支援者名、ユーザーIDなど）をクリックすると、その列を基準に昇順/降順でソートされます。
 4.  **データのエクスポート:**
     * 「出力形式」ドロップダウンからCSVまたはJSONを選択します。
@@ -66,18 +66,15 @@
 * `filter_start_date_after=[YYYY-MM-DD]` : (任意) この日付以降に支援を開始したユーザーのみ。
 * `filter_start_date_before=[YYYY-MM-DD]` : (任意) この日付以前に支援を開始したユーザーのみ。
 * `filter_duration_months_over=[数値]` : (任意) 指定した月数以上、支援を継続しているユーザーのみ。
-* `sort_by=[列キー]` : (任意) ソートする列のキー。指定可能なキー: `supporter_name`, `user_id`, `plan_name`, `start_date`, `memo`。
-* `sort_order=[asc|desc]` : (任意) ソート順。`asc` (昇順) または `desc` (降順)。`sort_by` と共に使用。デフォルトは `asc`。
+* `sort_by=[列キー]` : (任意) ソートする列のキー。指定可能なキー: `supporter_name`, `user_id`, `plan_name`, `start_date`, `memo`。デフォルトは `start_date`。
+* `sort_order=[asc|desc]` : (任意) ソート順。`asc` (昇順) または `desc` (降順)。`sort_by` が `start_date` の場合のデフォルトは `desc`、それ以外は `asc`。
 * `format=[csv|json]` : (必須、`download=true`の場合) ダウンロードするファイルの形式。
 * `download=true` : (任意) このパラメータが存在する場合、処理完了後に自動的にファイルをダウンロードします。
 
 **使用例:**
 クリエイターID `mycreator` の支援者一覧から、「プレミアムプラン」と「スタンダードプラン」の支援者で、3ヶ月以上支援を継続しており、支援開始日の降順でソートし、CSV形式で自動ダウンロードする場合:
 
-```
-[https://kiyo.bio/Tools/FanboxEnumerator/?creator_id=mycreator&filter_plan=プレミアムプラン,スタンダードプラン&filter_duration_months_over=3&sort_by=start_date&sort_order=desc&format=csv&download=true](https://kiyo.bio/Tools/FanboxEnumerator/?creator_id=mycreator&filter_plan=プレミアムプラン,スタンダードプラン&filter_duration_months_over=3&sort_by=start_date&sort_order=desc&format=csv&download=true)
-```
-（実際のURLはホスティング場所に合わせてください）
+https://kiyo.bio/Tools/FanboxEnumerator/?creator_id=mycreator&filter_plan=プレミアムプラン,スタンダードプラン&filter_duration_months_over=3&sort_by=start_date&sort_order=desc&format=csv&download=true（実際のURLはホスティング場所に合わせてください）
 
 ### 1.4. 注意事項
 
@@ -105,13 +102,16 @@
 1.  **対象ファイル:** `FanboxEnumerator/index.html`, `FanboxEnumerator/style.css`, `FanboxEnumerator/script.js`, `FanboxEnumerator/README.md`。
 2.  **FANBOXのHTML構造の変更対応:**
     * もしFANBOX側のHTML構造が変更され、情報抽出がうまくいかなくなった場合、`script.js`内の`parseFanboxHtml`関数内のDOMセレクタの修正が必要です。
-    * 具体的には、以下の情報を抽出するためのセレクタを見直す必要があります（2025年5月時点の想定セレクタ）:
-        * 各支援者行: `div.commonStyles__Tr-sc-1f3w2vz-1.fsExkx`
-        * 支援者名: 上記行内の1番目の`div.commonStyles__Td-sc-1f3w2vz-2.gOXCUW` -> `a.Row__UserWrapper-sc-1xb9lq9-1` -> `div.commonStyles__TextEllipsis-sc-1f3w2vz-3.bqBOcj` のテキスト
-        * ユーザーID: 上記行内の1番目の`div.commonStyles__Td-sc-1f3w2vz-2.gOXCUW` -> `a.Row__UserWrapper-sc-1xb9lq9-1` の `href` 属性から抽出
-        * プラン名: 上記行内の2番目の`div.commonStyles__Td-sc-1f3w2vz-2.gOXCUW` -> `div.commonStyles__TextEllipsis-sc-1f3w2vz-3.bqBOcj` のテキスト
-        * 支援開始日: 上記行内の3番目の`div.commonStyles__Td-sc-1f3w2vz-2.gOXCUW` のテキスト
-        * メモ: 上記行内の4番目の`div.commonStyles__Td-sc-1f3w2vz-2.gOXCUW` -> `div.commonStyles__TextEllipsis-sc-1f3w2vz-3.bqBOcj` のテキスト
+    * 具体的には、以下の情報を抽出するためのセレクタを見直す必要があります（2025年5月30日時点の想定セレクタ。実際のHTMLサンプル (`relationships.html`) に基づく）:
+        * 各支援者行: `div.commonStyles__Table-sc-1f3w2vz-0.dRWCLG` の直下の子 `div.commonStyles__Tr-sc-1f3w2vz-1` (ヘッダー行を示す `div.Header__Th-sc-ofkfyg-0` を含まないように注意)。より具体的には、`div.commonStyles__Tr-sc-1f3w2vz-1.fsExkx` がデータ行のようです。
+        * 各セル: 上記行内の `div.commonStyles__Td-sc-1f3w2vz-2.gOXCUW`。
+            * 1番目のセル (支援者名・ID):
+                * `a.Row__UserWrapper-sc-1xb9lq9-1` を取得。
+                * 支援者名: その中の `div.commonStyles__TextEllipsis-sc-1f3w2vz-3.bqBOcj` のテキスト。
+                * ユーザーID: `a` タグの `href` 属性から `/manage/relationships/(\d+)` の正規表現でID部分を抽出。
+            * 2番目のセル (プラン名): `div.commonStyles__TextEllipsis-sc-1f3w2vz-3.bqBOcj` のテキスト。
+            * 3番目のセル (支援開始日): テキストコンテント。
+            * 4番目のセル (メモ): `div.commonStyles__TextEllipsis-sc-1f3w2vz-3.bqBOcj` のテキスト。
     * 変更があった場合は、最新のFANBOX支援者一覧ページのHTMLソースを提供し、上記セレクタの更新を指示してください。
 3.  **プロキシサーバーリストの更新:**
     * `script.js` 内の `proxies` 配列で定義されているプロキシサーバーが利用不可になった場合、代替の公開プロキシサービスを調査し、この配列を更新するよう指示してください。
@@ -125,8 +125,8 @@
 
 * **HTML構造依存性:** 最も重要な注意点です。FANBOX側の変更に対して脆弱です。
 * **CORSプロキシ依存性:** プロキシがダウンするとURLからの直接読み込み機能が使えなくなります。
-* **日付のパース:** 支援開始日の文字列フォーマット（例: "YYYY年M月D日"）が変わると、期間計算やソートが正しく動作しなくなる可能性があります。`parseDate`関数を見直す必要があります。
-* **URLクエリパラメータの処理:** `script.js` の `processUrlQueryParameters` 関数で処理しています。パラメータの追加や変更はここで行います。セキュリティ（特にURL検証）に注意が必要です。
+* **日付のパース:** 支援開始日の文字列フォーマット（例: "YYYY年M月D日"）が変わると、期間計算やソートが正しく動作しなくなる可能性があります。`script.js`内の`parseDate`関数を見直す必要があります。
+* **URLクエリパラメータの処理:** `script.js` の `processUrlQueryParameters` 関数で処理しています。パラメータの追加や変更はここで行います。セキュリティ（特にURL検証と入力値のサニタイズ）に注意が必要です。
 * **GA4測定ID:** `index.html` にGA4測定ID (`G-WWQTE7VWKG`) が設定されています。新しいインタラクションを追加した場合は、関連イベントの送信を検討してください。
 
 ## 3. このツールのメンテナンスを行うAIへの指示書
@@ -159,7 +159,7 @@
             * 「更新履歴」セクションに、今回の変更内容を、日付とリビジョン番号と共に**先頭に**追記。`index.html` に追記した内容と整合性を取ってください。
             * このREADME.md内の他のセクション（特にDOMセレクタに関する記述やURLクエリパラメータ仕様）で、今回の変更によって内容が古くなった箇所があれば、その修正も提案してください。
 5.  **GA4イベントの考慮:**
-    * 新しいユーザー操作が追加されたり、重要な処理フローが変更されたりした場合は、関連するGA4イベントを `script.js` 内に追加・修正することを検討し、オーナーに提案してください。
+    * 新しいユーザー操作が追加されたり、重要な処理フローが変更されたりした場合は、関連するGA4イベントを `script.js` 内に追加・修正することを検討し、オーナーに提案してください。イベント名はわかりやすく具体的に（例: `click_fetch_button`, `apply_plan_filter`, `download_csv` など）。
 
 ### 3.3. プロジェクト構造と主要ファイル
 
@@ -174,7 +174,7 @@
 メンテナンスの際は、まず `script.js` 内の `parseFanboxHtml` 関数にあるDOMセレクタが最新のFANBOXのHTML構造と一致しているか確認してください。
 オーナーから最新の `relationships.html` のサンプルが提供された場合は、それを元にセレクタを検証・修正してください。
 
-**主な確認箇所 (セレクタ):**
+**主な確認箇所 (セレクタの概要 - 詳細は2.2参照):**
 
 * 支援者一行ごとの要素
 * 支援者名、ユーザーID、プラン名、支援開始日、メモを特定するための各要素のセレクタ
@@ -194,4 +194,3 @@
     * 各列でのソート機能。
     * CSV、JSON形式でのダウンロード機能。
     * URLクエリパラメータによる一部自動操作対応。
-
