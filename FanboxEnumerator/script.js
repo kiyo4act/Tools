@@ -1,14 +1,14 @@
 // FanboxEnumerator/script.js
 document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Elements ---
-    const inputMethodRadios = document.querySelectorAll('input[name="inputMethod"]');
-    const urlInputSection = document.getElementById('urlInputSection');
-    const manualInputSection = document.getElementById('manualInputSection');
+    // Removed inputMethodRadios as UI changed
+    // const urlInputSection = document.getElementById('urlInputSection'); // No longer needed for toggling
+    // const manualInputSection = document.getElementById('manualInputSection'); // No longer needed for toggling
 
     const proxySelectEl = document.getElementById('proxySelectEl');
     const creatorIdInputEl = document.getElementById('creatorIdInputEl');
     const fullUrlInputEl = document.getElementById('fullUrlInputEl');
-    const fetchAndParseBtnEl = document.getElementById('fetchAndParseBtnEl');
+    const fetchHtmlBtnEl = document.getElementById('fetchHtmlBtnEl'); // Renamed from fetchAndParseBtnEl
     const urlLoaderEl = document.getElementById('urlLoaderEl');
     const urlStatusEl = document.getElementById('urlStatusEl');
 
@@ -35,39 +35,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateHistoryContentEl = document.getElementById('updateHistoryContentEl');
 
     // --- State Variables ---
-    let rawSupportersData = []; // Array of supporter objects from HTML
+    let rawSupportersData = [];
     let filteredSupportersData = [];
-    let currentSort = { column: 'start_date', order: 'desc' }; // Default sort by start_date descending
+    let currentSort = { column: 'start_date', order: 'desc' };
 
-    // --- Proxies (same as LyricPrinter) ---
+    // --- Proxies ---
     const proxies = [
         { name: "Proxy 1 (codetabs)", idName: "codetabs", buildUrl: (targetUrl) => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(targetUrl)}` },
         { name: "Proxy 2 (allorigins)", idName: "allorigins", buildUrl: (targetUrl) => `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}` }
     ];
 
     function populateProxies() {
-        proxies.forEach((proxy, index) => {
+        if (!proxySelectEl) {
+            console.error("Proxy select element not found.");
+            return;
+        }
+        proxies.forEach((proxy) => { // Removed index as it's not used
             const option = document.createElement('option');
-            option.value = proxy.idName; // Use idName as value for query param consistency
+            option.value = proxy.idName;
             option.textContent = proxy.name;
             proxySelectEl.appendChild(option);
         });
-        proxySelectEl.value = "codetabs"; // Default to codetabs
+        proxySelectEl.value = "codetabs";
     }
-
-    // --- Input Method Toggle ---
-    inputMethodRadios.forEach(radio => {
-        radio.addEventListener('change', (event) => {
-            if (event.target.value === 'url') {
-                urlInputSection.style.display = 'block';
-                manualInputSection.style.display = 'none';
-            } else {
-                urlInputSection.style.display = 'none';
-                manualInputSection.style.display = 'block';
-            }
-             gtag('event', 'select_input_method', { 'event_category': 'ui_interaction', 'input_method': event.target.value });
-        });
-    });
 
     // --- Accordion Toggle ---
     function setupAccordionToggle(toggleButton, contentElement, defaultOpen = false) {
@@ -93,12 +83,12 @@ document.addEventListener('DOMContentLoaded', () => {
     setupAccordionToggle(updateHistoryToggleBtnEl, updateHistoryContentEl, false);
 
 
-    // --- HTML Fetching and Parsing ---
-    async function fetchFanboxHtml(url) {
+    // --- HTML Fetching ---
+    async function fetchFanboxHtmlToTextarea(url) {
         urlLoaderEl.style.display = 'inline-block';
         urlStatusEl.textContent = 'HTMLを読み込み中...';
         urlStatusEl.className = 'status-message';
-        fetchAndParseBtnEl.disabled = true;
+        if(fetchHtmlBtnEl) fetchHtmlBtnEl.disabled = true;
 
         const selectedProxyIdName = proxySelectEl.value;
         const selectedProxy = proxies.find(p => p.idName === selectedProxyIdName) || proxies[0];
@@ -112,22 +102,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(`HTTPエラー ${response.status}. プロキシ (${selectedProxy.name}) または対象サイトの問題の可能性があります。`);
             }
             const htmlText = await response.text();
-            urlStatusEl.textContent = 'HTML読み込み成功。解析を開始します...';
+            htmlInputEl.value = htmlText; // Display fetched HTML in textarea
+            urlStatusEl.textContent = 'HTML読み込み完了。「このHTMLを解析実行」ボタンを押してください。';
             urlStatusEl.className = 'status-message success';
             gtag('event', 'fetch_html_success', { 'event_category': 'data_source', 'proxy_used': selectedProxy.idName });
-            return htmlText;
+            return htmlText; // Return for potential auto-parse in query param scenario
         } catch (error) {
             console.error('Fetch error:', error);
-            urlStatusEl.textContent = `HTML取得失敗: ${error.message}. 手動入力をお試しください。`;
+            htmlInputEl.value = `HTML取得失敗:\n${error.message}`;
+            urlStatusEl.textContent = `HTML取得失敗: ${error.message}. 手動でHTMLを貼り付けてください。`;
             urlStatusEl.className = 'status-message error';
             gtag('event', 'fetch_html_failure', { 'event_category': 'data_source', 'proxy_used': selectedProxy.idName, 'error_message': error.message.substring(0,100) });
             return null;
         } finally {
             urlLoaderEl.style.display = 'none';
-            fetchAndParseBtnEl.disabled = false;
+            if(fetchHtmlBtnEl) fetchHtmlBtnEl.disabled = false;
         }
     }
-
+    
+    // --- HTML Parsing ---
     function parseFanboxHtml(htmlString) {
         parseStatusEl.textContent = 'HTMLを解析中...';
         parseStatusEl.className = 'status-message';
@@ -135,8 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const parser = new DOMParser();
             const doc = parser.parseFromString(htmlString, 'text/html');
             const supporters = [];
-            // IMPORTANT: The selectors below are based on the provided 'relationships.html'
-            // and might need adjustment if FANBOX's HTML structure changes.
+            
             const tableBody = doc.querySelector('div.commonStyles__Table-sc-1f3w2vz-0.dRWCLG');
             if (!tableBody) {
                  parseStatusEl.textContent = '支援者テーブルの主要コンテナが見つかりません。HTML構造が変更された可能性があります。';
@@ -147,11 +139,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const rowElements = Array.from(tableBody.children).filter(child => child.matches('div.commonStyles__Tr-sc-1f3w2vz-1'));
 
-
-            if (rowElements.length <= 1 && htmlString.includes("ファン一覧")) { // <=1 because first might be header
-                 parseStatusEl.textContent = 'HTMLは読み込めましたが、支援者データが見つかりませんでした。ページの構造が変更されたか、支援者がいない可能性があります。';
+            if (rowElements.length === 0 && htmlString.includes("ファン一覧")) {
+                 parseStatusEl.textContent = 'HTMLは読み込めましたが、支援者データ行が見つかりませんでした。';
                  parseStatusEl.className = 'status-message error';
-                 gtag('event', 'parse_html_warning', { 'event_category': 'data_processing', 'message': 'No supporter data rows found' });
+                 gtag('event', 'parse_html_warning', { 'event_category': 'data_processing', 'message': 'No supporter data rows found (empty table)' });
                  return [];
             }
              if (!htmlString.includes("ファン一覧") && !htmlString.includes("fanbox.cc/manage/relationships")) {
@@ -161,14 +152,13 @@ document.addEventListener('DOMContentLoaded', () => {
                  return [];
             }
 
-
-            rowElements.forEach((row, index) => {
-                if (row.querySelector('div.LabelWithSortButton__Wrapper-sc-m597y7-0')) { // Heuristic to identify header row
+            rowElements.forEach((row) => {
+                if (row.querySelector('div.LabelWithSortButton__Wrapper-sc-m597y7-0')) { 
                     return; 
                 }
 
                 const cells = row.querySelectorAll('div.commonStyles__Td-sc-1f3w2vz-2.gOXCUW');
-                if (cells.length >= 4) { // Name, Plan, Start Date, Memo
+                if (cells.length >= 4) { 
                     const userWrapperAnchor = cells[0]?.querySelector('a.Row__UserWrapper-sc-1xb9lq9-1');
                     const supporterNameEl = userWrapperAnchor?.querySelector('div.commonStyles__TextEllipsis-sc-1f3w2vz-3.bqBOcj');
                     const supporterName = supporterNameEl?.textContent.trim() || '名前不明';
@@ -203,8 +193,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (supporters.length > 0) {
                 parseStatusEl.textContent = `解析完了: ${supporters.length}件の支援者情報を抽出しました。`;
                 parseStatusEl.className = 'status-message success';
-            } else if (rowElements.length > 1) { 
+            } else if (rowElements.length > 0) { 
                  parseStatusEl.textContent = '支援者リストの行は認識できましたが、データ抽出に失敗しました。セレクタの調整が必要です。';
+                 parseStatusEl.className = 'status-message error';
+            } else {
+                 parseStatusEl.textContent = 'HTML内に有効な支援者情報が見つかりませんでした。';
                  parseStatusEl.className = 'status-message error';
             }
             
@@ -219,13 +212,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-
-    async function handleFetchAndParse() {
+    // --- Event Handlers ---
+    async function handleFetchHtml() { // Renamed from handleFetchAndParse
         let targetUrl = fullUrlInputEl.value.trim();
         const creatorId = creatorIdInputEl.value.trim();
 
         if (!targetUrl && creatorId) {
-            if (!/^[a-zA-Z0-9._-]+$/.test(creatorId)) { // Allow dots and hyphens in creator ID
+            if (!/^[a-zA-Z0-9._-]+$/.test(creatorId)) {
                 urlStatusEl.textContent = 'クリエイターIDの形式が無効です。英数字、アンダースコア(_)、ハイフン(-)、ドット(.)が使用できます。';
                 urlStatusEl.className = 'status-message error';
                 return;
@@ -235,7 +228,6 @@ document.addEventListener('DOMContentLoaded', () => {
              console.warn("クリエイターIDとフルURLの両方が入力されています。フルURLを優先します。");
              creatorIdInputEl.value = ''; 
         }
-
 
         if (!targetUrl) {
             urlStatusEl.textContent = 'クリエイターIDまたはフルURLを入力してください。';
@@ -255,36 +247,25 @@ document.addEventListener('DOMContentLoaded', () => {
             urlStatusEl.className = 'status-message error';
             return;
         }
-
-        const htmlString = await fetchFanboxHtml(targetUrl);
-        processParsedData(htmlString);
+        // Fetched HTML will be put into htmlInputEl by fetchFanboxHtmlToTextarea
+        await fetchFanboxHtmlToTextarea(targetUrl); 
     }
 
-    function handleManualParse() {
+    function handleParseHtmlFromTextarea() { // Renamed from handleManualParse
         const htmlString = htmlInputEl.value;
         if (!htmlString.trim()) {
-            parseStatusEl.textContent = 'HTMLソースを入力してください。';
+            parseStatusEl.textContent = 'HTMLソースが空です。URLから読み込むか、手動で貼り付けてください。';
             parseStatusEl.className = 'status-message error';
             return;
         }
-        processParsedData(htmlString);
-    }
-    
-    function processParsedData(htmlString) {
-        if (htmlString) {
-            rawSupportersData = parseFanboxHtml(htmlString);
-            if (rawSupportersData.length > 0) {
-                filteredSupportersData = [...rawSupportersData];
-                populatePlanFilter();
-                applyAllFiltersAndRender(); 
-                controlsAndPreviewSection.style.display = 'block';
-                downloadBtnEl.disabled = false;
-            } else {
-                controlsAndPreviewSection.style.display = 'none';
-                downloadBtnEl.disabled = true;
-                previewTableBodyEl.innerHTML = '';
-                rowCountEl.textContent = '0';
-            }
+        
+        rawSupportersData = parseFanboxHtml(htmlString);
+        if (rawSupportersData.length > 0) {
+            filteredSupportersData = [...rawSupportersData];
+            populatePlanFilter();
+            applyAllFiltersAndRender(); 
+            controlsAndPreviewSection.style.display = 'block';
+            downloadBtnEl.disabled = false;
         } else {
             controlsAndPreviewSection.style.display = 'none';
             downloadBtnEl.disabled = true;
@@ -293,11 +274,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    if(fetchHtmlBtnEl) fetchHtmlBtnEl.addEventListener('click', handleFetchHtml);
+    if(parseHtmlBtnEl) parseHtmlBtnEl.addEventListener('click', handleParseHtmlFromTextarea);
 
-    fetchAndParseBtnEl.addEventListener('click', handleFetchAndParse);
-    parseHtmlBtnEl.addEventListener('click', handleManualParse);
-
-    // --- Filtering and Sorting ---
+    // --- Filtering and Sorting (largely unchanged, ensure it uses rawSupportersData correctly) ---
     function populatePlanFilter() {
         planFilterContainer.innerHTML = '';
         const plans = [...new Set(rawSupportersData.map(s => s.plan_name))].sort();
@@ -306,14 +286,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         plans.forEach(plan => {
-            const id = `plan-${plan.replace(/[^a-zA-Z0-9]/g, '-')}`; // Sanitize plan name for ID
+            const id = `plan-${plan.replace(/[^a-zA-Z0-9]/g, '-')}`;
             const div = document.createElement('div');
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.value = plan;
             checkbox.id = id;
             checkbox.checked = true;
-            checkbox.addEventListener('change', applyAllFiltersAndRender);
+            // Removed direct event listener here, will use applyFiltersBtnEl or auto-apply
             
             const label = document.createElement('label');
             label.htmlFor = id;
@@ -347,11 +327,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const selectedPlans = getSelectedPlans();
         const allAvailablePlans = [...new Set(rawSupportersData.map(s => s.plan_name))];
-        // Only filter by plan if not all plans are selected or if no plans are selected (which means filter out everything)
-        if (selectedPlans.length < allAvailablePlans.length) {
+        if (selectedPlans.length < allAvailablePlans.length && allAvailablePlans.length > 0) { // Filter if not all selected AND there are plans
             dataToFilter = dataToFilter.filter(s => selectedPlans.includes(s.plan_name));
         }
-
 
         const startDateAfter = startDateAfterEl.value ? new Date(startDateAfterEl.value) : null;
         if (startDateAfter) {
@@ -411,18 +389,11 @@ document.addEventListener('DOMContentLoaded', () => {
         gtag('event', 'reset_filters', { 'event_category': 'data_manipulation' });
     }
 
-    applyFiltersBtnEl.addEventListener('click', applyAllFiltersAndRender);
-    resetFiltersBtnEl.addEventListener('click', resetFilters);
+    if(applyFiltersBtnEl) applyFiltersBtnEl.addEventListener('click', applyAllFiltersAndRender);
+    if(resetFiltersBtnEl) resetFiltersBtnEl.addEventListener('click', resetFilters);
     
-    planFilterContainer.addEventListener('change', (event) => { // Event delegation for plan checkboxes
-        if (event.target.type === 'checkbox') {
-            applyAllFiltersAndRender();
-        }
-    });
-    startDateAfterEl.addEventListener('change', applyAllFiltersAndRender);
-    startDateBeforeEl.addEventListener('change', applyAllFiltersAndRender);
-    durationMonthsOverEl.addEventListener('input', applyAllFiltersAndRender);
-
+    // Plan checkboxes will now trigger filter via the applyFiltersBtnEl or auto-apply if desired later
+    // For now, explicit button click for filters is fine.
 
     function applySort() {
         if (!currentSort.column) return;
@@ -453,6 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function updateSortIndicators() {
+        if (!previewTableEl) return;
         previewTableEl.querySelectorAll('th .sort-indicator').forEach(span => span.textContent = '');
         if (currentSort.column) {
             const currentTh = previewTableEl.querySelector(`th[data-sort="${currentSort.column}"]`);
@@ -465,28 +437,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    previewTableEl.querySelectorAll('th').forEach(th => {
-        th.addEventListener('click', () => {
-            const sortKey = th.dataset.sort;
-            if (!sortKey) return;
+    if (previewTableEl) {
+        previewTableEl.querySelectorAll('th').forEach(th => {
+            th.addEventListener('click', () => {
+                const sortKey = th.dataset.sort;
+                if (!sortKey) return;
 
-            if (currentSort.column === sortKey) {
-                currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
-            } else {
-                currentSort.column = sortKey;
-                currentSort.order = 'asc'; 
-            }
-            
-            updateSortIndicators();
-            applySort(); 
-            renderTable(); 
-            gtag('event', 'sort_table', { 'event_category': 'data_manipulation', 'sort_column': currentSort.column, 'sort_order': currentSort.order });
+                if (currentSort.column === sortKey) {
+                    currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSort.column = sortKey;
+                    currentSort.order = 'asc'; 
+                }
+                
+                updateSortIndicators();
+                applySort(); 
+                renderTable(); 
+                gtag('event', 'sort_table', { 'event_category': 'data_manipulation', 'sort_column': currentSort.column, 'sort_order': currentSort.order });
+            });
         });
-    });
+    }
 
 
     // --- Table Rendering ---
     function renderTable() {
+        if (!previewTableBodyEl || !rowCountEl) return;
         previewTableBodyEl.innerHTML = ''; 
         rowCountEl.textContent = filteredSupportersData.length;
 
@@ -494,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const tr = previewTableBodyEl.insertRow();
             const td = tr.insertCell();
             td.colSpan = 5; 
-            td.textContent = '表示するデータがありません。フィルター条件を確認してください。';
+            td.textContent = '表示するデータがありません。フィルター条件を確認するか、HTMLを解析してください。';
             td.style.textAlign = 'center';
             td.style.padding = '20px';
             return;
@@ -523,45 +498,47 @@ document.addEventListener('DOMContentLoaded', () => {
         URL.revokeObjectURL(url);
     }
 
-    downloadBtnEl.addEventListener('click', () => {
-        if (filteredSupportersData.length === 0) {
-            parseStatusEl.textContent = 'エクスポートするデータがありません。';
-            parseStatusEl.className = 'status-message error';
-            setTimeout(() => { parseStatusEl.textContent = ''; parseStatusEl.className = 'status-message';}, 3000);
-            return;
-        }
+    if(downloadBtnEl) {
+        downloadBtnEl.addEventListener('click', () => {
+            if (filteredSupportersData.length === 0) {
+                parseStatusEl.textContent = 'エクスポートするデータがありません。';
+                parseStatusEl.className = 'status-message error';
+                setTimeout(() => { parseStatusEl.textContent = ''; parseStatusEl.className = 'status-message';}, 3000);
+                return;
+            }
 
-        const format = exportFormatEl.value;
-        const date = new Date();
-        const timestamp = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}_${date.getHours().toString().padStart(2, '0')}${date.getMinutes().toString().padStart(2, '0')}`;
-        let filename = `fanbox_supporters_${timestamp}`;
-        let content;
-        let mimeType;
+            const format = exportFormatEl.value;
+            const date = new Date();
+            const timestamp = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}_${date.getHours().toString().padStart(2, '0')}${date.getMinutes().toString().padStart(2, '0')}`;
+            let filename = `fanbox_supporters_${timestamp}`;
+            let content;
+            let mimeType;
 
-        gtag('event', 'download_data', { 'event_category': 'export', 'export_format': format, 'item_count': filteredSupportersData.length });
+            gtag('event', 'download_data', { 'event_category': 'export', 'export_format': format, 'item_count': filteredSupportersData.length });
 
-        if (format === 'csv') {
-            filename += '.csv';
-            mimeType = 'text/csv;charset=utf-8;';
-            let csvContent = '\uFEFF'; 
-            csvContent += '"支援者名","ユーザーID","プラン名","支援開始日","メモ"\n';
-            filteredSupportersData.forEach(s => {
-                const name = s.supporter_name ? s.supporter_name.replace(/"/g, '""') : '';
-                const userId = s.user_id || '';
-                const plan = s.plan_name ? s.plan_name.replace(/"/g, '""') : '';
-                const startDate = s.start_date || '';
-                const memo = s.memo ? s.memo.replace(/"/g, '""') : '';
-                csvContent += `"${name}","${userId}","${plan}","${startDate}","${memo}"\n`;
-            });
-            content = csvContent;
-        } else if (format === 'json') {
-            filename += '.json';
-            mimeType = 'application/json;charset=utf-8;';
-            content = JSON.stringify(filteredSupportersData, null, 2);
-        }
+            if (format === 'csv') {
+                filename += '.csv';
+                mimeType = 'text/csv;charset=utf-8;';
+                let csvContent = '\uFEFF'; 
+                csvContent += '"支援者名","ユーザーID","プラン名","支援開始日","メモ"\n';
+                filteredSupportersData.forEach(s => {
+                    const name = s.supporter_name ? s.supporter_name.replace(/"/g, '""') : '';
+                    const userId = s.user_id || '';
+                    const plan = s.plan_name ? s.plan_name.replace(/"/g, '""') : '';
+                    const startDateVal = s.start_date || ''; // Ensure it's not null/undefined
+                    const memo = s.memo ? s.memo.replace(/"/g, '""') : '';
+                    csvContent += `"${name}","${userId}","${plan}","${startDateVal}","${memo}"\n`;
+                });
+                content = csvContent;
+            } else if (format === 'json') {
+                filename += '.json';
+                mimeType = 'application/json;charset=utf-8;';
+                content = JSON.stringify(filteredSupportersData, null, 2);
+            }
 
-        downloadData(filename, content, mimeType);
-    });
+            downloadData(filename, content, mimeType);
+        });
+    }
     
     // --- URL Query Parameter Processing ---
     async function processUrlQueryParameters() {
@@ -571,8 +548,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (!targetFanboxUrl && creatorIdParam) {
             if (!/^[a-zA-Z0-9._-]+$/.test(creatorIdParam)) {
-                urlStatusEl.textContent = 'URLクエリパラメータのクリエイターID形式が無効です。';
-                urlStatusEl.className = 'status-message error';
+                if(urlStatusEl) {
+                    urlStatusEl.textContent = 'URLクエリパラメータのクリエイターID形式が無効です。';
+                    urlStatusEl.className = 'status-message error';
+                }
                 return;
             }
             targetFanboxUrl = `https://${creatorIdParam}.fanbox.cc/manage/relationships`;
@@ -584,82 +563,94 @@ document.addEventListener('DOMContentLoaded', () => {
             const urlObj = new URL(targetFanboxUrl);
              if (!urlObj.hostname.endsWith('.fanbox.cc') || urlObj.pathname !== '/manage/relationships') {
                 console.error('Query Param: Invalid FANBOX URL format.');
-                urlStatusEl.textContent = 'URLクエリパラメータのFANBOX URL形式が無効です。';
-                urlStatusEl.className = 'status-message error';
+                if(urlStatusEl) {
+                    urlStatusEl.textContent = 'URLクエリパラメータのFANBOX URL形式が無効です。';
+                    urlStatusEl.className = 'status-message error';
+                }
                 return;
             }
-            fullUrlInputEl.value = targetFanboxUrl;
-            if (creatorIdParam) creatorIdInputEl.value = creatorIdParam; 
-            document.querySelector('input[name="inputMethod"][value="url"]').checked = true; 
-            urlInputSection.style.display = 'block';
-            manualInputSection.style.display = 'none';
+            if(fullUrlInputEl) fullUrlInputEl.value = targetFanboxUrl;
+            if (creatorIdParam && creatorIdInputEl) creatorIdInputEl.value = creatorIdParam; 
+            
+            // No radio button to check, sections are always visible now.
 
         } catch (e) {
             console.error('Query Param: Invalid URL.', e);
-            urlStatusEl.textContent = 'URLクエリパラメータのURLが無効です。';
-            urlStatusEl.className = 'status-message error';
+            if(urlStatusEl) {
+                urlStatusEl.textContent = 'URLクエリパラメータのURLが無効です。';
+                urlStatusEl.className = 'status-message error';
+            }
             return;
         }
 
         const proxyIdQuery = params.get('proxy_id');
-        if (proxyIdQuery && proxies.some(p => p.idName === proxyIdQuery)) {
+        if (proxyIdQuery && proxies.some(p => p.idName === proxyIdQuery) && proxySelectEl) {
             proxySelectEl.value = proxyIdQuery;
         }
 
-        const htmlString = await fetchFanboxHtml(targetFanboxUrl);
+        // Fetch HTML and display in textarea, then auto-parse if download is requested
+        const htmlString = await fetchFanboxHtmlToTextarea(targetFanboxUrl); 
         if (!htmlString) return; 
         
-        rawSupportersData = parseFanboxHtml(htmlString);
-        if (rawSupportersData.length === 0) {
-            controlsAndPreviewSection.style.display = 'none';
-            downloadBtnEl.disabled = true;
-            return;
-        }
-        
-        filteredSupportersData = [...rawSupportersData];
-        populatePlanFilter(); 
-        controlsAndPreviewSection.style.display = 'block';
-        downloadBtnEl.disabled = false;
-
-        const filterPlanQuery = params.get('filter_plan');
-        if (filterPlanQuery) {
-            const plansToFilter = filterPlanQuery.split(',').map(p => p.trim());
-            planFilterContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                cb.checked = plansToFilter.includes(cb.value);
-            });
-        }
-
-        const startDateAfterQuery = params.get('filter_start_date_after');
-        if (startDateAfterQuery) startDateAfterEl.value = startDateAfterQuery;
-
-        const startDateBeforeQuery = params.get('filter_start_date_before');
-        if (startDateBeforeQuery) startDateBeforeEl.value = startDateBeforeQuery;
-        
-        const durationMonthsQuery = params.get('filter_duration_months_over');
-        if (durationMonthsQuery) durationMonthsOverEl.value = durationMonthsQuery;
-
-        const sortByQuery = params.get('sort_by');
-        const sortOrderQuery = params.get('sort_order') || 'asc'; 
-        if (sortByQuery && ['supporter_name', 'user_id', 'plan_name', 'start_date', 'memo'].includes(sortByQuery)) {
-            currentSort.column = sortByQuery;
-            currentSort.order = (sortOrderQuery === 'desc') ? 'desc' : 'asc';
-        }
-        
-        updateSortIndicators(); 
-        applyAllFiltersAndRender(); 
-
+        // If auto-download is requested, proceed to parse and download
         const downloadFormat = params.get('format');
         const autoDownload = params.get('download') === 'true';
 
         if (autoDownload && (downloadFormat === 'csv' || downloadFormat === 'json')) {
-            exportFormatEl.value = downloadFormat;
+            rawSupportersData = parseFanboxHtml(htmlString); // Parse the HTML
+            if (rawSupportersData.length === 0) {
+                if(controlsAndPreviewSection) controlsAndPreviewSection.style.display = 'none';
+                if(downloadBtnEl) downloadBtnEl.disabled = true;
+                console.warn("Auto-parse for download: No data found.");
+                if(parseStatusEl) {
+                    parseStatusEl.textContent = "自動処理: 解析後にデータがありませんでした。";
+                    parseStatusEl.className = 'status-message error';
+                }
+                return;
+            }
+            
+            filteredSupportersData = [...rawSupportersData];
+            populatePlanFilter(); 
+            if(controlsAndPreviewSection) controlsAndPreviewSection.style.display = 'block';
+            if(downloadBtnEl) downloadBtnEl.disabled = false;
+
+            const filterPlanQuery = params.get('filter_plan');
+            if (filterPlanQuery) {
+                const plansToFilter = filterPlanQuery.split(',').map(p => p.trim());
+                planFilterContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                    cb.checked = plansToFilter.includes(cb.value);
+                });
+            }
+
+            const startDateAfterQuery = params.get('filter_start_date_after');
+            if (startDateAfterQuery && startDateAfterEl) startDateAfterEl.value = startDateAfterQuery;
+
+            const startDateBeforeQuery = params.get('filter_start_date_before');
+            if (startDateBeforeQuery && startDateBeforeEl) startDateBeforeEl.value = startDateBeforeQuery;
+            
+            const durationMonthsQuery = params.get('filter_duration_months_over');
+            if (durationMonthsQuery && durationMonthsOverEl) durationMonthsOverEl.value = durationMonthsQuery;
+
+            const sortByQuery = params.get('sort_by');
+            const sortOrderQuery = params.get('sort_order') || 'asc'; 
+            if (sortByQuery && ['supporter_name', 'user_id', 'plan_name', 'start_date', 'memo'].includes(sortByQuery)) {
+                currentSort.column = sortByQuery;
+                currentSort.order = (sortOrderQuery === 'desc') ? 'desc' : 'asc';
+            }
+            
+            updateSortIndicators(); 
+            applyAllFiltersAndRender(); 
+
+            if(exportFormatEl) exportFormatEl.value = downloadFormat;
             setTimeout(() => { 
-                 if (filteredSupportersData.length > 0) { 
+                 if (filteredSupportersData.length > 0 && downloadBtnEl) { 
                     downloadBtnEl.click();
                  } else {
                     console.warn("Auto-download skipped: No data after filtering/parsing from URL query.");
-                    parseStatusEl.textContent = "自動ダウンロードがスキップされました: フィルタリング/解析後にデータがありません。";
-                    parseStatusEl.className = 'status-message error';
+                    if(parseStatusEl) {
+                        parseStatusEl.textContent = "自動ダウンロードがスキップされました: フィルタリング/解析後にデータがありません。";
+                        parseStatusEl.className = 'status-message error';
+                    }
                  }
             }, 100);
         }
