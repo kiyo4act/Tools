@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FANBOX支援者リスト抽出ツール</title>
-    <meta name="version" content="1">
-    <meta name="last-updated" content="2025-05-30">
+    <meta name="version" content="1.1"> <meta name="last-updated" content="2025-05-30">
     <meta name="description" content="Pixiv FANBOXの支援者一覧ページから情報を抽出し、CSVまたはJSON形式でダウンロードするツールです。">
     <link rel="stylesheet" href="style.css">
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WWQTE7VWKG"></script>
@@ -19,8 +18,7 @@
 <body>
     <div class="container">
         <h1>FANBOX支援者リスト抽出ツール</h1>
-        <p class="version-info">最終更新: 2025年5月30日 (Rev. 1)</p>
-        <p class="tool-description">
+        <p class="version-info">最終更新: 2025年5月30日 (Rev. 1.1)</p> <p class="tool-description">
             Pixiv FANBOXの支援者一覧ページのURLまたはHTMLソースから、支援者情報を抽出し、CSVまたはJSON形式でダウンロードします。<br>
             プランや支援期間でのフィルタリング、ソート機能も備えています。
         </p>
@@ -29,10 +27,6 @@
             <div class="usage-section">
                 <h4>基本的な使い方</h4>
                 <ol>
-                    <li>
-                        <strong>入力方法の選択:</strong>
-                        <p>「URLから読み込む」または「HTMLを直接入力」を選択します。</p>
-                    </li>
                     <li>
                         <strong>FANBOX情報の入力:</strong>
                         <ul>
@@ -43,16 +37,20 @@
                                         <br><small>クリエイターID例: <code>yourcreatorid</code> (<code>https://yourcreatorid.fanbox.cc/</code> の場合)</small>
                                         <br><small>フルURL例: <code>https://yourcreatorid.fanbox.cc/manage/relationships</code></small>
                                     </li>
-                                    <li>「HTML読み込み＆解析実行」ボタンを押します。</li>
+                                    <li>「URLからHTML読み込み」ボタンを押すと、下の「HTMLソース」欄に読み込まれたHTMLが表示されます。</li>
                                 </ol>
                             </li>
                             <li><strong>HTMLを直接入力する場合:</strong>
                                 <ol type="a">
                                     <li>ブラウザでFanboxの支援者一覧ページを開き、ページのソースコード（または支援者リストが表示されている範囲のHTML）を手動でコピーします。</li>
-                                    <li>下の「HTMLソース直接入力」欄に貼り付け、「HTML解析実行」ボタンを押します。</li>
+                                    <li>下の「HTMLソース」欄に貼り付けます。</li>
                                 </ol>
                             </li>
                         </ul>
+                    </li>
+                    <li>
+                        <strong>解析実行:</strong>
+                        <p>「HTMLソース」欄にHTMLが表示（または貼り付け）されている状態で、「このHTMLを解析実行」ボタンを押します。</p>
                     </li>
                     <li>
                         <strong>フィルタリングとソート (任意):</strong>
@@ -70,47 +68,50 @@
                 <ul>
                     <li>
                         <strong>URLからの読み込みがうまくいかない場合:</strong>
-                        <p>「プロキシサーバー」の選択肢を変更して、再度「HTML読み込み＆解析実行」をお試しください。プロキシサービスや対象サイトの状況により、一時的に読み込めないことがあります。それでもうまくいかない場合は、「HTMLを直接入力」をお試しください。</p>
+                        <p>「プロキシサーバー」の選択肢を変更して、再度「URLからHTML読み込み」をお試しください。プロキシサービスや対象サイトの状況により、一時的に読み込めないことがあります。読み込まれたHTMLが期待通りか「HTMLソース」欄で確認してください。それでもうまくいかない場合は、HTMLを手動でコピーして「HTMLソース」欄に貼り付けてください。</p>
                     </li>
                     <li>
                         <strong>抽出結果がおかしい場合:</strong>
-                        <p>Pixiv FANBOXのページのHTML構造が変更された可能性があります。ツールの更新をお待ちいただくか、開発者にご連絡ください。</p>
+                        <p>Pixiv FANBOXのページのHTML構造が変更された可能性があります。「HTMLソース」欄の内容を確認し、期待する情報が含まれているか確認してください。ツール側のセレクタ修正が必要な場合は、開発者にご連絡ください。</p>
                     </li>
                 </ul>
             </div>
         </div>
 
-        <div class="input-method-selector">
-            <label><input type="radio" name="inputMethod" value="url" checked> URLから読み込む</label>
-            <label><input type="radio" name="inputMethod" value="manual"> HTMLを直接入力</label>
-        </div>
-
         <div id="urlInputSection">
-            <h3>URLから読み込む</h3>
-            <div class="url-fetch-container">
-                <label for="proxySelectEl">プロキシサーバー:</label>
-                <select id="proxySelectEl">
-                    </select>
-                <label for="creatorIdInputEl">FanboxクリエイターID:</label>
-                <input type="text" id="creatorIdInputEl" placeholder="例: yourcreatorid">
-                <span class="separator-text">または</span>
-                <label for="fullUrlInputEl">フルURL:</label>
-                <input type="text" id="fullUrlInputEl" placeholder="https://yourcreatorid.fanbox.cc/manage/relationships">
+            <h3>1. FANBOX情報入力</h3>
+            <div class="input-group">
+                <h4>URLから読み込む</h4>
+                <div class="url-fetch-container">
+                    <label for="proxySelectEl">プロキシサーバー:</label>
+                    <select id="proxySelectEl">
+                        </select>
+                    <label for="creatorIdInputEl">FanboxクリエイターID:</label>
+                    <input type="text" id="creatorIdInputEl" placeholder="例: yourcreatorid">
+                    <span class="separator-text">または</span>
+                    <label for="fullUrlInputEl">フルURL:</label>
+                    <input type="text" id="fullUrlInputEl" placeholder="https://yourcreatorid.fanbox.cc/manage/relationships">
+                </div>
+                <button id="fetchHtmlBtnEl" class="primary-action">URLからHTML読み込み</button>
+                <div class="loader" id="urlLoaderEl"></div>
+                <div id="urlStatusEl" class="status-message"></div>
             </div>
-            <button id="fetchAndParseBtnEl" class="primary-action">HTML読み込み＆解析実行</button>
-            <div class="loader" id="urlLoaderEl"></div>
-            <div id="urlStatusEl" class="status-message"></div>
         </div>
 
-        <div id="manualInputSection" style="display:none;">
-            <h3>HTMLソース直接入力</h3>
-            <textarea id="htmlInputEl" placeholder="ここにFanbox支援者一覧ページのHTMLソースを貼り付けてください..."></textarea>
-            <button id="parseHtmlBtnEl" class="primary-action">HTML解析実行</button>
+        <div id="manualInputSection" class="input-group">
+             <h4>HTMLソース (URL読み込み結果もここに表示されます)</h4>
+            <textarea id="htmlInputEl" placeholder="ここにFanbox支援者一覧ページのHTMLソースを貼り付けるか、上記URLから読み込んでください..."></textarea>
         </div>
-        <div id="parseStatusEl" class="status-message"></div>
+        
+        <div class="input-group">
+            <h3>2. 解析実行</h3>
+            <button id="parseHtmlBtnEl" class="primary-action">このHTMLを解析実行</button>
+            <div id="parseStatusEl" class="status-message"></div>
+        </div>
+
 
         <div id="controlsAndPreviewSection" style="display:none;">
-            <h3>抽出結果と操作</h3>
+            <h3>3. 抽出結果と操作</h3>
             <div class="filter-controls-grid">
                 <div class="filter-group">
                     <h4>プランフィルター</h4>
@@ -167,6 +168,13 @@
             <h3 id="updateHistoryToggleBtnEl" class="accordion-toggle">ツールの更新履歴 <span class="accordion-icon">&#9660;</span></h3>
             <div id="updateHistoryContentEl" class="update-history-content accordion-content">
                 <ul>
+                     <li>
+                        <span class="version-date">2025年5月30日</span> <span class="version-rev">(Rev. 1.1)</span>
+                        <ul class="change-list">
+                            <li>URL読み込み時に取得したHTMLをテキストエリアに表示するよう変更。</li>
+                            <li>URL入力/HTML手動入力のUI切り替えを廃止し、常時両方の手段を利用可能に変更。</li>
+                        </ul>
+                    </li>
                     <li>
                         <span class="version-date">2025年5月30日</span> <span class="version-rev">(Rev. 1)</span>
                         <ul class="change-list">
