@@ -3,53 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FANBOX支援者リスト抽出</title>
+    <title>Fanbox Enumerator</title>
     <link rel="stylesheet" href="style.css">
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WWQTE7VWKG"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-WWQTE7VWKG');
-    </script>
 </head>
 <body>
-    <div class="popup-container">
+    <div class="container">
         <header>
             <h1>FANBOX支援者リスト抽出</h1>
         </header>
         <main>
-            <button id="extractBtn" class="action-button">現在のページから情報を抽出</button>
-            <div id="statusMessage" class="status-message"></div>
+            <button id="extractBtn" class="button primary">現在のページから情報を抽出</button>
+            <div id="statusMessage" class="status"></div>
             <div id="loadingIndicator" class="loader" style="display: none;"></div>
 
             <div id="controlsSection" style="display: none;">
-                <div class="filter-section">
-                    <h4>プランフィルター</h4>
+                <div class="filter-group">
+                    <h3>プランフィルター</h3>
                     <div id="planFilterContainer" class="checkbox-group">
                         </div>
                 </div>
-                <div class="filter-section">
-                    <h4>支援期間フィルター</h4>
-                    <div class="input-group">
+
+                <div class="filter-group">
+                    <h3>支援期間フィルター</h3>
+                    <div class="input-field">
                         <label for="startDateAfter">支援開始日 (以降):</label>
                         <input type="date" id="startDateAfter">
                     </div>
-                    <div class="input-group">
+                    <div class="input-field">
                         <label for="startDateBefore">支援開始日 (以前):</label>
                         <input type="date" id="startDateBefore">
                     </div>
-                    <div class="input-group">
+                    <div class="input-field">
                         <label for="durationMonthsOver">継続月数 (以上):</label>
                         <input type="number" id="durationMonthsOver" min="0" placeholder="例: 3">
                     </div>
                     <div class="button-group">
-                        <button id="applyFiltersBtn" class="filter-button">フィルター適用</button>
-                        <button id="resetFiltersBtn" class="filter-button">リセット</button>
+                        <button id="applyFiltersBtn" class="button">フィルター適用</button>
+                        <button id="resetFiltersBtn" class="button secondary">リセット</button>
                     </div>
                 </div>
 
-                <h4>抽出結果 (<span id="rowCount">0</span> 件)</h4>
+                <h3>抽出結果 (<span id="rowCount">0</span>件)</h3>
                 <div class="table-wrapper">
                     <table id="previewTable">
                         <thead>
@@ -67,17 +61,18 @@
                 </div>
 
                 <div class="export-section">
-                    <label for="exportFormat">出力形式:</label>
+                    <h3>エクスポート</h3>
+                    <label for="exportFormat">形式:</label>
                     <select id="exportFormat">
                         <option value="csv">CSV</option>
                         <option value="json">JSON</option>
                     </select>
-                    <button id="downloadBtn" class="action-button" disabled>ダウンロード</button>
+                    <button id="downloadBtn" class="button primary" disabled>ダウンロード</button>
                 </div>
             </div>
         </main>
         <footer>
-            <p class="version">Version 1.0</p>
+            <p>Fanbox Enumerator v1.0</p>
         </footer>
     </div>
     <script src="popup.js"></script>
