@@ -1,0 +1,48 @@
+/* FanboxEnumerator/_src/style.css - Popup Styles */
+body {
+    font-family: 'Noto Sans JP', Meiryo, sans-serif;
+    font-size: 14px;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+.popup-container {
+    width: 480px; /* Adjusted width for more content */
+    padding: 15px;
+    box-sizing: border-box;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 10px;
+}
+
+header h1 {
+    font-size: 1.3em;
+    color: #2c3e50;
+    margin: 0;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.action-button {
+    background-color: #3498db;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s ease-in-out;
+    width: 100%;
+    box-sizing: border-box;
+}
+.action-but
