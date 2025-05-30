@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "FANBOX支援者リスト抽出ツール (FanboxEnumerator)",
-  "version": "2025.5.31.2",
+  "version": "2025.5.31.3",
   "description": "Pixiv FANBOXの支援者一覧ページから情報を抽出し、CSV/JSON形式でエクスポートします。",
   "permissions": [
     "activeTab",
