@@ -1,36 +1,37 @@
 {
   "manifest_version": 3,
-  "name": "FANBOX支援者リスト抽出ツール",
+  "name": "FANBOX支援者リスト抽出ツール (FanboxEnumerator)",
   "version": "1.0",
-  "description": "Pixiv FANBOXの支援者一覧ページから情報を抽出し、CSV/JSON形式でダウンロードします。",
+  "description": "Pixiv FANBOXの支援者一覧ページから情報を抽出し、CSV/JSON形式でエクスポートします。",
   "permissions": [
     "activeTab",
     "scripting",
-    "storage"
+    "storage",
+    "declarativeContent"
   ],
   "host_permissions": [
     "https://*.fanbox.cc/manage/relationships"
   ],
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "_src/popup.html",
     "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
+      "16": "_src/icons/icon16.png",
+      "48": "_src/icons/icon48.png",
+      "128": "_src/icons/icon128.png"
     }
   },
   "icons": {
-    "16": "icons/icon16.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+    "16": "_src/icons/icon16.png",
+    "48": "_src/icons/icon48.png",
+    "128": "_src/icons/icon128.png"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "_src/background.js"
   },
   "content_scripts": [
     {
       "matches": ["https://*.fanbox.cc/manage/relationships"],
-      "js": ["content_script.js"],
+      "js": ["_src/content_script.js"],
       "run_at": "document_idle"
     }
   ]
