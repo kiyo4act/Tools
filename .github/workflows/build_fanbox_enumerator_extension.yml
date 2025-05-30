@@ -1,0 +1,86 @@
+name: Build FanboxEnumerator Chrome Extension
+
+on:
+  push:
+    branches:
+      - main # mainブランチへのpush時に実行
+    paths:
+      - 'FanboxEnumerator/_src/**' # FanboxEnumerator/_src ディレクトリ以下のファイル変更時のみ
+      - '.github/workflows/build_fanbox_enumerator_extension.yml' # このワークフローファイル自体の変更時
+  workflow_dispatch: # 手動実行も可能にする
+
+permissions:
+  contents: write # リポジトリへのコミット・プッシュのために必要
+
+jobs:
+  build-and-package:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get version and date for naming
+        id: version_info
+        # working-directory を指定して、FanboxEnumerator/_src/manifest.json を正しく参照できるようにします。
+        # ただし、jqコマンドはリポジトリルートからのパスでファイルを指定するのが確実です。
+        run: |
+          MANIFEST_PATH="FanboxEnumerator/_src/manifest.json"
+          if [ ! -f "$MANIFEST_PATH" ]; then
+            echo "Error: $MANIFEST_PATH not found!"
+            exit 1
+          fi
+          VERSION_STRING=$(jq -r .version "$MANIFEST_PATH")
+          # バージョン文字列 (例: "2025.5.31.2") の最後のドット以降をリビジョン番号として抽出
+          REVISION=$(echo "$VERSION_STRING" | awk -F. '{print $NF}')
+          CURRENT_DATE_FOR_FILENAME=$(date +'%Y%m%d') # YYYYMMDD形式
+          
+          echo "Extracted manifest version: $VERSION_STRING"
+          echo "Extracted revision for filename: $REVISION"
+          echo "Current date for filename: $CURRENT_DATE_FOR_FILENAME"
+
+          if [ -z "$REVISION" ]; then
+            echo "Error: Could not extract revision from version string: $VERSION_STRING"
+            exit 1
+          fi
+
+          ZIP_FILENAME="FanboxEnumerator_${CURRENT_DATE_FOR_FILENAME}_Rev${REVISION}.zip"
+          
+          echo "zip_filename=${ZIP_FILENAME}" >> $GITHUB_OUTPUT
+          echo "Generated ZIP Filename: $ZIP_FILENAME"
+
+      - name: Create ZIP archive
+        # working-directory を FanboxEnumerator/_src に設定して、その中のファイルをzip化
+        working-directory: FanboxEnumerator/_src
+        run: |
+          zip -r ../../${{ steps.version_info.outputs.zip_filename }} . -x "*.DS_Store"
+          echo "Created ZIP file at repository root: ${{ steps.version_info.outputs.zip_filename }}"
+
+      - name: Create dist directory inside FanboxEnumerator
+        working-directory: FanboxEnumerator
+        run: mkdir -p dist
+        
+      - name: Move ZIP to FanboxEnumerator/dist directory
+        # mvコマンドはリポジトリルートからのパスで指定
+        run: mv ${{ steps.version_info.outputs.zip_filename }} FanboxEnumerator/dist/
+        
+      - name: List files in FanboxEnumerator/dist
+        working-directory: FanboxEnumerator
+        run: ls -l dist/
+
+      - name: Commit and push ZIP file
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action Bot"
+          # コミット対象のパスを正しく指定
+          git add FanboxEnumerator/dist/${{ steps.version_info.outputs.zip_filename }}
+          
+          if git diff --staged --quiet; then
+            echo "No changes to the extension package. Nothing to commit."
+          else
+            git commit -m "Automated: Build and package extension - ${{ steps.version_info.outputs.zip_filename }}"
+            # mainブランチの最新状態を取得してからpush
+            git pull --rebase origin main 
+            git push
+            echo "Extension package committed and pushed to FanboxEnumerator/dist/ directory."
+          fi
