@@ -3,7 +3,7 @@
 このリポジトリは、Pixiv FANBOXの支援者一覧ページから情報を抽出し、CSVまたはJSON形式でエクスポートするためのChrome拡張機能「FanboxEnumerator」のソースコードと関連ファイルを管理します。
 
 **ユーザー向け紹介・ダウンロードページ:** [./index.html](./index.html) (GitHub Pagesで公開後、適切なURLに置き換えてください)
-**最新バージョン:** 2025年5月31日 (Rev. 2)
+**最新バージョン:** 2025年5月31日 (Rev. 3)
 
 ## 1. ツールの目的
 
@@ -22,13 +22,13 @@ Pixiv FANBOXのクリエイターが、自身の支援者一覧ページから�
 ## 3. インストールと使い方
 
 詳細なインストール手順と使い方は、上記の「ユーザー向け紹介・ダウンロードページ」 (`./index.html`) を参照してください。
-基本的には、`dist/` ディレクトリにある最新の `.zip` ファイル（例: `FanboxEnumerator_20250531_Rev2.zip`）をダウンロード・解凍し、Chromeの拡張機能ページで「パッケージ化されていない拡張機能を読み込む」から解凍したフォルダ（`_src`の内容が含まれるフォルダ）を指定してインストールします。
+基本的には、`dist/` ディレクトリにある最新の `.zip` ファイル（例: `FanboxEnumerator_20250531_Rev3.zip`）をダウンロード・解凍し、Chromeの拡張機能ページで「パッケージ化されていない拡張機能を読み込む」から解凍したフォルダ（`manifest.json`が含まれるフォルダ、通常は`_src`の内容）を指定してインストールします。
 
 ## 4. 開発者（オーナー）のための備忘録
 
 ### 4.1. プロジェクト構成
 
-FanboxEnumerator/├── index.html             # ユーザー向け紹介・ダウンロードページ├── README.md              # このファイル├── _src/                  # 拡張機能のソースコード (Jekyllにより公開サイトから除外)│   ├── manifest.json      # 拡張機能の定義ファイル (version: "1.2" など)│   ├── popup.html         # ポップアップUI│   ├── style.css          # ポップアップ用CSS│   ├── popup.js           # ポップアップのロジック│   ├── content_script.js  # FANBOXページに挿入されDOM操作を行うスクリプト│   ├── background.js      # バックグラウンド処理 (ページ条件による有効化など)│   └── icons/             # 拡張機能アイコン (icon16.png, icon48.png, icon128.png)├── dist/                  # ビルドされた拡張機能パッケージ (.zip)│   └── FanboxEnumerator_YYYYMMDD_RevX.zip # 例: FanboxEnumerator_20250531_Rev2.zip└── .github/└── workflows/└── build_extension.yml # GitHub Actionsによる自動ビルド・パッケージ化ワークフロー
+FanboxEnumerator/├── index.html             # ユーザー向け紹介・ダウンロードページ├── README.md              # このファイル├── _src/                  # 拡張機能のソースコード (Jekyllにより公開サイトから除外)│   ├── manifest.json      # 拡張機能の定義ファイル (version: "2025.5.31.3" など)│   ├── popup.html         # ポップアップUI│   ├── style.css          # ポップアップ用CSS│   ├── popup.js           # ポップアップのロジック│   ├── content_script.js  # FANBOXページに挿入されDOM操作を行うスクリプト│   ├── background.js      # バックグラウンド処理 (ページ条件による有効化など)│   └── icons/             # 拡張機能アイコン (icon16.png, icon48.png, icon128.png)├── dist/                  # ビルドされた拡張機能パッケージ (.zip)│   └── FanboxEnumerator_YYYYMMDD_RevX.zip # 例: FanboxEnumerator_20250531_Rev3.zip└── .github/               # (リポジトリルートに配置)└── workflows/└── build_fanbox_enumerator_extension.yml # GitHub Actionsワークフロー
 ### 4.2. 技術スタック
 
 * HTML, CSS, JavaScript (Vanilla JS)
@@ -52,14 +52,14 @@ FanboxEnumerator/├── index.html             # ユーザー向け紹介・�
     * 具体的な要望（例: 新しいフィルタ条件、UI改善、エラーハンドリング強化など）を明確に伝えてください。
     * `manifest.json` のパーミッション変更が必要な場合も指示してください。
 4.  **バージョン情報と更新履歴:**
-    * 大きな変更後は、`_src/manifest.json` の `version` (例: "1.2" -> "1.3")、`FanboxEnumerator/index.html` 内のバージョン表記と更新履歴（例: "2025年MM月DD日 (Rev. N)"）、およびこの `FanboxEnumerator/README.md` の更新履歴の更新を指示してください。リビジョン番号(N)は整数でインクリメントします。
+    * 大きな変更後は、`_src/manifest.json` の `version` (例: `"2025.5.31.3"` -> `"2025.6.1.4"`)、`FanboxEnumerator/index.html` 内のバージョン表記と更新履歴（例: "2025年M月D日 (Rev. N)"）、およびこの `FanboxEnumerator/README.md` の更新履歴の更新を指示してください。リビジョン番号(N)は整数でインクリメントします。
 5.  **GA4イベント:**
     * `_src/popup.js` 内でGA4イベント送信を行っています（測定ID: `G-WWQTE7VWKG`）。新しいユーザー操作を追加した場合は、関連イベントの追加も検討・指示してください。
 
 ### 4.4. ビルドとパッケージ化
 
 * `_src/` ディレクトリ内のファイルをまとめて `.zip` ファイルにすることで、Chrome拡張機能としてパッケージ化できます。
-* `.github/workflows/build_extension.yml` にて、`_src/` ディレクトリの内容を `FanboxEnumerator_YYYYMMDD_RevX.zip` (Xはmanifest.jsonのversionから生成) として `dist/` ディレクトリに自動で配置するGitHub Actionsワークフローが設定されています。
+* リポジトリルートの `.github/workflows/build_fanbox_enumerator_extension.yml` にて、`FanboxEnumerator/_src/` ディレクトリの内容を `FanboxEnumerator_YYYYMMDD_RevX.zip` (Xはmanifest.jsonのversionの最後のセグメントから生成) として `FanboxEnumerator/dist/` ディレクトリに自動で配置するGitHub Actionsワークフローが設定されています。
 
 ### 4.5. アイコンについて
 
@@ -86,8 +86,8 @@ FanboxEnumerator/├── index.html             # ユーザー向け紹介・�
     * 変更が必要なファイルの**完全なソースコード**を提案してください。
 4.  **バージョン情報と更新履歴の更新 (重要):**
     * オーナーから「バージョン情報と更新履歴を更新してください」という明確な指示があった場合に限り、以下の箇所を更新してください。
-        * **`_src/manifest.json` 内:** `version` フィールド (例: "1.2" -> "1.3")。
-        * **`FanboxEnumerator/index.html` 内:** バージョン表示（例: "最終更新: 2025年MM月DD日 (Rev. N)"）と更新履歴リスト。
+        * **`_src/manifest.json` 内:** `version` フィールド (例: `"2025.5.31.3"` -> `"2025.6.1.4"`)。
+        * **`FanboxEnumerator/index.html` 内:** バージョン表示（例: "最終更新: 2025年M月D日 (Rev. N)"）と更新履歴リスト。
         * **`FanboxEnumerator/README.md` (このファイル) 内:** 「更新履歴」セクションと、冒頭の最新バージョン情報。
         * このREADME.md内の他のセクション（特にDOMセレクタに関する記述）で、今回の変更によって内容が古くなった箇所があれば、その修正も提案してください。
 5.  **GA4イベントの考慮:**
@@ -99,9 +99,16 @@ FanboxEnumerator/├── index.html             # ユーザー向け紹介・�
 
 ## 6. 更新履歴
 
+* **2025年5月31日 (Rev. 3)**
+    * ダウンロードボタンのリンクパスを修正。
+    * `tools-list.json` 生成用のメタ情報を `FanboxEnumerator/index.html` に追加。
+    * バージョン表記を更新。
+    * GitHub Actionsのzipファイル名生成ロジックを修正 (日付をmanifest.jsonから取得)。
 * **2025年5月31日 (Rev. 2)**
     * アイコンファイル (SVGプレースホルダー) を追加。
     * GitHub Actionsによるzipパッケージの自動ビルド・デプロイワークフローを追加。
-    * 各ファイルのバージョン表記を日付とリビジョン形式に統一。
+    * 各ファイルのバージョン表記を「日付 (Rev. 整数)」形式に統一。
+    * `manifest.json`の`version`を`YYYY.M.D.REV`形式 (例: `2025.5.31.2`) に変更。
+    * GitHub Actionsワークフローの配置場所と動作をリポジトリルート基準に修正。
 * **2025年5月30日 (Rev. 1)**
     * 初回リリース。基本的な情報抽出、フィルタリング、ソート、エクスポート機能の実装。
