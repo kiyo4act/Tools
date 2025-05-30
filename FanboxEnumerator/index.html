@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FANBOX支援者リスト抽出ツール (FanboxEnumerator)</title> <meta name="description" content="Pixiv FANBOXの支援者一覧から情報を簡単に抽出できるChrome拡張機能「FanboxEnumerator」の紹介とダウンロードページです。"> <meta name="last-updated" content="2025-05-31"> <style>
+    <title>FANBOX支援者リスト抽出ツール (FanboxEnumerator)</title>
+    <meta name="description" content="Pixiv FANBOXの支援者一覧から情報を簡単に抽出できるChrome拡張機能「FanboxEnumerator」の紹介とダウンロードページです。">
+    <meta name="last-updated" content="2025-05-31">
+    <style>
         body { font-family: 'Noto Sans JP', sans-serif; line-height: 1.8; margin: 0; padding: 0; background-color: #f9f9f9; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
         .container { max-width: 800px; margin: 20px auto; padding: 30px; background-color: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); flex-grow: 1; }
         header { text-align: center; margin-bottom: 30px; }
@@ -78,7 +81,7 @@
             ファイル名は <code>FanboxEnumerator_YYYYMMDD_RevX.zip</code> の形式になります (例: <code>FanboxEnumerator_20250531_Rev3.zip</code>)。</p>
             <div class="button-container">
                 <a href="dist/FanboxEnumerator_20250531_Rev3.zip" class="download-button" download>FanboxEnumerator_20250531_Rev3.zip をダウンロード</a>
-                <p style="font-size:0.9em; color:#777; margin-top:10px;">(上記のファイル名は例です。GitHub Actionsで最新版がビルドされ、このリンクも更新される想定です)</p>
+                <p style="font-size:0.9em; color:#777; margin-top:10px;">(manifest.jsonのバージョンが"2025.5.31.3"の場合のファイル名例です。最新版はGitHub Actionsでビルドされます)</p>
             </div>
         </section>
 
@@ -119,6 +122,7 @@
                         <li>ダウンロードボタンのリンクパスを修正。</li>
                         <li><code>tools-list.json</code> 生成用のメタ情報を追加。</li>
                         <li>バージョン表記を更新。</li>
+                        <li>GitHub Actionsのzipファイル名生成ロジックを修正 (日付をmanifest.jsonから取得)。</li>
                     </ul>
                 </li>
                 <li>
