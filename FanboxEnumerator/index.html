@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FANBOX支援者リスト抽出ツール - ダウンロード</title>
-    <meta name="description" content="Pixiv FANBOXの支援者一覧から情報を簡単に抽出できるChrome拡張機能「FanboxEnumerator」の紹介とダウンロードページです。">
-    <style>
+    <title>FANBOX支援者リスト抽出ツール (FanboxEnumerator)</title> <meta name="description" content="Pixiv FANBOXの支援者一覧から情報を簡単に抽出できるChrome拡張機能「FanboxEnumerator」の紹介とダウンロードページです。"> <meta name="last-updated" content="2025-05-31"> <style>
         body { font-family: 'Noto Sans JP', sans-serif; line-height: 1.8; margin: 0; padding: 0; background-color: #f9f9f9; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
         .container { max-width: 800px; margin: 20px auto; padding: 30px; background-color: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); flex-grow: 1; }
         header { text-align: center; margin-bottom: 30px; }
@@ -43,7 +41,7 @@
     <div class="container">
         <header>
             <h1>FANBOX支援者リスト抽出ツール (FanboxEnumerator)</h1>
-            <p class="version">最終更新: 2025年5月31日 (Rev. 2)</p>
+            <p class="version">最終更新: 2025年5月31日 (Rev. 3)</p>
         </header>
 
         <nav>
@@ -77,9 +75,9 @@
         <section id="download">
             <h2>ダウンロード</h2>
             <p>以下のボタンから、拡張機能のパッケージファイル（.zip）をダウンロードしてください。<br>
-            ファイル名は <code>FanboxEnumerator_YYYYMMDD_RevX.zip</code> の形式になります (例: <code>FanboxEnumerator_20250531_Rev2.zip</code>)。</p>
+            ファイル名は <code>FanboxEnumerator_YYYYMMDD_RevX.zip</code> の形式になります (例: <code>FanboxEnumerator_20250531_Rev3.zip</code>)。</p>
             <div class="button-container">
-                <a href="../dist/FanboxEnumerator_20250531_Rev2.zip" class="download-button" download>FanboxEnumerator_20250531_Rev2.zip をダウンロード</a>
+                <a href="dist/FanboxEnumerator_20250531_Rev3.zip" class="download-button" download>FanboxEnumerator_20250531_Rev3.zip をダウンロード</a>
                 <p style="font-size:0.9em; color:#777; margin-top:10px;">(上記のファイル名は例です。GitHub Actionsで最新版がビルドされ、このリンクも更新される想定です)</p>
             </div>
         </section>
@@ -116,12 +114,21 @@
             <h3>更新履歴</h3>
             <ul>
                 <li>
+                    <span class="version-date">2025年5月31日</span> <span class="version-rev">(Rev. 3)</span>
+                    <ul class="change-list">
+                        <li>ダウンロードボタンのリンクパスを修正。</li>
+                        <li><code>tools-list.json</code> 生成用のメタ情報を追加。</li>
+                        <li>バージョン表記を更新。</li>
+                    </ul>
+                </li>
+                <li>
                     <span class="version-date">2025年5月31日</span> <span class="version-rev">(Rev. 2)</span>
                     <ul class="change-list">
                         <li>アイコンファイル (SVGプレースホルダー) を追加。</li>
                         <li>GitHub Actionsによるzipパッケージの自動ビルド・デプロイワークフローを追加。</li>
                         <li>各ファイルのバージョン表記を「日付 (Rev. 整数)」形式に統一。</li>
                         <li><code>manifest.json</code>の<code>version</code>を<code>YYYY.M.D.REV</code>形式 (例: <code>2025.5.31.2</code>) に変更。</li>
+                        <li>GitHub Actionsワークフローの配置場所と動作をリポジトリルート基準に修正。</li>
                     </ul>
                 </li>
                 <li>
