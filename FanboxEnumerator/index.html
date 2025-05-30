@@ -80,7 +80,7 @@
             ファイル名は <code>FanboxEnumerator_YYYYMMDD_RevX.zip</code> の形式になります (例: <code>FanboxEnumerator_20250531_Rev2.zip</code>)。</p>
             <div class="button-container">
                 <a href="../dist/FanboxEnumerator_20250531_Rev2.zip" class="download-button" download>FanboxEnumerator_20250531_Rev2.zip をダウンロード</a>
-                <p style="font-size:0.9em; color:#777; margin-top:10px;">(上記のファイル名は例です。GitHub Actionsで最新版がビルドされます)</p>
+                <p style="font-size:0.9em; color:#777; margin-top:10px;">(上記のファイル名は例です。GitHub Actionsで最新版がビルドされ、このリンクも更新される想定です)</p>
             </div>
         </section>
 
@@ -90,8 +90,10 @@
             <ol>
                 <li>上記から最新版の <code>.zip</code> ファイルをダウンロードし、任意の場所に解凍（展開）します。フォルダ（例: <code>_src</code> という名前のフォルダ、または <code>FanboxEnumerator_YYYYMMDD_RevX</code> のような名前のフォルダ）が作成されます。</li>
                 <li>Google Chromeブラウザを開き、アドレスバーに <code>chrome://extensions</code> と入力して拡張機能管理ページを開きます。</li>
-                <li>ページの右上にある「<strong>デベロッパーモード</strong>」のトグルスイッチをオンにします。</li>
-                <li>左上に表示される「<strong>パッケージ化されていない拡張機能を読み込む</strong>」ボタンをクリックします。</li>
+                <li>ページの右上にある「<strong>デベロッパーモード</strong>」のトグルスイッチをオンにします。
+                </li>
+                <li>左上に表示される「<strong>パッケージ化されていない拡張機能を読み込む</strong>」ボタンをクリックします。
+                </li>
                 <li>ファイル選択ダイアログが表示されるので、手順1で解凍したフォルダ（<code>manifest.json</code>ファイルが含まれているフォルダ）を選択します。通常は解凍してできたフォルダの直下、またはその中の `_src` フォルダです。</li>
                 <li>「FanboxEnumerator」が拡張機能の一覧に追加されればインストール完了です。</li>
             </ol>
@@ -116,9 +118,10 @@
                 <li>
                     <span class="version-date">2025年5月31日</span> <span class="version-rev">(Rev. 2)</span>
                     <ul class="change-list">
-                        <li>アイコンファイルを追加。</li>
+                        <li>アイコンファイル (SVGプレースホルダー) を追加。</li>
                         <li>GitHub Actionsによるzipパッケージの自動ビルド・デプロイワークフローを追加。</li>
-                        <li>各ファイルのバージョン表記を日付とリビジョン形式に統一。</li>
+                        <li>各ファイルのバージョン表記を「日付 (Rev. 整数)」形式に統一。</li>
+                        <li><code>manifest.json</code>の<code>version</code>を<code>YYYY.M.D.REV</code>形式 (例: <code>2025.5.31.2</code>) に変更。</li>
                     </ul>
                 </li>
                 <li>
