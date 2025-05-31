@@ -13,25 +13,25 @@
     "https://*.fanbox.cc/manage/relationships"
   ],
   "action": {
-    "default_popup": "_src/popup.html",
+    "default_popup": "popup.html",
     "default_icon": {
-      "16": "_src/icons/icon16.png",
-      "48": "_src/icons/icon48.png",
-      "128": "_src/icons/icon128.png"
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
     }
   },
   "icons": {
-    "16": "_src/icons/icon16.png",
-    "48": "_src/icons/icon48.png",
-    "128": "_src/icons/icon128.png"
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
   },
   "background": {
-    "service_worker": "_src/background.js"
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
       "matches": ["https://*.fanbox.cc/manage/relationships"],
-      "js": ["_src/content_script.js"],
+      "js": ["content_script.js"],
       "run_at": "document_idle"
     }
   ]
