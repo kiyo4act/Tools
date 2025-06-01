@@ -217,7 +217,7 @@
     <div class="container">
         <header>
             <h1>FANBOX支援者リスト抽出ツール</h1>
-            <p class="version">最終更新: 2025年6月1日 (Rev. 4)</p>
+            <p class="version">最終更新: 2025年6月1日 (Rev. 5)</p>
         </header>
 
         <nav>
@@ -246,6 +246,7 @@
                 <li>支援開始日や継続期間によるフィルタリング</li>
                 <li>各列での昇順・降順ソート</li>
                 <li>CSV形式またはJSON形式でのデータエクスポート</li>
+                <li>デバッグ用に、表示中のFANBOXページのHTML全体をダウンロードする機能</li>
             </ul>
         </section>
 
@@ -253,14 +254,14 @@
             <h2>ダウンロード</h2>
             <p>以下のボタンから、拡張機能のパッケージファイル（.zip）をダウンロードしてください。<br>
                 ファイル名は <code>FanboxEnumerator_YYYYMMDD_RevX.zip</code> の形式になります (例:
-                <code>FanboxEnumerator_20250601_Rev4.zip</code>)。
+                <code>FanboxEnumerator_20250601_Rev5.zip</code>)。
             </p>
             <div class="button-container">
-                <a href="dist/FanboxEnumerator_20250601_Rev4.zip"
+                <a href="dist/FanboxEnumerator_20250601_Rev5.zip"
                    class="download-button"
-                   download>FanboxEnumerator_20250601_Rev4.zip をダウンロード</a>
+                   download>FanboxEnumerator_20250601_Rev5.zip をダウンロード</a>
                 <p style="font-size:0.9em; color:#777; margin-top:10px;">
-                    (manifest.jsonのバージョンが"2025.6.1.4"の場合のファイル名例です。最新版はGitHub Actionsでビルドされます)</p>
+                    (manifest.jsonのバージョンが"2025.6.1.5"の場合のファイル名例です。最新版はGitHub Actionsでビルドされます)</p>
             </div>
         </section>
 
@@ -296,6 +297,8 @@
                 <li>抽出が完了すると、支援者情報がテーブル形式で表示されます。</li>
                 <li>必要に応じて、「プランフィルター」や「支援期間フィルター」で表示するデータを絞り込んだり、テーブルヘッダーをクリックしてソートしたりできます。</li>
                 <li>「エクスポート」セクションで出力形式（CSVまたはJSON）を選択し、「ダウンロード」ボタンをクリックすると、表示されているデータがファイルとして保存されます。</li>
+                <li>HTML構造の変更などで抽出がうまくいかない場合は、「デバッグ用」セクションの「現在のページのHTMLをダウンロード」ボタンで、FANBOXページのHTMLソースをダウンロードし、開発者に提供してください。
+                </li>
             </ol>
         </section>
 
@@ -303,6 +306,13 @@
                  class="update-history-wrapper">
             <h3>更新履歴</h3>
             <ul>
+                <li>
+                    <span class="version-date">2025年6月1日</span> <span class="version-rev">(Rev. 5)</span>
+                    <ul class="change-list">
+                        <li>デバッグ用に、表示中のFANBOXページのHTML全体をダウンロードする機能を追加。</li>
+                        <li>バージョン表記を更新。</li>
+                    </ul>
+                </li>
                 <li>
                     <span class="version-date">2025年6月1日</span> <span class="version-rev">(Rev. 4)</span>
                     <ul class="change-list">

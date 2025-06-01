@@ -10,13 +10,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const startDateAfterEl = document.getElementById('startDateAfter');
     const startDateBeforeEl = document.getElementById('startDateBefore');
     const durationMonthsOverEl = document.getElementById('durationMonthsOver');
-    // const applyFiltersBtnEl = document.getElementById('applyFiltersBtn'); // Removed
     const resetFiltersBtnEl = document.getElementById('resetFiltersBtn');
     const rowCountEl = document.getElementById('rowCount');
     const previewTableBodyEl = document.getElementById('previewTableBody');
     const previewTableEl = document.getElementById('previewTable');
     const exportFormatEl = document.getElementById('exportFormat');
     const downloadBtnEl = document.getElementById('downloadBtn');
+    const downloadHtmlBtnEl = document.getElementById('downloadHtmlBtn'); // New debug button
+    const debugStatusEl = document.getElementById('debugStatus'); // Status for debug button
 
     // --- State Variables ---
     let rawSupportersData = [];
@@ -36,11 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Helper Functions ---
-    function showStatus(message, type = 'info') {
+    function showStatus(message, type = 'info', element = statusMessageEl) {
         console.log(`[Popup Status] ${type}: ${message}`);
-        if (statusMessageEl) {
-            statusMessageEl.textContent = message;
-            statusMessageEl.className = `status ${type}`;
+        if (element) {
+            element.textContent = message;
+            element.className = `status ${type}`;
         }
     }
 
@@ -49,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (extractBtn) extractBtn.disabled = show;
     }
 
-    // --- Main Logic ---
+    // --- Main Logic for Data Extraction ---
     if (extractBtn) {
         extractBtn.addEventListener('click', async () => {
             console.log('[Popup] Extract button clicked.');
@@ -87,14 +88,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(`[Popup] Sending "scrapeData" message to tab ID: ${tab.id}`);
                 chrome.tabs.sendMessage(tab.id, { action: "scrapeData" }, (response) => {
                     if (chrome.runtime.lastError) {
-                        console.error("[Popup] Error receiving message from content script:", chrome.runtime.lastError.message);
+                        console.error("[Popup] Error receiving message (scrapeData):", chrome.runtime.lastError.message);
                         showStatus(`コンテンツスクリプトとの通信エラー: ${chrome.runtime.lastError.message}`, 'error');
-                        gtag_event('extract_error', { 'error_type': 'receive_message_error', 'error_message': chrome.runtime.lastError.message.substring(0,100) });
+                        gtag_event('extract_error', { 'error_type': 'receive_message_error_scrape', 'error_message': chrome.runtime.lastError.message.substring(0,100) });
                         showLoading(false);
                         return;
                     }
 
-                    console.log('[Popup] Received response from content script:', response);
+                    console.log('[Popup] Received response (scrapeData):', response);
 
                     if (response && response.data) {
                         rawSupportersData = response.data;
@@ -108,17 +109,17 @@ document.addEventListener('DOMContentLoaded', () => {
                             gtag_event('extract_success', { 'supporter_count': rawSupportersData.length });
                         } else if (response.error) {
                             showStatus(`情報抽出エラー(CS): ${response.error}`, 'error');
-                            gtag_event('extract_warning', { 'message': `content_script_reported_error: ${response.error.substring(0,100)}` });
+                            gtag_event('extract_warning', { 'message': `content_script_reported_error_scrape: ${response.error.substring(0,100)}` });
                         } else {
                             showStatus('ページから支援者情報が見つかりませんでした(データ空)。ページ構造が変更されたか、内容が空の可能性があります。', 'error');
                             gtag_event('extract_warning', { 'message': 'no_supporters_found_on_page_or_empty_data' });
                         }
                     } else if (response && response.error) {
                          showStatus(`情報抽出エラー(CSレスポンス): ${response.error}`, 'error');
-                         gtag_event('extract_error', { 'error_type': 'content_script_error_response', 'error_message': response.error.substring(0,100) });
+                         gtag_event('extract_error', { 'error_type': 'content_script_error_response_scrape', 'error_message': response.error.substring(0,100) });
                     } else {
                         showStatus('ページからの情報抽出に失敗しました。コンテンツスクリプトからの応答が不正です。', 'error');
-                        gtag_event('extract_error', { 'error_type': 'invalid_response_from_content_script' });
+                        gtag_event('extract_error', { 'error_type': 'invalid_response_from_content_script_scrape' });
                     }
                     showLoading(false);
                 });
@@ -126,15 +127,82 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 console.error('[Popup] Extraction try-catch error:', error);
                 showStatus(`予期せぬエラーが発生しました: ${error.message}`, 'error');
-                gtag_event('extract_error', { 'error_type': 'popup_catch_block', 'error_message': error.message.substring(0,100) });
+                gtag_event('extract_error', { 'error_type': 'popup_catch_block_scrape', 'error_message': error.message.substring(0,100) });
                 showLoading(false);
             }
         });
     }
 
+    // --- Debug HTML Download Logic ---
+    if (downloadHtmlBtnEl) {
+        downloadHtmlBtnEl.addEventListener('click', async () => {
+            showStatus('ページのHTMLを取得中...', 'info', debugStatusEl);
+            downloadHtmlBtnEl.disabled = true;
+            gtag_event('click_download_html_debug_button');
 
-    // --- Filtering and Sorting Logic ---
+            try {
+                const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+                if (!tab || !tab.id) {
+                    showStatus('アクティブなタブが見つかりません。', 'error', debugStatusEl);
+                    gtag_event('download_html_debug_error', { 'error_type': 'no_active_tab' });
+                    downloadHtmlBtnEl.disabled = false;
+                    return;
+                }
+                 if (!tab.url || !tab.url.includes("fanbox.cc")) { // More general check for any fanbox page
+                    showStatus('FANBOXのページを開いてから実行してください。', 'error', debugStatusEl);
+                    gtag_event('download_html_debug_error', { 'error_type': 'not_fanbox_page' });
+                    downloadHtmlBtnEl.disabled = false;
+                    return;
+                }
+
+
+                console.log(`[Popup] Sending "getHTML" message to tab ID: ${tab.id}`);
+                chrome.tabs.sendMessage(tab.id, { action: "getHTML" }, (response) => {
+                    if (chrome.runtime.lastError) {
+                        console.error("[Popup] Error receiving message (getHTML):", chrome.runtime.lastError.message);
+                        showStatus(`HTML取得通信エラー: ${chrome.runtime.lastError.message}`, 'error', debugStatusEl);
+                        gtag_event('download_html_debug_error', { 'error_type': 'receive_message_error_gethtml', 'error_message': chrome.runtime.lastError.message.substring(0,100) });
+                        downloadHtmlBtnEl.disabled = false;
+                        return;
+                    }
+
+                    console.log('[Popup] Received response (getHTML)');
+                    if (response && response.html) {
+                        const blob = new Blob([response.html], { type: 'text/html;charset=utf-8;' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        const pageTitle = tab.title ? tab.title.replace(/[^a-z0-9_.\-]/gi, '_').substring(0, 50) : 'fanbox_page';
+                        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                        a.download = `${pageTitle}_${timestamp}.html`;
+                        a.href = url;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        showStatus('ページのHTMLをダウンロードしました。', 'success', debugStatusEl);
+                        gtag_event('download_html_debug_success');
+                    } else if (response && response.error) {
+                        showStatus(`HTML取得エラー(CS): ${response.error}`, 'error', debugStatusEl);
+                        gtag_event('download_html_debug_error', { 'error_type': 'content_script_error_gethtml', 'error_message': response.error.substring(0,100) });
+                    } else {
+                        showStatus('HTMLの取得に失敗しました。', 'error', debugStatusEl);
+                        gtag_event('download_html_debug_error', { 'error_type': 'no_html_in_response' });
+                    }
+                    downloadHtmlBtnEl.disabled = false;
+                });
+            } catch (error) {
+                console.error('[Popup] Download HTML error:', error);
+                showStatus(`HTMLダウンロード中にエラー: ${error.message}`, 'error', debugStatusEl);
+                gtag_event('download_html_debug_error', { 'error_type': 'popup_catch_block_gethtml', 'error_message': error.message.substring(0,100) });
+                downloadHtmlBtnEl.disabled = false;
+            }
+        });
+    }
+
+
+    // --- Filtering and Sorting Logic (remains largely the same) ---
     function populatePlanFilter() {
+        // ... (previous implementation)
         if (!planFilterContainerEl) return;
         planFilterContainerEl.innerHTML = '';
         const plans = [...new Set(rawSupportersData.map(s => s.plan_name))].sort();
@@ -162,6 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getSelectedPlans() {
+        // ... (previous implementation)
         if (!planFilterContainerEl) return [];
         const selected = [];
         planFilterContainerEl.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
@@ -171,6 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function parseDate(dateString) {
+        // ... (previous implementation)
         if (!dateString || typeof dateString !== 'string') return null;
         const match = dateString.match(/(\d{4})年\s*(\d{1,2})月\s*(\d{1,2})日/);
         if (match) {
@@ -180,6 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function applyAllFiltersAndRender() {
+        // ... (previous implementation with checks for element existence)
         let dataToFilter = [...rawSupportersData];
 
         const selectedPlans = getSelectedPlans();
@@ -236,6 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function resetFilters() {
+        // ... (previous implementation with checks)
         if(planFilterContainerEl) planFilterContainerEl.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
         if(startDateAfterEl) startDateAfterEl.value = '';
         if(startDateBeforeEl) startDateBeforeEl.value = '';
@@ -246,7 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gtag_event('reset_filters_popup');
     }
 
-    // if(applyFiltersBtnEl) applyFiltersBtnEl.addEventListener('click', applyAllFiltersAndRender); // Removed
+    // if(applyFiltersBtnEl) applyFiltersBtnEl.addEventListener('click', applyAllFiltersAndRender); // Button removed
     if(resetFiltersBtnEl) resetFiltersBtnEl.addEventListener('click', resetFilters);
 
     if(planFilterContainerEl) {
@@ -262,6 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     function applySort() {
+        // ... (previous implementation)
         if (!currentSort.column) return;
         filteredSupportersData.sort((a, b) => {
             let valA = a[currentSort.column];
@@ -287,6 +360,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateSortIndicators() {
+        // ... (previous implementation)
         if (!previewTableEl) return;
         previewTableEl.querySelectorAll('th .sort-indicator').forEach(span => span.textContent = '');
         if (currentSort.column) {
@@ -321,6 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderTable() {
+        // ... (previous implementation)
         if (!previewTableBodyEl || !rowCountEl) return;
         previewTableBodyEl.innerHTML = '';
         rowCountEl.textContent = filteredSupportersData.length;
@@ -344,6 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function downloadFile(filename, content, mimeType) {
+        // ... (previous implementation)
         const blob = new Blob([content], { type: mimeType });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -358,6 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(downloadBtnEl) {
         downloadBtnEl.addEventListener('click', () => {
+            // ... (previous implementation)
             if (filteredSupportersData.length === 0) {
                 showStatus('エクスポートするデータがありません。', 'error');
                 return;

@@ -1,106 +1,130 @@
 // FanboxEnumerator/_src/content_script.js
+console.log("[FanboxEnumerator Content Script] SUCCESSFULLY LOADED and EXECUTING. (v1.2.3)"); // Version bump for clarity
 
 /**
  * Parses the FANBOX relationships page HTML to extract supporter data.
- * This function is executed in the context of the web page.
- * @returns {Array<Object>|{error: string}} Array of supporter objects or an error object.
  */
 function extractDataFromDOM() {
+    console.log("[FanboxEnumerator Content Script] extractDataFromDOM() called.");
     try {
         const supporters = [];
-        // Selector based on provided relationships.html and common FANBOX structure.
-        // This is the most fragile part and likely to need updates if FANBOX changes its HTML.
-        const tableBody = document.querySelector('div.commonStyles__Table-sc-1f3w2vz-0.dRWCLG');
+        const tableContainerSelector = 'div[class*="TableContainer__Container-"], div.commonStyles__Table-sc-1f3w2vz-0';
+        const tableBody = document.querySelector(tableContainerSelector);
 
         if (!tableBody) {
-            console.warn('[FanboxEnumerator] Supporter table container not found. HTML structure might have changed.');
-            return { error: '支援者テーブルの主要コンテナが見つかりませんでした。' };
+            const errText = '支援者テーブルの主要コンテナが見つかりません。HTML構造が大幅に変更された可能性があります。';
+            console.warn(`[FanboxEnumerator Content Script] ${errText}`);
+            return { error: errText, data: [] };
+        }
+        console.log("[FanboxEnumerator Content Script] Table container found:", tableBody);
+
+        const rowSelector = 'div[class*="commonStyles__Tr-"]';
+        const rowElements = Array.from(tableBody.querySelectorAll(rowSelector));
+        console.log(`[FanboxEnumerator Content Script] Found ${rowElements.length} potential row elements using selector: ${rowSelector}`);
+
+        if (rowElements.length === 0 && document.body.innerHTML.includes("ファン一覧")) {
+             const errText = 'HTMLは読み込めましたが、支援者データ行が見つかりませんでした。';
+             console.warn(`[FanboxEnumerator Content Script] ${errText}`);
+            return { error: errText, data: [] };
         }
 
-        // Get all direct div children of tableBody, these should be the rows
-        const rowElements = Array.from(tableBody.children).filter(child => child.matches('div.commonStyles__Tr-sc-1f3w2vz-1'));
-
-        if (rowElements.length === 0) {
-             console.warn('[FanboxEnumerator] No supporter rows found in the table.');
-            // It's possible the page is loaded but has no supporters, or the selector is wrong.
-            // Check if it's a valid page but just empty.
-            if (document.title.includes("ファン一覧")) {
-                 return { error: '支援者データ行が見つかりませんでした。支援者がいないか、ページの読み込みが不完全な可能性があります。' };
+        rowElements.forEach((row, rowIndex) => {
+            if (row.querySelector('div[class*="Header__Th-"]') || row.querySelector('div[class*="LabelWithSortButton__Wrapper-"]')) {
+                console.log(`[FanboxEnumerator Content Script] Row ${rowIndex} skipped (likely header).`);
+                return;
             }
-            return { error: '支援者データ行が見つかりませんでした。' };
-        }
+            // console.log(`[FanboxEnumerator Content Script] Processing data row ${rowIndex}. HTML:`, row.innerHTML.substring(0, 300));
 
-        rowElements.forEach((row) => {
-            // Skip header row (heuristic: check for header-specific class or content)
-            if (row.querySelector('div.LabelWithSortButton__Wrapper-sc-m597y7-0')) {
-                return; // This is likely the header row, skip it.
-            }
+            const cellSelector = 'div[class*="commonStyles__Td-"]';
+            const cells = row.querySelectorAll(cellSelector);
+            // console.log(`[FanboxEnumerator Content Script] Row ${rowIndex}: Found ${cells.length} cells.`);
 
-            const cells = row.querySelectorAll('div.commonStyles__Td-sc-1f3w2vz-2.gOXCUW');
-            if (cells.length >= 4) { // Expecting Name, Plan, Start Date, Memo
-                const userWrapperAnchor = cells[0]?.querySelector('a.Row__UserWrapper-sc-1xb9lq9-1');
-                const supporterNameEl = userWrapperAnchor?.querySelector('div.commonStyles__TextEllipsis-sc-1f3w2vz-3.bqBOcj');
-                const supporterName = supporterNameEl?.textContent.trim() || '名前不明';
-                
+            if (cells.length >= 3) {
+                let supporterName = '名前不明';
                 let userId = 'ID不明';
-                const userLink = userWrapperAnchor?.getAttribute('href');
-                if (userLink) {
-                    const match = userLink.match(/\/manage\/relationships\/(\d+)/);
-                    if (match && match[1]) {
-                        userId = match[1];
+                let planName = 'プラン不明';
+                let startDate = '開始日不明';
+                let memo = '';
+
+                const userCell = cells[0];
+                const userWrapperAnchor = userCell?.querySelector('a[href*="/manage/relationships/"]');
+                if (userWrapperAnchor) {
+                    let nameElement = userWrapperAnchor.querySelector('div[class*="TextEllipsis__Text-"]');
+                    if (!nameElement) nameElement = userWrapperAnchor.querySelector('div');
+                    supporterName = nameElement?.textContent.trim() || userWrapperAnchor.textContent.trim() || '名前不明';
+
+                    const userLink = userWrapperAnchor.getAttribute('href');
+                    if (userLink) {
+                        const match = userLink.match(/\/manage\/relationships\/(\d+)/);
+                        if (match && match[1]) userId = match[1];
                     }
+                } else {
+                    const potentialNameEl = userCell?.querySelector('div[class*="TextEllipsis__Text-"]') || userCell?.querySelector('div');
+                    supporterName = potentialNameEl?.textContent.trim() || userCell?.textContent.trim().split('\n')[0] || '名前不明';
                 }
 
-                const planNameEl = cells[1]?.querySelector('div.commonStyles__TextEllipsis-sc-1f3w2vz-3.bqBOcj');
-                const planName = planNameEl?.textContent.trim() || 'プラン不明';
-                
-                const startDate = cells[2]?.textContent.trim() || '開始日不明';
-                
-                const memoEl = cells[3]?.querySelector('div.commonStyles__TextEllipsis-sc-1f3w2vz-3.bqBOcj');
-                const memo = memoEl?.textContent.trim() || '';
+                const planCell = cells[1];
+                const planNameEl = planCell?.querySelector('div[class*="TextEllipsis__Text-"]') || planCell?.querySelector('div');
+                planName = planNameEl?.textContent.trim() || planCell?.textContent.trim() || 'プラン不明';
 
-                supporters.push({
-                    supporter_name: supporterName,
-                    user_id: userId,
-                    plan_name: planName,
-                    start_date: startDate,
-                    memo: memo
-                });
+                const startDateCell = cells[2];
+                startDate = startDateCell?.textContent.trim() || '開始日不明';
+
+                if (cells.length >= 4) {
+                    const memoCell = cells[3];
+                    const memoEl = memoCell?.querySelector('div[class*="TextEllipsis__Text-"]') || memoCell?.querySelector('div');
+                    memo = memoEl?.textContent.trim() || memoCell?.textContent.trim() || '';
+                }
+
+                if (supporterName !== '名前不明' || planName !== 'プラン不明' || startDate !== '開始日不明') {
+                    supporters.push({
+                        supporter_name: supporterName,
+                        user_id: userId,
+                        plan_name: planName,
+                        start_date: startDate,
+                        memo: memo
+                    });
+                } else {
+                    // console.warn(`[FanboxEnumerator Content Script] Row ${rowIndex}: All fields parsed as default/unknown. Skipping.`);
+                }
             } else {
-                // console.warn('[FanboxEnumerator] A row did not have enough cells:', row);
+                // console.warn(`[FanboxEnumerator Content Script] Row ${rowIndex} did not have enough cells (found ${cells.length}, expected >= 3).`);
             }
         });
 
         if (supporters.length === 0 && rowElements.length > 1) {
-            // Had rows but couldn't extract data from them, likely cell selectors are wrong
-            return { error: '支援者リストの行は認識できましたが、詳細データの抽出に失敗しました。HTML構造が変更された可能性があります。' };
+            const errText = '支援者リストの行は認識できましたが、詳細データの抽出に失敗しました。HTML構造が変更されたか、詳細情報のセレクタが正しくない可能性があります。';
+            console.warn(`[FanboxEnumerator Content Script] ${errText}`);
+            return { error: errText, data: [] };
         }
-
+        console.log("[FanboxEnumerator Content Script] Extraction complete. Supporters found:", supporters.length);
         return supporters;
 
     } catch (e) {
-        console.error('[FanboxEnumerator] Error during DOM scraping:', e);
-        return { error: `DOM解析中にエラーが発生しました: ${e.message}` };
+        const errorMsg = `DOM解析中に予期せぬエラーが発生しました: ${e.message}`;
+        console.error('[FanboxEnumerator Content Script] Error during DOM scraping:', e);
+        return { error: errorMsg, data: [] };
     }
 }
 
-
-/**
- * Listen for messages from the popup script.
- */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log("[FanboxEnumerator Content Script] Message received:", request);
     if (request.action === "scrapeData") {
-        console.log("[FanboxEnumerator Content Script] Received scrapeData request from popup.");
-        const data = extractDataFromDOM();
-        if (data.error) {
-            console.error("[FanboxEnumerator Content Script] Error extracting data:", data.error);
-            sendResponse({ error: data.error });
+        const result = extractDataFromDOM();
+        if (typeof result === 'object' && result !== null && 'error' in result) {
+            sendResponse({ error: result.error, data: result.data || [] });
         } else {
-            console.log("[FanboxEnumerator Content Script] Successfully extracted data:", data);
-            sendResponse({ data: data });
+            sendResponse({ data: result });
         }
-        return true; // Indicates that the response is sent asynchronously (though not strictly needed here)
+    } else if (request.action === "getHTML") {
+        console.log("[FanboxEnumerator Content Script] Received getHTML request.");
+        try {
+            const htmlContent = document.documentElement.outerHTML;
+            sendResponse({ html: htmlContent });
+        } catch (e) {
+            console.error("[FanboxEnumerator Content Script] Error getting outerHTML:", e);
+            sendResponse({ error: `HTML取得エラー: ${e.message}` });
+        }
     }
+    return true; // Keep the message channel open for asynchronous response.
 });
-
-console.log("[FanboxEnumerator] Content script loaded and listening.");
