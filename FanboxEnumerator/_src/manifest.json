@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "FANBOX支援者リスト抽出ツール (FanboxEnumerator)",
-  "version": "2025.5.31.3",
+  "name": "FANBOX支援者リスト抽出ツール",
+  "version": "2025.6.1.4",
   "description": "Pixiv FANBOXの支援者一覧ページから情報を抽出し、CSV/JSON形式でエクスポートします。",
   "permissions": [
     "activeTab",
@@ -30,8 +30,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://*.fanbox.cc/manage/relationships"],
-      "js": ["content_script.js"],
+      "matches": [
+        "https://*.fanbox.cc/manage/relationships"
+      ],
+      "js": [
+        "content_script.js"
+      ],
       "run_at": "document_idle"
     }
   ]
