@@ -101,8 +101,8 @@ FanboxEnumerator/├── index.html             # ユーザー向け紹介・�
     * GitHub Actionsのzipファイル名生成ロジックを修正。
 * **2025年5月31日 (Rev. 2)**
     * アイコンファイル (SVGプレースホルダー) を追加。
-    * GitHub Actionsワークフローを追加。
-    * バージョン表記形式を統一。
-    * `manifest.json`の`version`を`YYYY.M.D.REV`形式に変更。
+    * GitHub Actionsによるzipパッケージの自動ビルド・デプロイワークフローを追加。
+    * 各ファイルのバージョン表記を「日付 (Rev. 整数)」形式に統一。
+    * `manifest.json`の<code>version</code>を<code>YYYY.M.D.REV</code>形式に変更。
 * **2025年5月30日 (Rev. 1)**
     * 初回リリース。

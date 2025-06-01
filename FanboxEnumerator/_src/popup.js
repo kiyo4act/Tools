@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('[Popup] Received response (scrapeData):', response);
 
                     if (response && response.data) {
-                        rawSupportersData = response.data;
+                        rawSupportersData = response.data; // This might be an empty array
                         if (rawSupportersData.length > 0) {
                             filteredSupportersData = [...rawSupportersData];
                             showStatus(`支援者 ${rawSupportersData.length} 件の情報を抽出しました。`, 'success');
@@ -107,17 +107,17 @@ document.addEventListener('DOMContentLoaded', () => {
                             populatePlanFilter();
                             applyAllFiltersAndRender();
                             gtag_event('extract_success', { 'supporter_count': rawSupportersData.length });
-                        } else if (response.error) {
+                        } else if (response.error) { // Error explicitly sent from content script
                             showStatus(`情報抽出エラー(CS): ${response.error}`, 'error');
                             gtag_event('extract_warning', { 'message': `content_script_reported_error_scrape: ${response.error.substring(0,100)}` });
-                        } else {
+                        } else { // No error, but data is empty
                             showStatus('ページから支援者情報が見つかりませんでした(データ空)。ページ構造が変更されたか、内容が空の可能性があります。', 'error');
                             gtag_event('extract_warning', { 'message': 'no_supporters_found_on_page_or_empty_data' });
                         }
-                    } else if (response && response.error) {
+                    } else if (response && response.error) { // Error from content script in general
                          showStatus(`情報抽出エラー(CSレスポンス): ${response.error}`, 'error');
                          gtag_event('extract_error', { 'error_type': 'content_script_error_response_scrape', 'error_message': response.error.substring(0,100) });
-                    } else {
+                    } else { // Unexpected response
                         showStatus('ページからの情報抽出に失敗しました。コンテンツスクリプトからの応答が不正です。', 'error');
                         gtag_event('extract_error', { 'error_type': 'invalid_response_from_content_script_scrape' });
                     }
@@ -148,13 +148,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     downloadHtmlBtnEl.disabled = false;
                     return;
                 }
-                 if (!tab.url || !tab.url.includes("fanbox.cc")) { // More general check for any fanbox page
+                 if (!tab.url || !tab.url.includes("fanbox.cc")) {
                     showStatus('FANBOXのページを開いてから実行してください。', 'error', debugStatusEl);
                     gtag_event('download_html_debug_error', { 'error_type': 'not_fanbox_page' });
                     downloadHtmlBtnEl.disabled = false;
                     return;
                 }
-
 
                 console.log(`[Popup] Sending "getHTML" message to tab ID: ${tab.id}`);
                 chrome.tabs.sendMessage(tab.id, { action: "getHTML" }, (response) => {
@@ -199,10 +198,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
     // --- Filtering and Sorting Logic (remains largely the same) ---
     function populatePlanFilter() {
-        // ... (previous implementation)
         if (!planFilterContainerEl) return;
         planFilterContainerEl.innerHTML = '';
         const plans = [...new Set(rawSupportersData.map(s => s.plan_name))].sort();
@@ -230,7 +227,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getSelectedPlans() {
-        // ... (previous implementation)
         if (!planFilterContainerEl) return [];
         const selected = [];
         planFilterContainerEl.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
@@ -240,7 +236,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function parseDate(dateString) {
-        // ... (previous implementation)
         if (!dateString || typeof dateString !== 'string') return null;
         const match = dateString.match(/(\d{4})年\s*(\d{1,2})月\s*(\d{1,2})日/);
         if (match) {
@@ -250,7 +245,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function applyAllFiltersAndRender() {
-        // ... (previous implementation with checks for element existence)
         let dataToFilter = [...rawSupportersData];
 
         const selectedPlans = getSelectedPlans();
@@ -307,7 +301,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function resetFilters() {
-        // ... (previous implementation with checks)
         if(planFilterContainerEl) planFilterContainerEl.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
         if(startDateAfterEl) startDateAfterEl.value = '';
         if(startDateBeforeEl) startDateBeforeEl.value = '';
@@ -318,7 +311,6 @@ document.addEventListener('DOMContentLoaded', () => {
         gtag_event('reset_filters_popup');
     }
 
-    // if(applyFiltersBtnEl) applyFiltersBtnEl.addEventListener('click', applyAllFiltersAndRender); // Button removed
     if(resetFiltersBtnEl) resetFiltersBtnEl.addEventListener('click', resetFilters);
 
     if(planFilterContainerEl) {
@@ -332,9 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(startDateBeforeEl) startDateBeforeEl.addEventListener('change', applyAllFiltersAndRender);
     if(durationMonthsOverEl) durationMonthsOverEl.addEventListener('input', applyAllFiltersAndRender);
 
-
     function applySort() {
-        // ... (previous implementation)
         if (!currentSort.column) return;
         filteredSupportersData.sort((a, b) => {
             let valA = a[currentSort.column];
@@ -360,7 +350,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateSortIndicators() {
-        // ... (previous implementation)
         if (!previewTableEl) return;
         previewTableEl.querySelectorAll('th .sort-indicator').forEach(span => span.textContent = '');
         if (currentSort.column) {
@@ -395,7 +384,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderTable() {
-        // ... (previous implementation)
         if (!previewTableBodyEl || !rowCountEl) return;
         previewTableBodyEl.innerHTML = '';
         rowCountEl.textContent = filteredSupportersData.length;
@@ -419,7 +407,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function downloadFile(filename, content, mimeType) {
-        // ... (previous implementation)
         const blob = new Blob([content], { type: mimeType });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -434,7 +421,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(downloadBtnEl) {
         downloadBtnEl.addEventListener('click', () => {
-            // ... (previous implementation)
             if (filteredSupportersData.length === 0) {
                 showStatus('エクスポートするデータがありません。', 'error');
                 return;

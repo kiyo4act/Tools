@@ -1,5 +1,5 @@
 // FanboxEnumerator/_src/content_script.js
-console.log("[FanboxEnumerator Content Script] SUCCESSFULLY LOADED and EXECUTING. (v1.2.3)"); // Version bump for clarity
+console.log("[FanboxEnumerator Content Script] SUCCESSFULLY LOADED and EXECUTING. (v1.2.4)"); // Version bump for clarity
 
 /**
  * Parses the FANBOX relationships page HTML to extract supporter data.
@@ -16,11 +16,11 @@ function extractDataFromDOM() {
             console.warn(`[FanboxEnumerator Content Script] ${errText}`);
             return { error: errText, data: [] };
         }
-        console.log("[FanboxEnumerator Content Script] Table container found:", tableBody);
+        // console.log("[FanboxEnumerator Content Script] Table container found:", tableBody);
 
         const rowSelector = 'div[class*="commonStyles__Tr-"]';
         const rowElements = Array.from(tableBody.querySelectorAll(rowSelector));
-        console.log(`[FanboxEnumerator Content Script] Found ${rowElements.length} potential row elements using selector: ${rowSelector}`);
+        // console.log(`[FanboxEnumerator Content Script] Found ${rowElements.length} potential row elements using selector: ${rowSelector}`);
 
         if (rowElements.length === 0 && document.body.innerHTML.includes("ファン一覧")) {
              const errText = 'HTMLは読み込めましたが、支援者データ行が見つかりませんでした。';
@@ -30,14 +30,13 @@ function extractDataFromDOM() {
 
         rowElements.forEach((row, rowIndex) => {
             if (row.querySelector('div[class*="Header__Th-"]') || row.querySelector('div[class*="LabelWithSortButton__Wrapper-"]')) {
-                console.log(`[FanboxEnumerator Content Script] Row ${rowIndex} skipped (likely header).`);
+                // console.log(`[FanboxEnumerator Content Script] Row ${rowIndex} skipped (likely header).`);
                 return;
             }
-            // console.log(`[FanboxEnumerator Content Script] Processing data row ${rowIndex}. HTML:`, row.innerHTML.substring(0, 300));
+            // console.log(`[FanboxEnumerator Content Script] Processing data row ${rowIndex}.`);
 
             const cellSelector = 'div[class*="commonStyles__Td-"]';
             const cells = row.querySelectorAll(cellSelector);
-            // console.log(`[FanboxEnumerator Content Script] Row ${rowIndex}: Found ${cells.length} cells.`);
 
             if (cells.length >= 3) {
                 let supporterName = '名前不明';
@@ -50,7 +49,7 @@ function extractDataFromDOM() {
                 const userWrapperAnchor = userCell?.querySelector('a[href*="/manage/relationships/"]');
                 if (userWrapperAnchor) {
                     let nameElement = userWrapperAnchor.querySelector('div[class*="TextEllipsis__Text-"]');
-                    if (!nameElement) nameElement = userWrapperAnchor.querySelector('div');
+                    if (!nameElement) nameElement = userWrapperAnchor.querySelector('div'); // Fallback to any div
                     supporterName = nameElement?.textContent.trim() || userWrapperAnchor.textContent.trim() || '名前不明';
 
                     const userLink = userWrapperAnchor.getAttribute('href');
@@ -84,11 +83,7 @@ function extractDataFromDOM() {
                         start_date: startDate,
                         memo: memo
                     });
-                } else {
-                    // console.warn(`[FanboxEnumerator Content Script] Row ${rowIndex}: All fields parsed as default/unknown. Skipping.`);
                 }
-            } else {
-                // console.warn(`[FanboxEnumerator Content Script] Row ${rowIndex} did not have enough cells (found ${cells.length}, expected >= 3).`);
             }
         });
 
@@ -126,5 +121,5 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             sendResponse({ error: `HTML取得エラー: ${e.message}` });
         }
     }
-    return true; // Keep the message channel open for asynchronous response.
+    return true;
 });
