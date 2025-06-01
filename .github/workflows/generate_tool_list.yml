@@ -22,10 +22,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        # フルヒストリを取得するために fetch-depth: 0 を指定することも検討できますが、
-        # rebase のためには通常最新のコミットがあれば十分です。
-        # with:
-        #   fetch-depth: 0 # 必要に応じて
+        with:
+          # トークンを指定することで、後続のpushで認証が通るようにする
+          # GITHUB_TOKENは自動的に提供される
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # mainブランチの最新を取得するためにfetch-depthを0にすることも検討
+          # fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -48,20 +50,25 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action Bot"
 
-          # tools-list.json をステージング
-          git add tools-list.json
+          # tools-list.json の変更状況を確認
+          if ! git diff --quiet tools-list.json; then
+            echo "Changes detected in tools-list.json."
 
-          # 変更があった場合のみコミット＆プッシュ
-          if git diff --staged --quiet; then
-            echo "No changes to tools-list.json. Nothing to commit."
-          else
-            echo "Changes detected in tools-list.json. Attempting to commit and push."
+            # 変更をステージング
+            git add tools-list.json
+
+            # ローカルでコミット
+            git commit -m "Automated: Update tools-list.json"
+
             # リモートの変更を取得し、ローカルのコミットをその上にrebaseする
             # これにより、non-fast-forwardエラーを防ぐ
             # 'main' の部分は実際のブランチ名に合わせてください
+            echo "Pulling remote changes with rebase..."
             git pull --rebase origin main
 
-            git commit -m "Automated: Update tools-list.json"
+            echo "Pushing changes to origin main..."
             git push origin main
             echo "tools-list.json updated and pushed to the repository."
+          else
+            echo "No changes to tools-list.json. Nothing to commit."
           fi
