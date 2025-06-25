@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+  <title>壁と光のカラーシミュレーター</title>
+  <meta name="version"
+        content="1">
+  <meta name="last-updated"
+        content="2025-06-10">
+  <meta name="description"
+        content="パズルゲーム「The Witness」の特定エリアの攻略補助ツール。色のついた壁に特定の光を当てた時の見え方をシミュレートしたり、複数の観測結果から元の壁の色を推定することができます。">
+  <style>
+    /* --- 基本スタイル --- */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      background-color: #f4f7f9;
+      line-height: 1.6;
+    }
+
+    main {
+      width: 100%;
+      max-width: 1200px;
+      background-color: #ffffff;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5 {
+      color: #333;
+    }
+
+    h1 {
+      border-bottom: 3px solid #007bff;
+      padding-bottom: 10px;
+      font-size: 2em;
+    }
+
+    h2 {
+      font-size: 1.5em;
+      margin-top: 40px;
+      border-left: 5px solid #007bff;
+      padding-left: 10px;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid #e0e0e0;
+      margin: 40px 0;
+    }
+
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* --- UIコンポーネント --- */
+    .section {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      background-color: #fdfdfd;
+    }
+
+    .control-group {
+      margin-bottom: 15px;
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .control-group label {
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.2s, opacity 0.2s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    button:disabled {
+      background-color: #adb5bd;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    button.secondary {
+      background-color: #6c757d;
+    }
+
+    button.secondary:hover {
+      background-color: #5a6268;
+    }
+
+    button.danger {
+      background-color: #dc3545;
+    }
+
+    button.danger:hover {
+      background-color: #c82333;
+    }
+
+    input[type="number"],
+    select {
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ced4da;
+      font-size: 16px;
+    }
+
+    /* --- グリッド関連 --- */
+    .grid-container {
+      display: grid;
+      gap: 5px;
+      margin-top: 10px;
+      border: 1px solid #dee2e6;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border-radius: 5px;
+      overflow-x: auto;
+      width: fit-content;
+      max-width: 100%;
+    }
+
+    .grid-cell {
+      width: 45px;
+      height: 45px;
+      border: 1px solid #adb5bd;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      color: rgba(0, 0, 0, 0.7);
+      user-select: none;
+      transition: transform 0.1s, background-color 0.2s;
+    }
+
+    .grid-cell:not(.no-hover):hover {
+      transform: scale(1.05);
+    }
+
+    /* --- カラーパレット --- */
+    .color-palette {
+      position: absolute;
+      display: none;
+      background: white;
+      border: 1px solid #999;
+      border-radius: 6px;
+      padding: 5px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+    }
+
+    .palette-color {
+      width: 30px;
+      height: 30px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .palette-color:hover {
+      transform: scale(1.1);
+      border-color: #007bff;
+    }
+
+    /* --- 光の色セレクター --- */
+    .light-selector {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      border: 1px solid #ced4da;
+      border-radius: 5px;
+    }
+
+    .light-checkboxes label {
+      margin-right: 10px;
+      font-weight: normal;
+    }
+
+    .light-color-indicator {
+      width: 30px;
+      height: 30px;
+      border: 1px solid #333;
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+      /* キャレットが表示されるのを防ぐ */
+    }
+
+    /* --- その他 --- */
+    .observation-pattern {
+      border: 1px dashed #007bff;
+      padding: 15px;
+      margin-top: 15px;
+      border-radius: 5px;
+      background-color: #f8f9fa;
+    }
+
+    .result-container {
+      margin-top: 20px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin: 15px 0;
+      padding: 10px;
+      border: 1px solid #e9ecef;
+      border-radius: 5px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .legend-color-box {
+      width: 20px;
+      height: 20px;
+      border: 1px solid #333;
+    }
+  </style>
+</head>
+
+<body>
+
+  <main>
+    <h1>壁と光のカラーシミュレーター</h1>
+    <p>色のついた壁に特定の光を当てた時の見え方をシミュレートしたり、複数の観測結果から元の壁の色を推定したりするツールです。</p>
+    <p>このツールは、パズルゲーム「The Witness」の特定エリアの攻略補助を目的として作成されました。The Witnessの攻略にどうぞ。<br>
+      <a href="https://store.steampowered.com/app/210970/The_Witness/"
+         target="_blank"
+         rel="noopener noreferrer">The Witness (Steamストアページ)</a>
+    </p>
+
+    <div id="legend-container">
+      <h3>色の凡例</h3>
+      <div class="legend"
+           id="color-legend"></div>
+    </div>
+
+    <hr>
+
+    <!-- 壁の色を推定する -->
+    <section id="estimator-section"
+             class="section">
+      <h2>壁の色を推定する</h2>
+      <p>「この色の光を当てたら、こう見えた」という観測パターンを複数登録・変更すると、下の結果が自動で更新されます。</p>
+      <div class="control-group">
+        <label for="estimator-rows">行数(n):</label>
+        <input type="number"
+               id="estimator-rows"
+               value="4"
+               min="1"
+               max="20"
+               title="壁の行数">
+        <label for="estimator-cols">列数(m):</label>
+        <input type="number"
+               id="estimator-cols"
+               value="5"
+               min="1"
+               max="20"
+               title="壁の列数">
+      </div>
+      <div id="observation-container"></div>
+      <div class="control-group"
+           style="margin-top: 15px;">
+        <button id="add-observation-btn">観測パターンを追加</button>
+      </div>
+      <div id="estimator-result-container"
+           class="result-container"></div>
+    </section>
+
+    <hr>
+
+    <!-- 見え方をシミュレートする -->
+    <section id="simulator-section"
+             class="section">
+      <h2>見え方をシミュレートする</h2>
+      <p>元の壁の色や当てる光の色を変更すると、下の見え方がリアルタイムで更新されます。</p>
+      <div class="control-group">
+        <label for="simulator-rows">行数(n):</label>
+        <input type="number"
+               id="simulator-rows"
+               value="4"
+               min="1"
+               max="20"
+               title="壁の行数">
+        <label for="simulator-cols">列数(m):</label>
+        <input type="number"
+               id="simulator-cols"
+               value="5"
+               min="1"
+               max="20"
+               title="壁の列数">
+        <button id="create-simulator-grid-btn">壁を再作成</button>
+      </div>
+      <div id="true-wall-container-wrapper">
+        <h4>元の壁 (各マスをクリックして色を変更)</h4>
+        <div id="true-wall-container"
+             class="grid-container"></div>
+      </div>
+      <div class="control-group"
+           style="margin-top: 20px;">
+        <label>当てる光の色:</label>
+        <div id="simulator-light-selector"></div>
+      </div>
+      <div id="simulation-result-container"
+           class="result-container"></div>
+    </section>
+
+    <footer style="text-align: center; margin-top: 40px; font-size: 12px; color: #6c757d;">
+      <p>免責事項: このツールは非公式のファンメイド作品です。ツールの動作や推定結果の正確性について、作者は一切の責任を負いません。自己責任でご利用ください。</p>
+    </footer>
+
+  </main>
+
+  <div id="color-palette"
+       class="color-palette"></div>
+  <div id="light-color-palette"
+       class="color-palette"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // --- 定数定義と状態管理 ---
+      const COLORS = {
+        R: { name: '赤', hex: '#FF0000', components: ['R'] }, G: { name: '緑', hex: '#00FF00', components: ['G'] }, B: { name: '青', hex: '#0000FF', components: ['B'] },
+        Y: { name: '黄', hex: '#FFFF00', components: ['R', 'G'] }, M: { name: 'マゼンタ', hex: '#FF00FF', components: ['R', 'B'] }, C: { name: 'シアン', hex: '#00FFFF', components: ['G', 'B'] },
+        W: { name: '白', hex: '#FFFFFF', components: ['R', 'G', 'B'] }, K: { name: '黒', hex: '#000000', components: [] }, EMPTY: { name: '無', hex: '#E0E0E0', components: [] }
+      };
+      const COLOR_KEYS = Object.keys(COLORS);
+      const LIGHT_COLOR_CYCLE = ['W', 'R', 'G', 'B', 'Y', 'M', 'C', 'K'];
+
+      const INTERACTION_MAP = {
+        R: { R: 'R', G: 'K', B: 'K', Y: 'R', M: 'R', C: 'K', W: 'R', K: 'K' },
+        G: { R: 'K', G: 'G', B: 'K', Y: 'G', M: 'K', C: 'G', W: 'G', K: 'K' },
+        B: { R: 'K', G: 'K', B: 'B', Y: 'K', M: 'B', C: 'B', W: 'B', K: 'K' },
+        Y: { R: 'R', G: 'G', B: 'K', Y: 'Y', M: 'R', C: 'G', W: 'Y', K: 'K' },
+        M: { R: 'R', G: 'K', B: 'B', Y: 'R', M: 'M', C: 'B', W: 'M', K: 'K' },
+        C: { R: 'K', G: 'G', B: 'B', Y: 'G', M: 'B', C: 'C', W: 'C', K: 'K' },
+        W: { R: 'R', G: 'G', B: 'B', Y: 'Y', M: 'M', C: 'C', W: 'W', K: 'K' },
+        K: { R: 'K', G: 'K', B: 'K', Y: 'K', M: 'K', C: 'K', W: 'K', K: 'K' }
+      };
+      const WALL_COLOR_CANDIDATES = ['R', 'G', 'B', 'Y', 'M', 'C', 'W', 'K'];
+
+      let activePaletteTarget = null;
+      let activeLightSelector = null;
+
+      // --- DOM要素取得 ---
+      const estimatorRowsInput = document.getElementById('estimator-rows');
+      const estimatorColsInput = document.getElementById('estimator-cols');
+      const observationContainer = document.getElementById('observation-container');
+      const addObservationBtn = document.getElementById('add-observation-btn');
+      const estimatorResultContainer = document.getElementById('estimator-result-container');
+
+      const simulatorRowsInput = document.getElementById('simulator-rows');
+      const simulatorColsInput = document.getElementById('simulator-cols');
+      const createSimulatorGridBtn = document.getElementById('create-simulator-grid-btn');
+      const trueWallContainer = document.getElementById('true-wall-container');
+      const simulatorLightSelectorContainer = document.getElementById('simulator-light-selector');
+      const simulationResultContainer = document.getElementById('simulation-result-container');
+      const colorLegend = document.getElementById('color-legend');
+      const colorPalette = document.getElementById('color-palette');
+      const lightColorPalette = document.getElementById('light-color-palette');
+
+      // --- 初期化処理 ---
+      function initialize() {
+        populateLegend();
+        createMainPalette();
+        createLightPalette();
+        createLightSelector(simulatorLightSelectorContainer);
+        addObservationPattern();
+        createSimulatorGrid();
+        setupEventListeners();
+        autoEstimate();
+      }
+
+      // --- イベントリスナー設定 ---
+      function setupEventListeners() {
+        estimatorRowsInput.addEventListener('input', refreshAllObservationGrids);
+        estimatorColsInput.addEventListener('input', refreshAllObservationGrids);
+        addObservationBtn.addEventListener('click', addObservationPattern);
+
+        createSimulatorGridBtn.addEventListener('click', createSimulatorGrid);
+        simulatorLightSelectorContainer.addEventListener('change', simulateView);
+
+        document.addEventListener('click', (e) => {
+          if (!colorPalette.contains(e.target) && e.target !== activePaletteTarget) {
+            hideMainPalette();
+          }
+          if (!lightColorPalette.contains(e.target) && e.target !== activeLightSelector?.querySelector('.light-color-indicator')) {
+            hideLightPalette();
+          }
+        }, true);
+      }
+
+      // --- 自動推定 ---
+      function autoEstimate() {
+        if (observationContainer.childElementCount > 0) {
+          estimateWallColors();
+        } else {
+          estimatorResultContainer.innerHTML = '';
+        }
+      }
+
+      // --- 汎用関数 ---
+      function populateLegend() {
+        colorLegend.innerHTML = '';
+        COLOR_KEYS.forEach(key => {
+          const item = document.createElement('div');
+          item.className = 'legend-item';
+          const box = document.createElement('div');
+          box.className = 'legend-color-box';
+          box.style.backgroundColor = COLORS[key].hex;
+          if (key === 'W') box.style.borderColor = '#cccccc';
+          const label = document.createElement('span');
+          label.textContent = `${COLORS[key].name} (${key})`;
+          item.append(box, label);
+          colorLegend.appendChild(item);
+        });
+      }
+
+      function createGrid(container, rows, cols, isInteractive, defaultColor = 'EMPTY') {
+        container.innerHTML = '';
+        container.style.gridTemplateColumns = `repeat(${cols}, 45px)`;
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const cell = document.createElement('div');
+            cell.className = 'grid-cell';
+            if (!isInteractive) cell.classList.add('no-hover');
+            cell.dataset.row = r;
+            cell.dataset.col = c;
+
+            const initialColor = typeof defaultColor === 'function' ? defaultColor(r, c) : defaultColor;
+            setColor(cell, initialColor);
+
+            if (isInteractive) {
+              cell.addEventListener('click', showMainPalette);
+            }
+            container.appendChild(cell);
+          }
+        }
+      }
+
+      function setColor(cell, colorKey) {
+        if (!COLORS[colorKey]) colorKey = 'K';
+        cell.dataset.color = colorKey;
+        cell.style.backgroundColor = COLORS[colorKey].hex;
+        cell.style.color = (colorKey === 'K' || colorKey === 'B' || colorKey === 'R' || colorKey === 'M') ? 'white' : 'black';
+        cell.style.borderColor = (colorKey === 'W') ? '#cccccc' : '#adb5bd';
+        cell.textContent = (colorKey === 'EMPTY') ? '無' : colorKey;
+        cell.title = '';
+      }
+
+      // --- カラーパレット関連 ---
+      function createMainPalette() {
+        colorPalette.innerHTML = '';
+        COLOR_KEYS.forEach(key => {
+          const colorDiv = document.createElement('div');
+          colorDiv.className = 'palette-color';
+          colorDiv.style.backgroundColor = COLORS[key].hex;
+          colorDiv.dataset.color = key;
+          colorDiv.addEventListener('click', () => {
+            if (activePaletteTarget) {
+              const isEstimatorCell = activePaletteTarget.closest('.observation-grid');
+              const isSimulatorCell = activePaletteTarget.closest('#true-wall-container');
+
+              setColor(activePaletteTarget, key);
+              hideMainPalette();
+
+              if (isEstimatorCell) {
+                autoEstimate();
+              }
+              if (isSimulatorCell) {
+                simulateView();
+              }
+            }
+          });
+          colorPalette.appendChild(colorDiv);
+        });
+      }
+
+      function showMainPalette(event) {
+        hideLightPalette(); // 同時に開かないように
+        const cell = event.currentTarget;
+        activePaletteTarget = cell;
+        const rect = cell.getBoundingClientRect();
+        colorPalette.style.display = 'grid';
+        colorPalette.style.top = `${window.scrollY + rect.bottom}px`;
+        colorPalette.style.left = `${window.scrollX + rect.left}px`;
+      }
+
+      function hideMainPalette() {
+        if (colorPalette.style.display !== 'none') {
+          colorPalette.style.display = 'none';
+          activePaletteTarget = null;
+        }
+      }
+
+      function createLightPalette() {
+        lightColorPalette.innerHTML = '';
+        LIGHT_COLOR_CYCLE.forEach(key => {
+          const colorDiv = document.createElement('div');
+          colorDiv.className = 'palette-color';
+          colorDiv.style.backgroundColor = COLORS[key].hex;
+          colorDiv.dataset.color = key;
+          colorDiv.addEventListener('click', () => {
+            if (activeLightSelector) {
+              const checkboxesDiv = activeLightSelector.querySelector('.light-checkboxes');
+              setLightColorFromKey(checkboxesDiv, key);
+              checkboxesDiv.dispatchEvent(new Event('change'));
+              hideLightPalette();
+            }
+          });
+          lightColorPalette.appendChild(colorDiv);
+        });
+      }
+
+      function showLightPalette(event) {
+        hideMainPalette(); // 同時に開かないように
+        const indicator = event.currentTarget;
+        activeLightSelector = indicator.closest('.light-selector');
+        const rect = indicator.getBoundingClientRect();
+        lightColorPalette.style.display = 'grid';
+        lightColorPalette.style.top = `${window.scrollY + rect.bottom}px`;
+        lightColorPalette.style.left = `${window.scrollX + rect.left}px`;
+      }
+
+      function hideLightPalette() {
+        if (lightColorPalette.style.display !== 'none') {
+          lightColorPalette.style.display = 'none';
+          activeLightSelector = null;
+        }
+      }
+
+      // --- 光セレクター関連 ---
+      function createLightSelector(container) {
+        container.innerHTML = '';
+        container.className = 'light-selector';
+
+        const checkboxesDiv = document.createElement('div');
+        checkboxesDiv.className = 'light-checkboxes';
+
+        ['R', 'G', 'B'].forEach(component => {
+          const label = document.createElement('label');
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.dataset.component = component;
+          label.append(checkbox, ` ${component}`);
+          checkboxesDiv.appendChild(label);
+        });
+
+        const indicator = document.createElement('div');
+        indicator.className = 'light-color-indicator';
+        container.append(checkboxesDiv, indicator);
+
+        const updateIndicator = () => {
+          const lightColorKey = getLightColorFromCheckboxes(checkboxesDiv);
+          indicator.style.backgroundColor = COLORS[lightColorKey].hex;
+          indicator.dataset.colorKey = lightColorKey;
+        };
+
+        checkboxesDiv.addEventListener('change', () => {
+          updateIndicator();
+          if (container.closest('.observation-pattern')) {
+            autoEstimate();
+          }
+        });
+
+        indicator.addEventListener('click', showLightPalette);
+
+        setLightColorFromKey(checkboxesDiv, 'W');
+        updateIndicator();
+      }
+
+      function getLightColorFromCheckboxes(checkboxesContainer) {
+        const components = [];
+        checkboxesContainer.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+          components.push(cb.dataset.component);
+        });
+        if (components.length === 3) return 'W';
+        if (components.length === 2) {
+          if (components.includes('R') && components.includes('G')) return 'Y';
+          if (components.includes('R') && components.includes('B')) return 'M';
+          if (components.includes('G') && components.includes('B')) return 'C';
+        }
+        if (components.length === 1) return components[0];
+        return 'K';
+      }
+
+      function setLightColorFromKey(checkboxesContainer, colorKey) {
+        const components = COLORS[colorKey].components;
+        checkboxesContainer.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+          cb.checked = components.includes(cb.dataset.component);
+        });
+      }
+
+      // --- 推定機能関連 ---
+      function renumberObservationPatterns() {
+        const patterns = observationContainer.querySelectorAll('.observation-pattern');
+        patterns.forEach((pattern, index) => {
+          pattern.querySelector('h4').textContent = `観測パターン #${index + 1}`;
+        });
+      }
+
+      function addObservationPattern() {
+        const patternDiv = document.createElement('div');
+        patternDiv.className = 'observation-pattern';
+
+        const header = document.createElement('div');
+        header.className = 'control-group';
+        const title = document.createElement('h4');
+        header.appendChild(title);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = '削除';
+        removeBtn.className = 'danger secondary';
+        removeBtn.style.cssText = 'padding:5px 10px; font-size:12px; margin-left: auto;';
+        removeBtn.onclick = () => {
+          patternDiv.remove();
+          renumberObservationPatterns();
+          autoEstimate();
+        };
+        header.appendChild(removeBtn);
+
+        const controlGroup = document.createElement('div');
+        controlGroup.className = 'control-group';
+        const label = document.createElement('label');
+        label.textContent = '光の色:';
+        const lightSelector = document.createElement('div');
+        createLightSelector(lightSelector);
+
+        controlGroup.append(label, lightSelector);
+        const gridLabel = document.createElement('h5');
+        gridLabel.style.margin = '15px 0 5px 0';
+        gridLabel.textContent = 'この光を当てた時の見え方:';
+        const gridContainer = document.createElement('div');
+        gridContainer.className = 'grid-container observation-grid';
+        patternDiv.append(header, controlGroup, gridLabel, gridContainer);
+        observationContainer.appendChild(patternDiv);
+
+        renumberObservationPatterns();
+        refreshSingleObservationGrid(gridContainer);
+        autoEstimate();
+      }
+
+      function refreshSingleObservationGrid(gridContainer) {
+        const rows = parseInt(estimatorRowsInput.value) || 1;
+        const cols = parseInt(estimatorColsInput.value) || 1;
+        const firstGrid = observationContainer.querySelector('.observation-grid');
+
+        const defaultColorFunc = (r, c) => {
+          if (firstGrid && gridContainer !== firstGrid) {
+            const correspondingCell = firstGrid.querySelector(`.grid-cell[data-row='${r}'][data-col='${c}']`);
+            if (correspondingCell && correspondingCell.dataset.color === 'EMPTY') return 'EMPTY';
+          }
+          return 'K';
+        };
+        createGrid(gridContainer, rows, cols, true, defaultColorFunc);
+      }
+
+      function refreshAllObservationGrids() {
+        observationContainer.querySelectorAll('.observation-grid').forEach(grid => {
+          refreshSingleObservationGrid(grid);
+        });
+        autoEstimate();
+      }
+
+      function estimateWallColors() {
+        const rows = parseInt(estimatorRowsInput.value);
+        const cols = parseInt(estimatorColsInput.value);
+        const patterns = observationContainer.querySelectorAll('.observation-pattern');
+        if (patterns.length === 0) {
+          estimatorResultContainer.innerHTML = '';
+          return;
+        }
+
+        const estimatedWall = Array(rows).fill(null).map(() => Array(cols).fill(null));
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            let possibleWallColors = [...WALL_COLOR_CANDIDATES];
+            let isDeterminedEmpty = false;
+            for (const pattern of patterns) {
+              const observedCell = pattern.querySelector(`.grid-cell[data-row='${r}'][data-col='${c}']`);
+              if (observedCell.dataset.color === 'EMPTY') {
+                isDeterminedEmpty = true;
+                break;
+              }
+              const lightSelector = pattern.querySelector('.light-checkboxes');
+              const lightColor = getLightColorFromCheckboxes(lightSelector);
+              possibleWallColors = possibleWallColors.filter(wallColor => INTERACTION_MAP[wallColor][lightColor] === observedCell.dataset.color);
+            }
+            estimatedWall[r][c] = isDeterminedEmpty ? ['EMPTY'] : possibleWallColors;
+          }
+        }
+        displayEstimatedWall(estimatedWall);
+      }
+
+      function displayEstimatedWall(wallData) {
+        estimatorResultContainer.innerHTML = '';
+        if (!wallData || wallData.length === 0) return;
+
+        const title = document.createElement('h3');
+        title.textContent = '推定結果 (「?」にカーソルを合わせると候補を表示)';
+        const grid = document.createElement('div');
+        grid.className = 'grid-container';
+        let isAmbiguous = false;
+        createGrid(grid, wallData.length, wallData[0].length, false);
+
+        for (let r = 0; r < wallData.length; r++) {
+          for (let c = 0; c < wallData[0].length; c++) {
+            const cell = grid.querySelector(`.grid-cell[data-row='${r}'][data-col='${c}']`);
+            const candidates = wallData[r][c];
+
+            if (candidates.length === 1) {
+              setColor(cell, candidates[0]);
+            } else {
+              isAmbiguous = true;
+              if (candidates.length > 1) {
+                cell.textContent = '?';
+                cell.style.backgroundColor = '#e9ecef';
+                cell.style.color = '#495057';
+                cell.title = '候補: ' + candidates.map(key => COLORS[key].name).join(', ');
+              } else {
+                setColor(cell, 'K');
+                cell.textContent = 'X';
+                cell.title = '矛盾した観測結果です';
+              }
+            }
+          }
+        }
+        const useButton = document.createElement('button');
+        useButton.textContent = 'この結果をシミュレーターで使用する';
+        useButton.className = 'secondary';
+        useButton.style.marginTop = '15px';
+        useButton.disabled = isAmbiguous;
+        if (isAmbiguous) {
+          useButton.title = '推定結果が確定していないマスがあるため使用できません。';
+        }
+        useButton.onclick = () => useEstimateForSimulation(wallData);
+        estimatorResultContainer.append(title, grid, useButton);
+      }
+
+      // --- シミュレーション機能関連 ---
+      function createSimulatorGrid() {
+        const rows = parseInt(simulatorRowsInput.value) || 1;
+        const cols = parseInt(simulatorColsInput.value) || 1;
+        createGrid(trueWallContainer, rows, cols, true, 'W');
+        simulateView();
+      }
+
+      function simulateView() {
+        const rows = parseInt(simulatorRowsInput.value);
+        const cols = parseInt(simulatorColsInput.value);
+        const lightColor = getLightColorFromCheckboxes(simulatorLightSelectorContainer.querySelector('.light-checkboxes'));
+
+        simulationResultContainer.innerHTML = '';
+        const title = document.createElement('h3');
+        title.textContent = `「${COLORS[lightColor].name}」の光を当てた時の見え方`;
+        const resultGrid = document.createElement('div');
+        resultGrid.className = 'grid-container';
+        createGrid(resultGrid, rows, cols, false);
+
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) {
+            const trueCell = trueWallContainer.querySelector(`.grid-cell[data-row='${r}'][data-col='${c}']`);
+            const resultCell = resultGrid.querySelector(`.grid-cell[data-row='${r}'][data-col='${c}']`);
+            const trueColor = trueCell.dataset.color;
+            const perceivedColor = (trueColor !== 'EMPTY') ? INTERACTION_MAP[trueColor][lightColor] : 'EMPTY';
+            setColor(resultCell, perceivedColor);
+          }
+        }
+        simulationResultContainer.append(title, resultGrid);
+      }
+
+      function useEstimateForSimulation(wallData) {
+        if (!wallData || wallData.length === 0) return;
+        const determinedWallState = wallData.map(row => row.map(candidates => (candidates.length >= 1) ? candidates[0] : 'K'));
+        const rows = determinedWallState.length;
+        const cols = determinedWallState[0].length;
+        simulatorRowsInput.value = rows;
+        simulatorColsInput.value = cols;
+        createGrid(trueWallContainer, rows, cols, true, (r, c) => determinedWallState[r][c]);
+        simulateView();
+        document.getElementById('simulator-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      initialize();
+    });
+  </script>
+
+</body>
+
+</html>
