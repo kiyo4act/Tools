@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+        content="EPUB形式のマンガから画像を抽出し、連番付きZIPファイルに変換するツール。複数のEPUBファイルの一括処理に対応。">
+  <meta name="last-updated"
+        content="2025-08-22">
+  <meta name="version"
+        content="1">
+  <title>EPUB to Image ZIP Converter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- JSZipライブラリを読み込みます -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', 'Noto Sans JP', sans-serif;
+    }
+
+    .drop-zone {
+      transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+    }
+
+    .drop-zone-over {
+      background-color: #e0f2fe;
+      border-color: #0284c7;
+    }
+
+    .loader {
+      border-top-color: #3498db;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 flex items-center justify-center min-h-screen p-4">
+
+  <div class="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6 md:p-8">
+    <div class="text-center mb-6">
+      <h1 class="text-2xl md:text-3xl font-bold text-slate-900">EPUB to Image ZIP Converter</h1>
+      <p class="text-slate-500 mt-2">EPUB形式のマンガから画像を抽出し、ZIPファイルに変換します。</p>
+    </div>
+
+    <!-- ファイル選択エリア -->
+    <div id="dropZone"
+         class="drop-zone border-2 border-dashed border-slate-300 rounded-lg p-8 text-center cursor-pointer bg-slate-50 hover:bg-slate-100">
+      <input type="file"
+             id="fileInput"
+             class="hidden"
+             accept=".epub"
+             multiple>
+      <div class="flex flex-col items-center">
+        <svg xmlns="http://www.w3.org/2000/svg"
+             class="w-12 h-12 text-slate-400 mb-4"
+             fill="none"
+             viewBox="0 0 24 24"
+             stroke="currentColor"
+             stroke-width="1.5">
+          <path stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+        </svg>
+        <p class="font-semibold text-slate-700">ここにEPUBファイルをドラッグ＆ドロップ</p>
+        <p class="text-slate-500 text-sm mt-1">またはクリックしてファイルを選択（複数可）</p>
+      </div>
+    </div>
+
+    <!-- ダウンロードオプションエリア -->
+    <div id="downloadOptionsContainer"
+         class="mt-6 hidden">
+      <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+        <div class="flex items-center justify-center mb-4">
+          <input id="downloadIndividuallyCheckbox"
+                 type="checkbox"
+                 class="h-4 w-4 rounded border-gray-300 text-sky-600 focus:ring-sky-500">
+          <label for="downloadIndividuallyCheckbox"
+                 class="ml-2 block text-sm text-slate-900">個別のZIPファイルをそれぞれダウンロードする</label>
+        </div>
+        <button id="downloadButton"
+                class="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105 disabled:bg-slate-400 disabled:cursor-wait">
+          <span id="download-text">ダウンロード開始</span>
+          <span id="download-loader"
+                class="hidden">処理中...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 処理状況表示エリア -->
+    <div id="status"
+         class="mt-6 text-center hidden">
+      <p id="overallStatusText"
+         class="text-slate-600 font-medium mb-2"></p>
+      <div class="flex items-center justify-center">
+        <div id="loader"
+             class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-6 w-6 mr-3"></div>
+        <p id="statusText"
+           class="text-slate-600"></p>
+      </div>
+      <div id="progressBarContainer"
+           class="w-full bg-slate-200 rounded-full h-2.5 mt-4 hidden">
+        <div id="progressBar"
+             class="bg-sky-500 h-2.5 rounded-full"
+             style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- 結果表示エリア -->
+    <div id="resultsList"
+         class="mt-6 space-y-3">
+      <!-- 完了したファイルのステータスがここに追加されます -->
+    </div>
+  </div>
+
+  <script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const statusDiv = document.getElementById('status');
+    const overallStatusText = document.getElementById('overallStatusText');
+    const statusText = document.getElementById('statusText');
+    const loader = document.getElementById('loader');
+    const progressBarContainer = document.getElementById('progressBarContainer');
+    const progressBar = document.getElementById('progressBar');
+    const resultsList = document.getElementById('resultsList');
+    const downloadOptionsContainer = document.getElementById('downloadOptionsContainer');
+
+    // イベントリスナー
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drop-zone-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drop-zone-over'));
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('drop-zone-over');
+      if (e.dataTransfer.files.length > 0) processFiles(e.dataTransfer.files);
+    });
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) processFiles(e.target.files);
+    });
+
+    // 複数ファイルを順次処理するメイン関数
+    async function processFiles(files) {
+      const epubFiles = Array.from(files).filter(file => file.name.toLowerCase().endsWith('.epub'));
+      if (epubFiles.length === 0) {
+        alert('有効なEPUBファイルがありません。');
+        return;
+      }
+
+      resetUI();
+      statusDiv.classList.remove('hidden');
+
+      const successfulZips = [];
+
+      for (let i = 0; i < epubFiles.length; i++) {
+        const file = epubFiles[i];
+        overallStatusText.textContent = `処理中 (${i + 1} / ${epubFiles.length}): ${file.name}`;
+        resetFileProgress();
+
+        const result = await handleFile(file);
+
+        if (result.status === 'success') {
+          successfulZips.push({ fileName: result.fileName, blob: result.blob });
+          addResultMessage(file.name, result.message, 'success');
+        } else {
+          addResultMessage(file.name, result.message, 'error');
+        }
+      }
+
+      statusDiv.classList.add('hidden');
+
+      if (successfulZips.length > 0) {
+        overallStatusText.textContent = `すべての処理が完了しました。(${successfulZips.length}件成功)`;
+        setupDownloadOptions(successfulZips);
+      } else {
+        overallStatusText.textContent = 'すべてのファイルの処理に失敗しました。';
+      }
+    }
+
+    // 個別のファイル処理関数
+    async function handleFile(file) {
+      try {
+        statusText.textContent = 'EPUBファイルを読み込んでいます...';
+        const zip = await JSZip.loadAsync(file);
+
+        statusText.textContent = '構造を解析中...';
+        const containerXmlPath = 'META-INF/container.xml';
+        if (!zip.files[containerXmlPath]) throw new Error('META-INF/container.xml が見つかりません。');
+        const containerXmlStr = await zip.files[containerXmlPath].async('string');
+        const parser = new DOMParser();
+        const containerDoc = parser.parseFromString(containerXmlStr, 'application/xml');
+        const opfPath = containerDoc.getElementsByTagName('rootfile')[0].getAttribute('full-path');
+        const opfBasePath = opfPath.includes('/') ? opfPath.substring(0, opfPath.lastIndexOf('/') + 1) : '';
+
+        statusText.textContent = 'ファイルリストを解析中...';
+        const opfStr = await zip.files[opfPath].async('string');
+        const opfDoc = parser.parseFromString(opfStr, 'application/xml');
+        const manifestItems = opfDoc.getElementsByTagName('manifest')[0].getElementsByTagName('item');
+        const spineItems = opfDoc.getElementsByTagName('spine')[0].getElementsByTagName('itemref');
+        const manifestMap = new Map();
+        for (const item of manifestItems) {
+          manifestMap.set(item.getAttribute('id'), { href: item.getAttribute('href'), mediaType: item.getAttribute('media-type') });
+        }
+
+        statusText.textContent = 'ページの順番を特定中...';
+        const orderedHtmlFiles = [];
+        for (const item of spineItems) {
+          const id = item.getAttribute('idref');
+          const manifestItem = manifestMap.get(id);
+          if (manifestItem && manifestItem.mediaType.includes('xhtml')) {
+            orderedHtmlFiles.push(opfBasePath + manifestItem.href);
+          }
+        }
+
+        statusText.textContent = '画像ファイルを抽出中...';
+        const orderedImagePaths = [];
+        const seenImages = new Set();
+        for (const htmlPath of orderedHtmlFiles) {
+          if (!zip.files[htmlPath]) continue;
+          const htmlStr = await zip.files[htmlPath].async('string');
+          const htmlDoc = parser.parseFromString(htmlStr, 'text/html');
+          const images = htmlDoc.querySelectorAll('img, image');
+          const htmlBasePath = htmlPath.includes('/') ? htmlPath.substring(0, htmlPath.lastIndexOf('/') + 1) : '';
+          for (const img of images) {
+            let src = img.getAttribute('src') || img.getAttribute('xlink:href');
+            if (src) {
+              const url = new URL(src, `file:///${htmlBasePath}`);
+              const fullPath = decodeURIComponent(url.pathname.substring(1));
+              if (!seenImages.has(fullPath) && zip.files[fullPath]) {
+                orderedImagePaths.push(fullPath);
+                seenImages.add(fullPath);
+              }
+            }
+          }
+        }
+
+        if (orderedImagePaths.length === 0) throw new Error('画像が見つかりませんでした。');
+
+        statusText.textContent = 'ZIPファイルを作成中...';
+        loader.classList.add('hidden');
+        progressBarContainer.classList.remove('hidden');
+        const outputZip = new JSZip();
+        const totalImages = orderedImagePaths.length;
+        const padLength = String(totalImages).length;
+        for (let i = 0; i < totalImages; i++) {
+          const imagePath = orderedImagePaths[i];
+          const fileExtension = imagePath.split('.').pop();
+          const newFileName = String(i + 1).padStart(padLength, '0') + '.' + fileExtension;
+          const imageData = await zip.files[imagePath].async('blob');
+          outputZip.file(newFileName, imageData);
+          progressBar.style.width = `${((i + 1) / totalImages) * 100}%`;
+        }
+
+        const zipBlob = await outputZip.generateAsync({ type: 'blob' });
+        const zipFileName = `${file.name.replace(/\.epub$/i, '')}.zip`;
+        return { status: 'success', fileName: zipFileName, blob: zipBlob, message: `${totalImages}個の画像を抽出` };
+
+      } catch (error) {
+        console.error(`Error processing ${file.name}:`, error);
+        return { status: 'error', message: `エラー: ${error.message}` };
+      }
+    }
+
+    // 結果リストにメッセージを追加する関数
+    function addResultMessage(fileName, message, status) {
+      const bgColor = status === 'success' ? 'bg-green-50' : 'bg-red-50';
+      const borderColor = status === 'success' ? 'border-green-200' : 'border-red-200';
+      const titleColor = status === 'success' ? 'text-green-800' : 'text-red-800';
+      const textColor = status === 'success' ? 'text-green-600' : 'text-red-600';
+
+      const resultEl = document.createElement('div');
+      resultEl.className = `${bgColor} border ${borderColor} rounded-lg p-4`;
+      resultEl.innerHTML = `
+                <div>
+                    <p class="font-semibold ${titleColor} truncate">${fileName}</p>
+                    <p class="text-sm ${textColor}">${message}</p>
+                </div>
+            `;
+      resultsList.appendChild(resultEl);
+    }
+
+    // ダウンロードオプションを設定する関数
+    function setupDownloadOptions(successfulZips) {
+      downloadOptionsContainer.classList.remove('hidden');
+      const button = document.getElementById('downloadButton');
+      const checkbox = document.getElementById('downloadIndividuallyCheckbox');
+
+      // 既存のリスナーを削除して重複を防ぐ
+      const newButton = button.cloneNode(true);
+      button.parentNode.replaceChild(newButton, button);
+
+      newButton.addEventListener('click', async () => {
+        newButton.disabled = true;
+        const downloadText = newButton.querySelector('#download-text');
+        const downloadLoader = newButton.querySelector('#download-loader');
+        downloadText.classList.add('hidden');
+        downloadLoader.classList.remove('hidden');
+
+        if (checkbox.checked) {
+          // 個別ダウンロード
+          downloadLoader.textContent = '個別ダウンロード中...';
+          for (const item of successfulZips) {
+            triggerDownload(item.blob, item.fileName);
+            await new Promise(resolve => setTimeout(resolve, 300)); // 連続ダウンロードのための遅延
+          }
+        } else {
+          // 一括ダウンロード
+          downloadLoader.textContent = 'ZIPファイルを作成中...';
+          const masterZip = new JSZip();
+          for (const item of successfulZips) {
+            masterZip.file(item.fileName, item.blob);
+          }
+          const masterBlob = await masterZip.generateAsync({ type: 'blob' });
+          triggerDownload(masterBlob, 'converted_epubs.zip');
+        }
+
+        newButton.disabled = false;
+        downloadText.classList.remove('hidden');
+        downloadLoader.classList.add('hidden');
+      });
+    }
+
+    // ダウンロードをトリガーするヘルパー関数
+    function triggerDownload(blob, fileName) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // UIをリセットする関数
+    function resetUI() {
+      resultsList.innerHTML = '';
+      downloadOptionsContainer.classList.add('hidden');
+      overallStatusText.textContent = '';
+      statusDiv.classList.add('hidden');
+    }
+
+    // ファイルごとの進捗表示をリセットする関数
+    function resetFileProgress() {
+      statusText.textContent = '';
+      loader.classList.remove('hidden');
+      progressBarContainer.classList.add('hidden');
+      progressBar.style.width = '0%';
+    }
+  </script>
+</body>
+
+</html>
