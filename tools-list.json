@@ -1,9 +1,9 @@
 [
   {
-    "name": "EPUBの画像だけをまとめてZIPに変換するツール",
+    "name": "EPUBの画像をまとめてZIPに変換するツール",
     "path": "EpubToZipConverter",
     "url": "/Tools/EpubToZipConverter/",
-    "description": "EPUB形式のマンガから画像を抽出し、連番付きZIPファイルに変換するツール。複数のEPUBファイルの一括処理に対応。",
+    "description": "EPUB形式のマンガなどから画像を抽出し、連番付きZIPファイルに変換するツール。複数のEPUBファイルの一括処理に対応。",
     "lastUpdated": "2025-08-22"
   },
   {
