@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+          content="はてなブログ用の自動生成アイキャッチデザイン案＆プレビューアです">
+    <meta name="last-updated"
+          content="2025-09-10">
+    <meta name="version"
+          content="1">
+    <title>はてなブログ アイキャッチデザイン プレビューア</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        .preview-container {
+            width: 300px;
+            height: 157.5px; /* 1200x630 -> 300x157.5 */
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .preview-iframe {
+            width: 1200px;
+            height: 630px;
+            transform: scale(0.25); /* 300 / 1200 = 0.25 */
+            transform-origin: top left;
+            border: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 sm:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-8 p-6 bg-white rounded-lg shadow">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">アイキャッチデザイン プレビューア</h1>
+            <p class="text-gray-600">以下のフォームにテキストを入力すると、すべてのデザインにリアルタイムで反映されます。</p>
+        </header>
+
+        <div class="controls-panel grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 p-6 bg-white rounded-lg shadow">
+            <div>
+                <label for="title" class="block text-sm font-medium text-gray-700 mb-1">記事タイトル ({Title})</label>
+                <input type="text" id="title" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" value="ここに記事のタイトルを入力します。複数行になる場合のテストも可能です。">
+            </div>
+            <div>
+                <label for="category" class="block text-sm font-medium text-gray-700 mb-1">カテゴリ ({FirstCategory})</label>
+                <input type="text" id="category" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" value="カテゴリ名">
+            </div>
+            <div>
+                <label for="blogTitle" class="block text-sm font-medium text-gray-700 mb-1">ブログ名 ({BlogTitle})</label>
+                <input type="text" id="blogTitle" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" value="My Awesome Blog">
+            </div>
+            <div>
+                <label for="authorName" class="block text-sm font-medium text-gray-700 mb-1">投稿者名 ({AuthorName})</label>
+                <input type="text" id="authorName" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" value="Gemini Creator">
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+                <div>
+                    <label for="year" class="block text-sm font-medium text-gray-700 mb-1">年</label>
+                    <input type="text" id="year" class="w-full p-2 border border-gray-300 rounded-md shadow-sm" value="2025">
+                </div>
+                <div>
+                    <label for="month" class="block text-sm font-medium text-gray-700 mb-1">月</label>
+                    <input type="text" id="month" class="w-full p-2 border border-gray-300 rounded-md shadow-sm" value="09">
+                </div>
+                <div>
+                    <label for="date" class="block text-sm font-medium text-gray-700 mb-1">日</label>
+                    <input type="text" id="date" class="w-full p-2 border border-gray-300 rounded-md shadow-sm" value="10">
+                </div>
+            </div>
+        </div>
+
+        <!-- カスタムHTML入力セクション -->
+        <div class="mb-8 p-6 bg-white rounded-lg shadow">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">カスタムHTMLプレビュー</h2>
+            <div>
+                <label for="customHtml" class="block text-sm font-medium text-gray-700 mb-1">ここにHTMLコードを貼り付けます</label>
+                <textarea id="customHtml" rows="10" class="w-full p-2 border border-gray-300 rounded-md shadow-sm font-mono text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="<!DOCTYPE html>..."></textarea>
+            </div>
+            <button id="addCustomPreviewBtn" class="mt-4 px-4 py-2 bg-green-600 text-white font-semibold rounded-md shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600 transition-colors">
+                カスタムHTMLをプレビュー
+            </button>
+        </div>
+        
+        <div id="custom-preview-section" class="hidden">
+             <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">カスタムプレビュー</h2>
+             <div id="custom-preview-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10"></div>
+             <hr class="my-8 border-gray-300">
+        </div>
+
+
+        <main id="preview-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
+            <!-- プレビューはここにJavaScriptで生成されます -->
+        </main>
+    </div>
+
+    <script>
+        const templates = {
+            "1-A: ディープオーシャン": `
+<!DOCTYPE html>
+<html lang="{BlogLanguage}">
+<head>
+    <meta charset="utf-8">
+    <title>デザイン案1-A：ディープオーシャン</title>
+    <style>
+        :root {
+            --gradient-start: #0f2027; --gradient-center: #203a43; --gradient-end: #2c5364;
+            --text-color: #ffffff; --overlay-bg: rgba(255, 255, 255, 0.1); --overlay-border: rgba(255, 255, 255, 0.2);
+            --header-bg: rgba(255, 255, 255, 0.1); --font-family: 'Noto Sans CJK JP', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 1200px; height: 630px; font-family: var(--font-family); color: var(--text-color);
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-center), var(--gradient-end));
+            display: flex; flex-direction: column; justify-content: space-between; padding: 40px; word-break: break-word; line-height: 1.5;
+        }
+        .header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .blog-info { display: flex; align-items: center; gap: 15px; }
+        .blog-info .icon img, .blog-info .icon svg { width: 50px; height: 50px; border-radius: 50%; background: rgba(255, 255, 255, 0.8); padding: 5px; }
+        .blog-info .title { font-size: 28px; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
+        .category-badge { font-size: 24px; font-weight: bold; padding: 8px 20px; background-color: var(--header-bg); border: 1px solid var(--overlay-border); border-radius: 50px; backdrop-filter: blur(8px); }
+        .category-badge:empty { display: none; }
+        .main-content {
+            width: 100%; padding: 30px; background: var(--overlay-bg); border-radius: 20px; border: 1px solid var(--overlay-border);
+            backdrop-filter: blur(12px) saturate(150%); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); text-align: center;
+            flex-grow: 1; display: flex; justify-content: center; align-items: center; margin-top: 20px; margin-bottom: 20px;
+        }
+        .entry-title {
+            font-size: 68px; font-weight: 900; line-height: 1.4; text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+            display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: auto-phrase;
+        }
+        .footer { width: 100%; text-align: right; font-size: 22px; font-weight: 500; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="blog-info">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="none"/><path d="M50,15A35,35,0,1,0,85,50,35,35,0,0,0,50,15Zm0,65A30,30,0,1,1,80,50,30,30,0,0,1,50,80Z" fill="#203a43"/><path d="M50,25a2.5,2.5,0,0,0-2.5,2.5v20a2.5,2.5,0,0,0,5,0v-20A2.5,2.5,0,0,0,50,25Z" fill="#203a43"/><circle cx="50" cy="60" r="3" fill="#203a43"/></svg></div>
+            <span class="title">{BlogTitle}</span>
+        </div>
+        <div class="category-badge">{FirstCategory}</div>
+    </header>
+    <main class="main-content"><h1 class="entry-title">{Title}</h1></main>
+    <footer class="footer"><span>{PostedYear}/{PostedMonth}/{PostedDate} | {AuthorName}</span></footer>
+</body>
+</html>
+`,
+            "1-C: ミント＆クリスタル": `
+<!DOCTYPE html>
+<html lang="{BlogLanguage}">
+<head>
+    <meta charset="utf-8">
+    <title>デザイン案1-C：ミント＆クリスタル</title>
+    <style>
+        :root {
+            --gradient-start: #48c6ef; --gradient-end: #6f86d6; --text-color: #ffffff;
+            --overlay-bg: rgba(255, 255, 255, 0.25); --overlay-border: rgba(255, 255, 255, 0.3);
+            --header-bg: rgba(255, 255, 255, 0.2); --font-family: 'Noto Sans CJK JP', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 1200px; height: 630px; font-family: var(--font-family); color: var(--text-color);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            display: flex; flex-direction: column; justify-content: space-between; padding: 40px; word-break: break-word; line-height: 1.5;
+        }
+        .header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .blog-info { display: flex; align-items: center; gap: 15px; }
+        .blog-info .icon img, .blog-info .icon svg { width: 50px; height: 50px; border-radius: 50%; background: var(--overlay-bg); padding: 5px; }
+        .blog-info .title { font-size: 28px; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.2); }
+        .category-badge { font-size: 24px; font-weight: bold; padding: 8px 20px; background-color: var(--header-bg); border-radius: 50px; backdrop-filter: blur(5px); }
+        .category-badge:empty { display: none; }
+        .main-content {
+            width: 100%; padding: 30px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+            border-radius: 20px; border: 1px solid var(--overlay-border); backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2); text-align: center;
+            flex-grow: 1; display: flex; justify-content: center; align-items: center; margin-top: 20px; margin-bottom: 20px;
+        }
+        .entry-title {
+            font-size: 68px; font-weight: 800; line-height: 1.4; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.25);
+            display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: auto-phrase;
+        }
+        .footer { width: 100%; text-align: right; font-size: 22px; font-weight: 500; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="blog-info">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+            <span class="title">{BlogTitle}</span>
+        </div>
+        <div class="category-badge">{FirstCategory}</div>
+    </header>
+    <main class="main-content"><h1 class="entry-title">{Title}</h1></main>
+    <footer class="footer"><span>{PostedYear}/{PostedMonth}/{PostedDate} | {AuthorName}</span></footer>
+</body>
+</html>
+`,
+            "1-D: モーニングミスト": `
+<!DOCTYPE html>
+<html lang="{BlogLanguage}">
+<head>
+    <meta charset="utf-8">
+    <title>デザイン案1-D：モーニングミスト</title>
+    <style>
+        :root {
+            --gradient-start: #f5f7fa; --gradient-end: #c3cfe2; --text-color: #333;
+            --text-shadow-color: rgba(255, 255, 255, 0.5); --glass-bg: rgba(255, 255, 255, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.6); --header-bg: rgba(255, 255, 255, 0.3);
+            --font-family: 'Noto Sans CJK JP', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 1200px; height: 630px; font-family: var(--font-family); color: var(--text-color);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            display: flex; flex-direction: column; justify-content: space-between; padding: 40px; word-break: break-word; line-height: 1.5;
+        }
+        .header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .blog-info { display: flex; align-items: center; gap: 15px; }
+        .blog-info .icon img, .blog-info .icon svg { width: 50px; height: 50px; border-radius: 50%; background: var(--header-bg); padding: 5px; }
+        .blog-info .title { font-size: 28px; font-weight: bold; text-shadow: 1px 1px 2px var(--text-shadow-color); }
+        .category-badge { font-size: 24px; font-weight: bold; padding: 8px 20px; background-color: var(--header-bg); border: 1px solid var(--glass-border); border-radius: 50px; backdrop-filter: blur(8px); }
+        .category-badge:empty { display: none; }
+        .main-content {
+            width: 100%; padding: 30px; background: var(--glass-bg); border-radius: 20px; border: 1px solid var(--glass-border);
+            backdrop-filter: blur(15px) saturate(120%); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1); text-align: center;
+            flex-grow: 1; display: flex; justify-content: center; align-items: center; margin-top: 20px; margin-bottom: 20px;
+        }
+        .entry-title {
+            font-size: 68px; font-weight: 800; line-height: 1.4; text-shadow: 2px 2px 5px var(--text-shadow-color);
+            display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: auto-phrase;
+        }
+        .footer { width: 100%; text-align: right; font-size: 22px; font-weight: 500; text-shadow: 1px 1px 2px var(--text-shadow-color); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="blog-info">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#333"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+            <span class="title">{BlogTitle}</span>
+        </div>
+        <div class="category-badge">{FirstCategory}</div>
+    </header>
+    <main class="main-content"><h1 class="entry-title">{Title}</h1></main>
+    <footer class="footer"><span>{PostedYear}/{PostedMonth}/{PostedDate} | {AuthorName}</span></footer>
+</body>
+</html>
+`,
+            "1-E: イリデッセントパール": `
+<!DOCTYPE html>
+<html lang="{BlogLanguage}">
+<head>
+    <meta charset="utf-8">
+    <title>デザイン案1-E：イリデッセントパール</title>
+    <style>
+        :root {
+            --gradient-start: #fde0e0; --gradient-mid1: #e4f1f1; --gradient-mid2: #e0eafc; --gradient-end: #f0e6ff;
+            --text-color: #2c3e50; --text-shadow-color: rgba(255, 255, 255, 0.6); --glass-bg: rgba(255, 255, 255, 0.5);
+            --glass-border: rgba(255, 255, 255, 0.7); --header-bg: rgba(255, 255, 255, 0.4);
+            --font-family: 'Noto Sans CJK JP', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 1200px; height: 630px; font-family: var(--font-family); color: var(--text-color);
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-mid1), var(--gradient-mid2), var(--gradient-end));
+            display: flex; flex-direction: column; justify-content: space-between; padding: 40px; word-break: break-word; line-height: 1.5;
+        }
+        .header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .blog-info { display: flex; align-items: center; gap: 15px; }
+        .blog-info .icon img, .blog-info .icon svg { width: 50px; height: 50px; border-radius: 50%; background: var(--header-bg); padding: 5px; }
+        .blog-info .title { font-size: 28px; font-weight: bold; text-shadow: 1px 1px 2px var(--text-shadow-color); }
+        .category-badge { font-size: 24px; font-weight: bold; padding: 8px 20px; background-color: var(--header-bg); border-radius: 50px; }
+        .category-badge:empty { display: none; }
+        .main-content {
+            width: 100%; padding: 30px; background: var(--glass-bg); border-radius: 20px; border: 1.5px solid var(--glass-border);
+            backdrop-filter: blur(12px) saturate(180%); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15); text-align: center;
+            flex-grow: 1; display: flex; justify-content: center; align-items: center; margin-top: 20px; margin-bottom: 20px;
+        }
+        .entry-title {
+            font-size: 68px; font-weight: 800; line-height: 1.4; text-shadow: 2px 2px 8px var(--text-shadow-color);
+            display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: auto-phrase;
+        }
+        .footer { width: 100%; text-align: right; font-size: 22px; font-weight: 500; text-shadow: 1px 1px 2px var(--text-shadow-color); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="blog-info">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#2c3e50"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+            <span class="title">{BlogTitle}</span>
+        </div>
+        <div class="category-badge">{FirstCategory}</div>
+    </header>
+    <main class="main-content"><h1 class="entry-title">{Title}</h1></main>
+    <footer class="footer"><span>{PostedYear}/{PostedMonth}/{PostedDate} | {AuthorName}</span></footer>
+</body>
+</html>
+`,
+            "1-F: フロストクラウド": `
+<!DOCTYPE html>
+<html lang="{BlogLanguage}">
+<head>
+    <meta charset="utf-8">
+    <title>デザイン案1-F：フロストクラウド</title>
+    <style>
+        :root {
+            --gradient-start: #eef1f5; --gradient-end: #ffffff; --text-color: #434d5c;
+            --text-shadow-color: rgba(255, 255, 255, 0.3);
+            --glass-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.2));
+            --glass-border: rgba(255, 255, 255, 0.5); --header-bg: rgba(255, 255, 255, 0.2);
+            --font-family: 'Noto Sans CJK JP', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 1200px; height: 630px; font-family: var(--font-family); color: var(--text-color);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            display: flex; flex-direction: column; justify-content: space-between; padding: 40px; word-break: break-word; line-height: 1.5;
+        }
+        .header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .blog-info { display: flex; align-items: center; gap: 15px; }
+        .blog-info .icon img, .blog-info .icon svg { width: 50px; height: 50px; border-radius: 50%; background: var(--header-bg); padding: 5px; }
+        .blog-info .title { font-size: 28px; font-weight: bold; text-shadow: 1px 1px 2px var(--text-shadow-color); }
+        .category-badge { font-size: 24px; font-weight: bold; padding: 8px 20px; background-color: var(--header-bg); border-radius: 50px; backdrop-filter: blur(2px); }
+        .category-badge:empty { display: none; }
+        .main-content {
+            width: 100%; padding: 30px; background: var(--glass-bg); border-radius: 20px; border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px); box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.1); text-align: center;
+            flex-grow: 1; display: flex; justify-content: center; align-items: center; margin-top: 20px; margin-bottom: 20px;
+        }
+        .entry-title {
+            font-size: 68px; font-weight: 800; line-height: 1.4; text-shadow: 2px 2px 5px var(--text-shadow-color);
+            display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: auto-phrase;
+        }
+        .footer { width: 100%; text-align: right; font-size: 22px; font-weight: 500; text-shadow: 1px 1px 2px var(--text-shadow-color); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="blog-info">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#434d5c"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+            <span class="title">{BlogTitle}</span>
+        </div>
+        <div class="category-badge">{FirstCategory}</div>
+    </header>
+    <main class="main-content"><h1 class="entry-title">{Title}</h1></main>
+    <footer class="footer"><span>{PostedYear}/{PostedMonth}/{PostedDate} | {AuthorName}</span></footer>
+</body>
+</html>
+`,
+            "1-G: ソフトオーロラ": `
+<!DOCTYPE html>
+<html lang="{BlogLanguage}">
+<head>
+    <meta charset="utf-8">
+    <title>デザイン案1-G：ソフトオーロラ</title>
+    <style>
+        :root {
+            --gradient-start: #fff1eb; --gradient-end: #ace0f9; --text-color: #5b535f;
+            --text-shadow-color: rgba(255, 255, 255, 0.4);
+            --glass-bg: linear-gradient(160deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.2));
+            --glass-border: rgba(255, 255, 255, 0.6); --header-bg: rgba(255, 255, 255, 0.3);
+            --font-family: 'Noto Sans CJK JP', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 1200px; height: 630px; font-family: var(--font-family); color: var(--text-color);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            display: flex; flex-direction: column; justify-content: space-between; padding: 40px; word-break: break-word; line-height: 1.5;
+        }
+        .header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .blog-info { display: flex; align-items: center; gap: 15px; }
+        .blog-info .icon img, .blog-info .icon svg { width: 50px; height: 50px; border-radius: 50%; background: var(--header-bg); padding: 5px; }
+        .blog-info .title { font-size: 28px; font-weight: bold; text-shadow: 1px 1px 2px var(--text-shadow-color); }
+        .category-badge { font-size: 24px; font-weight: bold; padding: 8px 20px; background-color: var(--header-bg); border-radius: 50px; backdrop-filter: blur(5px); }
+        .category-badge:empty { display: none; }
+        .main-content {
+            width: 100%; padding: 30px; background: var(--glass-bg); border-radius: 20px; border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1), inset 0 1px 1px 0 rgba(255, 255, 255, 0.7); text-align: center;
+            flex-grow: 1; display: flex; justify-content: center; align-items: center; margin-top: 20px; margin-bottom: 20px;
+        }
+        .entry-title {
+            font-size: 68px; font-weight: 800; line-height: 1.4; text-shadow: 2px 2px 5px var(--text-shadow-color);
+            display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: auto-phrase;
+        }
+        .footer { width: 100%; text-align: right; font-size: 22px; font-weight: 500; text-shadow: 1px 1px 2px var(--text-shadow-color); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="blog-info">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#5b535f"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+            <span class="title">{BlogTitle}</span>
+        </div>
+        <div class="category-badge">{FirstCategory}</div>
+    </header>
+    <main class="main-content"><h1 class="entry-title">{Title}</h1></main>
+    <footer class="footer"><span>{PostedYear}/{PostedMonth}/{PostedDate} | {AuthorName}</span></footer>
+</body>
+</html>
+`,
+            "1-H: クリスタルクリア": `
+<!DOCTYPE html>
+<html lang="{BlogLanguage}">
+<head>
+    <meta charset="utf-8">
+    <title>デザイン案1-H：クリスタルクリア</title>
+    <style>
+        :root {
+            --gradient-start: #d4e1ec; --gradient-end: #ffffff; --text-color: #3d5266;
+            --text-shadow-color: rgba(255, 255, 255, 0.7); --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.4); --header-bg: rgba(255, 255, 255, 0.2);
+            --font-family: 'Noto Sans CJK JP', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 1200px; height: 630px; font-family: var(--font-family); color: var(--text-color);
+            background: radial-gradient(circle at top left, var(--gradient-start), var(--gradient-end));
+            display: flex; flex-direction: column; justify-content: space-between; padding: 40px; word-break: break-word; line-height: 1.5;
+        }
+        .header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .blog-info { display: flex; align-items: center; gap: 15px; }
+        .blog-info .icon img, .blog-info .icon svg { width: 50px; height: 50px; border-radius: 50%; background: var(--header-bg); padding: 5px; }
+        .blog-info .title { font-size: 28px; font-weight: bold; text-shadow: 1px 1px 2px var(--text-shadow-color); }
+        .category-badge { font-size: 24px; font-weight: bold; padding: 8px 20px; background-color: var(--header-bg); border-radius: 50px; backdrop-filter: blur(5px); }
+        .category-badge:empty { display: none; }
+        .main-content {
+            width: 100%; padding: 30px; background: var(--glass-bg); border-radius: 20px; border: 1px solid var(--glass-border);
+            box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.4) inset, 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(8px); text-align: center;
+            flex-grow: 1; display: flex; justify-content: center; align-items: center; margin-top: 20px; margin-bottom: 20px;
+        }
+        .entry-title {
+            font-size: 68px; font-weight: 800; line-height: 1.4; text-shadow: 2px 2px 10px var(--text-shadow-color);
+            display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: auto-phrase;
+        }
+        .footer { width: 100%; text-align: right; font-size: 22px; font-weight: 500; text-shadow: 1px 1px 2px var(--text-shadow-color); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="blog-info">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#3d5266"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+            <span class="title">{BlogTitle}</span>
+        </div>
+        <div class="category-badge">{FirstCategory}</div>
+    </header>
+    <main class="main-content"><h1 class="entry-title">{Title}</h1></main>
+    <footer class="footer"><span>{PostedYear}/{PostedMonth}/{PostedDate} | {AuthorName}</span></footer>
+</body>
+</html>
+`,
+            "1-I: ヘブンリーレイ": `
+<!DOCTYPE html>
+<html lang="{BlogLanguage}">
+<head>
+    <meta charset="utf-8">
+    <title>デザイン案1-I：ヘブンリーレイ</title>
+    <style>
+        :root {
+            --gradient-start: #e0f2fe; --gradient-end: #fff0f5; --light-beam-color: rgba(255, 255, 255, 0.5);
+            --text-color: #3b3a51; --text-shadow-color: rgba(255, 255, 255, 0.5);
+            --glass-bg: linear-gradient(150deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.2));
+            --glass-border: rgba(255, 255, 255, 0.7); --header-bg: rgba(255, 255, 255, 0.3);
+            --font-family: 'Noto Sans CJK JP', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 1200px; height: 630px; font-family: var(--font-family); color: var(--text-color);
+            background: 
+                linear-gradient(110deg, transparent 45%, var(--light-beam-color) 50%, transparent 55%),
+                linear-gradient(130deg, transparent 40%, var(--light-beam-color) 45%, transparent 50%),
+                linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            display: flex; flex-direction: column; justify-content: space-between; padding: 40px; word-break: break-word;
+            line-height: 1.5; position: relative; overflow: hidden;
+        }
+        .header { display: flex; justify-content: space-between; align-items: center; width: 100%; z-index: 2; }
+        .blog-info { display: flex; align-items: center; gap: 15px; }
+        .blog-info .icon img, .blog-info .icon svg { width: 50px; height: 50px; border-radius: 50%; background: var(--header-bg); padding: 5px; }
+        .blog-info .title { font-size: 28px; font-weight: bold; text-shadow: 1px 1px 2px var(--text-shadow-color); }
+        .category-badge { font-size: 24px; font-weight: bold; padding: 8px 20px; background-color: var(--header-bg); border-radius: 50px; backdrop-filter: blur(5px); }
+        .category-badge:empty { display: none; }
+        .main-content {
+            width: 100%; padding: 30px; background: var(--glass-bg); border-radius: 20px; border: 1.5px solid var(--glass-border);
+            backdrop-filter: blur(12px); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12), inset 0 2px 2px 0 rgba(255, 255, 255, 0.8);
+            text-align: center; flex-grow: 1; display: flex; justify-content: center; align-items: center; margin-top: 20px; margin-bottom: 20px; z-index: 2;
+        }
+        .entry-title {
+            font-size: 68px; font-weight: 800; line-height: 1.4; text-shadow: 2px 2px 5px var(--text-shadow-color);
+            display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: auto-phrase;
+        }
+        .footer { width: 100%; text-align: right; font-size: 22px; font-weight: 500; text-shadow: 1px 1px 2px var(--text-shadow-color); z-index: 2; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="blog-info">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#3b3a51"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+            <span class="title">{BlogTitle}</span>
+        </div>
+        <div class="category-badge">{FirstCategory}</div>
+    </header>
+    <main class="main-content"><h1 class="entry-title">{Title}</h1></main>
+    <footer class="footer"><span>{PostedYear}/{PostedMonth}/{PostedDate} | {AuthorName}</span></footer>
+</body>
+</html>
+`,
+            "1-J: プリズムライト": `
+<!DOCTYPE html>
+<html lang="{BlogLanguage}">
+<head>
+    <meta charset="utf-8">
+    <title>デザイン案1-J：プリズムライト</title>
+    <style>
+        :root {
+            --gradient-start: #f4f7fc; --gradient-end: #f4f7fc; --text-color: #34495e;
+            --text-shadow-color: rgba(255, 255, 255, 0.5); --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.4); --header-bg: rgba(255, 255, 255, 0.2);
+            --font-family: 'Noto Sans CJK JP', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 1200px; height: 630px; font-family: var(--font-family); color: var(--text-color);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            display: flex; flex-direction: column; justify-content: space-between; padding: 40px; word-break: break-word;
+            line-height: 1.5; position: relative; overflow: hidden;
+        }
+        body::before {
+            content: ''; position: absolute; top: -20%; left: -20%; width: 140%; height: 140%;
+            background: conic-gradient(from 0.25turn, #ffb6c1, #ffdead, #f0e68c, #98fb98, #add8e6, #dda0dd, #ffb6c1);
+            filter: blur(150px); z-index: 1;
+        }
+        .header, .main-content, .footer { z-index: 2; position: relative; }
+        .header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .blog-info { display: flex; align-items: center; gap: 15px; }
+        .blog-info .icon img, .blog-info .icon svg { width: 50px; height: 50px; border-radius: 50%; background: var(--header-bg); padding: 5px; }
+        .blog-info .title { font-size: 28px; font-weight: bold; text-shadow: 1px 1px 2px var(--text-shadow-color); }
+        .category-badge { font-size: 24px; font-weight: bold; padding: 8px 20px; background-color: var(--header-bg); border-radius: 50px; backdrop-filter: blur(5px); }
+        .category-badge:empty { display: none; }
+        .main-content {
+            width: 100%; padding: 30px; background: var(--glass-bg); border-radius: 20px; border: 1px solid var(--glass-border);
+            backdrop-filter: blur(12px) saturate(250%) contrast(1.2); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+            text-align: center; flex-grow: 1; display: flex; justify-content: center; align-items: center; margin-top: 20px; margin-bottom: 20px;
+        }
+        .entry-title {
+            font-size: 68px; font-weight: 800; line-height: 1.4; text-shadow: 2px 2px 5px var(--text-shadow-color);
+            display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: auto-phrase;
+        }
+        .footer { width: 100%; text-align: right; font-size: 22px; font-weight: 500; text-shadow: 1px 1px 2px var(--text-shadow-color); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="blog-info">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#34495e"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+            <span class="title">{BlogTitle}</span>
+        </div>
+        <div class="category-badge">{FirstCategory}</div>
+    </header>
+    <main class="main-content"><h1 class="entry-title">{Title}</h1></main>
+    <footer class="footer"><span>{PostedYear}/{PostedMonth}/{PostedDate} | {AuthorName}</span></footer>
+</body>
+</html>
+`,
+            "1-K: リキッドライト": `
+<!DOCTYPE html>
+<html lang="{BlogLanguage}">
+<head>
+    <meta charset="utf-8">
+    <title>デザイン案1-K：リキッドライト</title>
+    <style>
+        :root {
+            --gradient-start: #f8f9fa; --gradient-end: #e9ecef; --light-color-1: rgba(255, 220, 230, 0.8);
+            --light-color-2: rgba(210, 230, 255, 0.8); --text-color: #495057;
+            --text-shadow-color: rgba(255, 255, 255, 0.6); --glass-bg: rgba(255, 255, 255, 0.5);
+            --glass-border: rgba(255, 255, 255, 0.8); --header-bg: rgba(255, 255, 255, 0.3);
+            --font-family: 'Noto Sans CJK JP', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 1200px; height: 630px; font-family: var(--font-family); color: var(--text-color);
+            background: 
+                radial-gradient(circle at 15% 20%, var(--light-color-1) 0%, transparent 30%),
+                radial-gradient(circle at 80% 70%, var(--light-color-2) 0%, transparent 35%),
+                linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            display: flex; flex-direction: column; justify-content: space-between; padding: 40px; word-break: break-word; line-height: 1.5;
+        }
+        .header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .blog-info { display: flex; align-items: center; gap: 15px; }
+        .blog-info .icon img, .blog-info .icon svg { width: 50px; height: 50px; border-radius: 50%; background: var(--header-bg); padding: 5px; }
+        .blog-info .title { font-size: 28px; font-weight: bold; text-shadow: 1px 1px 2px var(--text-shadow-color); }
+        .category-badge { font-size: 24px; font-weight: bold; padding: 8px 20px; background-color: var(--header-bg); border-radius: 50px; backdrop-filter: blur(5px); }
+        .category-badge:empty { display: none; }
+        .main-content {
+            width: 100%; padding: 30px; background: var(--glass-bg);
+            border-radius: 30px 20px 40px 25px; border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px) brightness(1.1); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1); text-align: center;
+            flex-grow: 1; display: flex; justify-content: center; align-items: center; margin-top: 20px; margin-bottom: 20px;
+        }
+        .entry-title {
+            font-size: 68px; font-weight: 800; line-height: 1.4; text-shadow: 2px 2px 5px var(--text-shadow-color);
+            display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: auto-phrase;
+        }
+        .footer { width: 100%; text-align: right; font-size: 22px; font-weight: 500; text-shadow: 1px 1px 2px var(--text-shadow-color); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="blog-info">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#495057"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+            <span class="title">{BlogTitle}</span>
+        </div>
+        <div class="category-badge">{FirstCategory}</div>
+    </header>
+    <main class="main-content"><h1 class="entry-title">{Title}</h1></main>
+    <footer class="footer"><span>{PostedYear}/{PostedMonth}/{PostedDate} | {AuthorName}</span></footer>
+</body>
+</html>
+`,
+            "1-L: シャープグレア": `
+<!DOCTYPE html>
+<html lang="{BlogLanguage}">
+<head>
+    <meta charset="utf-8">
+    <title>デザイン案1-L：シャープグレア</title>
+    <style>
+        :root {
+            --gradient-start: #ffffff; --gradient-end: #e6e9f0; --text-color: #2a3f5a;
+            --text-shadow-color: rgba(255, 255, 255, 0.5); --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.3); --header-bg: rgba(255, 255, 255, 0.1);
+            --font-family: 'Noto Sans CJK JP', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 1200px; height: 630px; font-family: var(--font-family); color: var(--text-color);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            display: flex; flex-direction: column; justify-content: space-between; padding: 40px; word-break: break-word; line-height: 1.5;
+        }
+        .header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .blog-info { display: flex; align-items: center; gap: 15px; }
+        .blog-info .icon img, .blog-info .icon svg { width: 50px; height: 50px; border-radius: 50%; background: var(--header-bg); padding: 5px; }
+        .blog-info .title { font-size: 28px; font-weight: bold; text-shadow: 1px 1px 2px var(--text-shadow-color); }
+        .category-badge { font-size: 24px; font-weight: bold; padding: 8px 20px; background-color: var(--header-bg); border-radius: 50px; backdrop-filter: blur(5px); }
+        .category-badge:empty { display: none; }
+        .main-content {
+            width: 100%; padding: 30px; background: var(--glass-bg); border-radius: 20px; border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+            text-align: center; flex-grow: 1; display: flex; justify-content: center; align-items: center;
+            margin-top: 20px; margin-bottom: 20px; position: relative; overflow: hidden;
+        }
+        .main-content::before {
+            content: ''; position: absolute; top: 0; left: -80%; width: 60%; height: 100%;
+            background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+            transform: skewX(-25deg);
+        }
+        .entry-title {
+            font-size: 68px; font-weight: 800; line-height: 1.4; text-shadow: 2px 2px 5px var(--text-shadow-color);
+            display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: auto-phrase;
+        }
+        .footer { width: 100%; text-align: right; font-size: 22px; font-weight: 500; text-shadow: 1px 1px 2px var(--text-shadow-color); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="blog-info">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#2a3f5a"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+            <span class="title">{BlogTitle}</span>
+        </div>
+        <div class="category-badge">{FirstCategory}</div>
+    </header>
+    <main class="main-content"><h1 class="entry-title">{Title}</h1></main>
+    <footer class="footer"><span>{PostedYear}/{PostedMonth}/{PostedDate} | {AuthorName}</span></footer>
+</body>
+</html>
+`,
+            "1-M: ダイヤモンドダスト": `
+<!DOCTYPE html>
+<html lang="{BlogLanguage}">
+<head>
+    <meta charset="utf-8">
+    <title>デザイン案1-M：ダイヤモンドダスト</title>
+    <style>
+        :root {
+            --gradient-start: #eaf6ff; --gradient-end: #f4f8ff; --text-color: #52616b;
+            --text-shadow-color: rgba(255, 255, 255, 0.7); --glass-bg: rgba(255, 255, 255, 0.3);
+            --glass-border: rgba(255, 255, 255, 0.6); --header-bg: rgba(255, 255, 255, 0.2);
+            --font-family: 'Noto Sans CJK JP', sans-serif;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 1200px; height: 630px; font-family: var(--font-family); color: var(--text-color);
+            background-color: var(--gradient-start);
+            background-image: 
+                url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="1" fill="rgba(255,255,255,0.7)"/><circle cx="80" cy="30" r="1" fill="rgba(255,255,255,0.7)"/><circle cx="50" cy="70" r="1" fill="rgba(255,255,255,0.7)"/><circle cx="90" cy="90" r="1" fill="rgba(255,255,255,0.7)"/><circle cx="10" cy="80" r="1" fill="rgba(255,255,255,0.7)"/></svg>'),
+                linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            display: flex; flex-direction: column; justify-content: space-between; padding: 40px; word-break: break-word; line-height: 1.5;
+        }
+        .header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .blog-info { display: flex; align-items: center; gap: 15px; }
+        .blog-info .icon img, .blog-info .icon svg { width: 50px; height: 50px; border-radius: 50%; background: var(--header-bg); padding: 5px; }
+        .blog-info .title { font-size: 28px; font-weight: bold; text-shadow: 1px 1px 2px var(--text-shadow-color); }
+        .category-badge { font-size: 24px; font-weight: bold; padding: 8px 20px; background-color: var(--header-bg); border-radius: 50px; backdrop-filter: blur(5px); }
+        .category-badge:empty { display: none; }
+        .main-content {
+            width: 100%; padding: 30px; background: var(--glass-bg); border-radius: 20px; border: 1px solid var(--glass-border);
+            box-shadow: inset 0 0 1.5px 1px rgba(255,255,255,0.8), 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(8px); text-align: center;
+            flex-grow: 1; display: flex; justify-content: center; align-items: center; margin-top: 20px; margin-bottom: 20px;
+        }
+        .entry-title {
+            font-size: 68px; font-weight: 800; line-height: 1.4; text-shadow: 2px 2px 8px var(--text-shadow-color);
+            display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: auto-phrase;
+        }
+        .footer { width: 100%; text-align: right; font-size: 22px; font-weight: 500; text-shadow: 1px 1px 2px var(--text-shadow-color); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="blog-info">
+            <div class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#52616b"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+            <span class="title">{BlogTitle}</span>
+        </div>
+        <div class="category-badge">{FirstCategory}</div>
+    </header>
+    <main class="main-content"><h1 class="entry-title">{Title}</h1></main>
+    <footer class="footer"><span>{PostedYear}/{PostedMonth}/{PostedDate} | {AuthorName}</span></footer>
+</body>
+</html>
+`
+        };
+
+        const controls = {
+            title: document.getElementById('title'),
+            category: document.getElementById('category'),
+            blogTitle: document.getElementById('blogTitle'),
+            authorName: document.getElementById('authorName'),
+            year: document.getElementById('year'),
+            month: document.getElementById('month'),
+            date: document.getElementById('date'),
+        };
+        const previewGrid = document.getElementById('preview-grid');
+        const customHtmlTextarea = document.getElementById('customHtml');
+        const addCustomPreviewBtn = document.getElementById('addCustomPreviewBtn');
+        const customPreviewSection = document.getElementById('custom-preview-section');
+        const customPreviewGrid = document.getElementById('custom-preview-grid');
+
+
+        function getReplacedHtml(templateString) {
+            const values = {
+                title: controls.title.value,
+                category: controls.category.value,
+                blogTitle: controls.blogTitle.value,
+                authorName: controls.authorName.value,
+                year: controls.year.value,
+                month: controls.month.value,
+                date: controls.date.value
+            };
+            return templateString.replace(/{BlogLanguage}/g, 'ja')
+                           .replace(/{Title}/g, values.title)
+                           .replace(/{FirstCategory}/g, values.category)
+                           .replace(/{BlogTitle}/g, values.blogTitle)
+                           .replace(/{AuthorName}/g, values.authorName)
+                           .replace(/{PostedYear}/g, values.year)
+                           .replace(/{PostedMonth}/g, values.month)
+                           .replace(/{PostedDate}/g, values.date);
+        }
+
+        function createPreviewCard(titleText, templateString, isCustom = false) {
+             const wrapper = document.createElement('div');
+             wrapper.className = 'flex flex-col items-center gap-3';
+
+             const title = document.createElement('h2');
+             title.textContent = titleText;
+             title.className = 'text-lg font-semibold text-gray-700';
+             wrapper.appendChild(title);
+
+             const container = document.createElement('div');
+             container.className = 'preview-container';
+             wrapper.appendChild(container);
+             
+             const iframe = document.createElement('iframe');
+             iframe.className = 'preview-iframe';
+             
+             if (isCustom) {
+                iframe.dataset.customTemplate = templateString;
+             } else {
+                iframe.dataset.templateName = titleText;
+             }
+
+             container.appendChild(iframe);
+
+             const copyButton = document.createElement('button');
+             copyButton.textContent = 'コードをコピー';
+             copyButton.className = 'mt-2 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-md shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-colors';
+             copyButton.addEventListener('click', (e) => {
+                 const btn = e.target;
+                 const codeToCopy = getReplacedHtml(templateString).trim();
+                 
+                 navigator.clipboard.writeText(codeToCopy).then(() => {
+                     btn.textContent = 'コピーしました！';
+                     setTimeout(() => {
+                        btn.textContent = 'コードをコピー';
+                     }, 2000);
+                 }).catch(err => {
+                     console.error('Copy failed', err);
+                     btn.textContent = 'コピー失敗';
+                      setTimeout(() => {
+                        btn.textContent = 'コードをコピー';
+                     }, 2000);
+                 });
+             });
+             wrapper.appendChild(copyButton);
+
+             return wrapper;
+        }
+
+
+        function updatePreviews() {
+            document.querySelectorAll('.preview-iframe').forEach(iframe => {
+                const templateName = iframe.dataset.templateName;
+                const customTemplate = iframe.dataset.customTemplate;
+                const sourceTemplate = customTemplate ? customTemplate : templates[templateName];
+                
+                if(sourceTemplate) {
+                    iframe.srcdoc = getReplacedHtml(sourceTemplate);
+                }
+            });
+        }
+
+        function init() {
+            for (const name in templates) {
+                const card = createPreviewCard(name, templates[name], false);
+                previewGrid.appendChild(card);
+            }
+            
+            for (const key in controls) {
+                controls[key].addEventListener('input', updatePreviews);
+            }
+            
+            addCustomPreviewBtn.addEventListener('click', () => {
+                const customHtml = customHtmlTextarea.value;
+                if (!customHtml.trim()) {
+                    alert('HTMLコードを入力してください。');
+                    return;
+                }
+                customPreviewGrid.innerHTML = ''; // 既存のカスタムプレビューをクリア
+                const card = createPreviewCard('カスタムHTML', customHtml, true);
+                customPreviewGrid.appendChild(card);
+                customPreviewSection.classList.remove('hidden');
+                updatePreviews(); // 新しく追加したプレビューも更新
+            });
+
+            updatePreviews();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
+
