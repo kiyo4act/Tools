@@ -33,5 +33,12 @@
     "url": "/Tools/TheWitnessColorSimulator/",
     "description": "パズルゲーム「The Witness」の特定エリアの攻略補助ツール。色のついた壁に特定の光を当てた時の見え方をシミュレートしたり、複数の観測結果から元の壁の色を推定することができます。",
     "lastUpdated": "2025-06-10"
+  },
+  {
+    "name": "アフィリエイトリンク生成ツール",
+    "path": "AffiliateLinkGenerator",
+    "url": "/Tools/AffiliateLinkGenerator/",
+    "description": "ECサイトの商品URLを入力すると、アフィリエイトリンクに自動変換するツール。現在はAmazonに対応、将来的に楽天等も対応予定。",
+    "lastUpdated": "2025-09-23"
   }
 ]
