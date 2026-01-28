@@ -28,6 +28,13 @@
     "lastUpdated": "2025-06-01"
   },
   {
+    "name": "iPhoneバッテリー残量比較シミュレーター",
+    "path": "iPhoneBatteryCompare",
+    "url": "/Tools/iPhoneBatteryCompare/",
+    "description": "今のiPhoneの電池残量(％)から、別のiPhoneだと何％になるかを比較するツール",
+    "lastUpdated": "2026-01-29"
+  },
+  {
     "name": "歌詞ページ印刷用整形ツール",
     "path": "LyricPrinter",
     "url": "/Tools/LyricPrinter/",
