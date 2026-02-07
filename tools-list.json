@@ -5,7 +5,7 @@
     "url": "/Tools/AffiliateLinkGenerator/",
     "description": "EC サイトの商品URLを入力すると、アフィリエイトリンクに変換するツール。現在はAmazonに対応、将来的に楽天等も対応予定。",
     "lastUpdated": "2025-09-23",
-    "category": "変換・抽出"
+    "category": "変換・整形"
   },
   {
     "name": "EPUBの画像をまとめてZIPに変換するツール",
@@ -13,7 +13,7 @@
     "url": "/Tools/EpubToZipConverter/",
     "description": "EPUB形式のマンガなどから画像を抽出し、連番付きZIPファイルに変換するツール。複数のEPUBファイルの一括処理に対応。",
     "lastUpdated": "2025-08-22",
-    "category": "変換・抽出"
+    "category": "変換・整形"
   },
   {
     "name": "はてなブログ アイキャッチデザイン プレビューア",
@@ -29,7 +29,7 @@
     "url": "/Tools/FanboxEnumerator/",
     "description": "Pixiv FANBOXの支援者一覧から情報を簡単に抽出できるChrome拡張機能「FanboxEnumerator」の紹介とダウンロードページです。",
     "lastUpdated": "2025-06-01",
-    "category": "変換・抽出"
+    "category": "自動化・効率化"
   },
   {
     "name": "フリマ設定価格計算ツール",
@@ -37,7 +37,7 @@
     "url": "/Tools/FleamarketValueCalculator/",
     "description": "手数料・送料を考慮して利益や価格を自動計算するツール。メルカリ、ラクマ、Yahoo!フリマに対応。",
     "lastUpdated": "2026-02-08",
-    "category": "計算・比較"
+    "category": "シミュレーション"
   },
   {
     "name": "iPhoneバッテリー残量比較シミュレーター",
@@ -45,7 +45,7 @@
     "url": "/Tools/iPhoneBatteryCompare/",
     "description": "今のiPhoneの電池残量(％)から、別のiPhoneだと何％になるかを比較するツール",
     "lastUpdated": "2026-01-29",
-    "category": "計算・比較"
+    "category": "シミュレーション"
   },
   {
     "name": "歌詞ページ印刷用整形ツール",
@@ -53,7 +53,7 @@
     "url": "/Tools/LyricPrinter/",
     "description": "指定された歌詞ページのURLまたはHTMLソースから、印刷に適した形式に整形するツールです。ルビ表示、フォントサイズ、改行、改ページなどを調整できます。",
     "lastUpdated": "2025-05-29",
-    "category": "変換・抽出"
+    "category": "変換・整形"
   },
   {
     "name": "壁と光のカラーシミュレーター",
