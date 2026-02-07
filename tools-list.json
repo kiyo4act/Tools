@@ -28,6 +28,13 @@
     "lastUpdated": "2025-06-01"
   },
   {
+    "name": "フリマ設定価格計算ツール",
+    "path": "FleamarketValueCalculator",
+    "url": "/Tools/FleamarketValueCalculator/",
+    "description": "手数料・送料を考慮して利益や価格を自動計算するツール。メルカリ、ラクマ、Yahoo!フリマに対応。",
+    "lastUpdated": "2026-02-08"
+  },
+  {
     "name": "iPhoneバッテリー残量比較シミュレーター",
     "path": "iPhoneBatteryCompare",
     "url": "/Tools/iPhoneBatteryCompare/",
