@@ -19,7 +19,8 @@ def get_html_metadata(html_file_path):
     metadata = {
         "name": None,
         "description": None,
-        "lastUpdated": None
+        "lastUpdated": None,
+        "category": None
     }
     try:
         with open(html_file_path, 'r', encoding='utf-8') as f:
@@ -36,6 +37,10 @@ def get_html_metadata(html_file_path):
             last_updated_meta = soup.find('meta', attrs={'name': 'last-updated'})
             if last_updated_meta and last_updated_meta.get('content'):
                 metadata["lastUpdated"] = last_updated_meta['content'].strip()
+
+            category_meta = soup.find('meta', attrs={'name': 'category'})
+            if category_meta and category_meta.get('content'):
+                metadata["category"] = category_meta['content'].strip()
             
             # もし<meta name="last-updated">がない場合、ファイルの最終更新日時を使用する例 (オプション)
             # if not metadata["lastUpdated"]:
@@ -78,7 +83,8 @@ def main():
                     "path": item_name, # フォルダ名
                     "url": f"{REPO_BASE_PATH.rstrip('/')}/{item_name}/", # 例: /Tools/LyricPrinter/
                     "description": metadata["description"],
-                    "lastUpdated": metadata["lastUpdated"]
+                    "lastUpdated": metadata["lastUpdated"],
+                    "category": metadata["category"]
                 }
                 tools_data.append(tool_entry)
             else:

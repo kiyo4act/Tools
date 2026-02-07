@@ -1,0 +1,67 @@
+# .github/workflows/generate_ogp.yml
+name: Generate OGP Images and Tags
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '*/index.html'
+      - '!tools-list.json'
+      - '.github/workflows/generate_ogp.yml'
+      - 'generate_ogp_script.py'
+      - '_assets/**'
+  workflow_dispatch: {} # 手動実行も可能
+
+permissions:
+  contents: write
+
+jobs:
+  generate-ogp:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies (Japanese fonts fallback)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-noto-cjk
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install Pillow beautifulsoup4
+
+      - name: Generate OGP images and insert tags
+        env:
+          SITE_BASE_URL: "https://kiyo.bio/Tools"
+        run: |
+          python generate_ogp_script.py --force
+
+      - name: Commit and push if changed
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action Bot"
+
+          # ogp.pngと変更されたindex.htmlをステージング
+          git add '*/ogp.png' '*/index.html'
+
+          if ! git diff --staged --quiet; then
+            echo "OGP画像/タグの変更を検出しました。"
+            git commit -m "Automated: Update OGP images and meta tags"
+            echo "リモートの変更を取得中..."
+            git pull --rebase origin main
+            echo "プッシュ中..."
+            git push origin main
+            echo "OGP画像とタグを更新しました。"
+          else
+            echo "OGPの変更はありません。コミット不要。"
+          fi
