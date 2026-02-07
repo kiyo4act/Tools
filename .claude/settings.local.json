@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(start \"\" \"c:\\\\Users\\\\dmorita\\\\Source\\\\Repos\\\\Tools\\\\FleamarketValueCalculator\\\\index.html\")"
+    ]
+  }
+}
