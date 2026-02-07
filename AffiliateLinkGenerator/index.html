@@ -3,33 +3,27 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>アフィリエイトリンク生成ツール</title>
-  <meta name="version"
-        content="1">
-  <meta name="last-updated"
-        content="2025-09-23">
-  <meta name="category"
-        content="変換・抽出">
-  <meta name="description"
-        content="EC サイトの商品URLを入力すると、アフィリエイトリンクに変換するツール。現在はAmazonに対応、将来的に楽天等も対応予定。">
-    <!-- OGP / Twitter Card -->
-    <meta property="og:title" content="アフィリエイトリンク生成ツール">
-    <meta property="og:description" content="EC サイトの商品URLを入力すると、アフィリエイトリンクに変換するツール。現在はAmazonに対応、将来的に楽天等も対応予定。">
-    <meta property="og:image" content="https://kiyo.bio/Tools/AffiliateLinkGenerator/ogp.png">
-    <meta property="og:url" content="https://kiyo.bio/Tools/AffiliateLinkGenerator/">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="kiyo.bio">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="アフィリエイトリンク生成ツール">
-    <meta name="twitter:description" content="EC サイトの商品URLを入力すると、アフィリエイトリンクに変換するツール。現在はAmazonに対応、将来的に楽天等も対応予定。">
-    <meta name="twitter:image" content="https://kiyo.bio/Tools/AffiliateLinkGenerator/ogp.png">
+  <meta name="version" content="1">
+  <meta name="last-updated" content="2025-09-23">
+  <meta name="category" content="変換・整形">
+  <meta name="description" content="EC サイトの商品URLを入力すると、アフィリエイトリンクに変換するツール。現在はAmazonに対応、将来的に楽天等も対応予定。">
+  <!-- OGP / Twitter Card -->
+  <meta property="og:title" content="アフィリエイトリンク生成ツール">
+  <meta property="og:description" content="EC サイトの商品URLを入力すると、アフィリエイトリンクに変換するツール。現在はAmazonに対応、将来的に楽天等も対応予定。">
+  <meta property="og:image" content="https://kiyo.bio/Tools/AffiliateLinkGenerator/ogp.png">
+  <meta property="og:url" content="https://kiyo.bio/Tools/AffiliateLinkGenerator/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="kiyo.bio">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="アフィリエイトリンク生成ツール">
+  <meta name="twitter:description" content="EC サイトの商品URLを入力すると、アフィリエイトリンクに変換するツール。現在はAmazonに対応、将来的に楽天等も対応予定。">
+  <meta name="twitter:image" content="https://kiyo.bio/Tools/AffiliateLinkGenerator/ogp.png">
 
-  <script async
-          src="https://www.googletagmanager.com/gtag/js?id=G-WWQTE7VWKG"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WWQTE7VWKG"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
@@ -435,64 +429,43 @@
     </div>
 
     <div class="platform-selector">
-      <label class="platform-label"
-             for="platform-select">プラットフォームを選択:</label>
+      <label class="platform-label" for="platform-select">プラットフォームを選択:</label>
       <select id="platform-select">
         <option value="amazon">Amazon</option>
-        <option value="rakuten"
-                disabled>楽天（準備中）</option>
+        <option value="rakuten" disabled>楽天（準備中）</option>
       </select>
 
       <div class="tag-settings">
         <div class="tag-input-group">
-          <label class="tag-input-label"
-                 for="affiliate-tag">アフィリエイトタグ:</label>
-          <input type="text"
-                 id="affiliate-tag"
-                 class="tag-input"
-                 value="konoe.studio-22"
-                 placeholder="your-tag-22">
+          <label class="tag-input-label" for="affiliate-tag">アフィリエイトタグ:</label>
+          <input type="text" id="affiliate-tag" class="tag-input" value="konoe.studio-22" placeholder="your-tag-22">
         </div>
       </div>
     </div>
 
     <div class="input-section">
-      <label class="input-label"
-             for="url-input">商品ページのURLを入力:</label>
+      <label class="input-label" for="url-input">商品ページのURLを入力:</label>
       <div class="url-input-group">
-        <input type="text"
-               id="url-input"
-               class="url-input"
-               placeholder="https://www.amazon.co.jp/dp/B0FHCQF5YT">
-        <button id="convert-button"
-                class="convert-button">変換する</button>
+        <input type="text" id="url-input" class="url-input" placeholder="https://www.amazon.co.jp/dp/B0FHCQF5YT">
+        <button id="convert-button" class="convert-button">変換する</button>
       </div>
     </div>
 
-    <div id="error-message"
-         class="error-message"></div>
-    <div id="warning-message"
-         class="warning-message"></div>
+    <div id="error-message" class="error-message"></div>
+    <div id="warning-message" class="warning-message"></div>
 
-    <div id="result-section"
-         class="result-section">
+    <div id="result-section" class="result-section">
       <div class="result-label">生成されたアフィリエイトリンク:</div>
-      <div id="result-box"
-           class="result-box"></div>
-      <button id="copy-button"
-              class="copy-button">リンクをコピー</button>
+      <div id="result-box" class="result-box"></div>
+      <button id="copy-button" class="copy-button">リンクをコピー</button>
     </div>
 
-    <div id="history-section"
-         class="history-section"
-         style="display: none;">
+    <div id="history-section" class="history-section" style="display: none;">
       <div class="history-title">
         <span>📝 変換履歴（最新10件）</span>
-        <button id="clear-history"
-                class="clear-history">履歴をクリア</button>
+        <button id="clear-history" class="clear-history">履歴をクリア</button>
       </div>
-      <div id="history-list"
-           class="history-list"></div>
+      <div id="history-list" class="history-list"></div>
     </div>
 
     <div class="usage-section">
@@ -514,8 +487,7 @@
         </ul>
       </div>
 
-      <div class="supported-urls"
-           style="margin-top: 15px; background: #fff8e1;">
+      <div class="supported-urls" style="margin-top: 15px; background: #fff8e1;">
         <h4>⚠️ 短縮URL（amzn.to）について:</h4>
         <ul style="color: #f57c00;">
           <li>短縮URLは自動展開できません</li>
