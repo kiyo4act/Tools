@@ -4,55 +4,63 @@
     "path": "AffiliateLinkGenerator",
     "url": "/Tools/AffiliateLinkGenerator/",
     "description": "EC サイトの商品URLを入力すると、アフィリエイトリンクに変換するツール。現在はAmazonに対応、将来的に楽天等も対応予定。",
-    "lastUpdated": "2025-09-23"
+    "lastUpdated": "2025-09-23",
+    "category": "変換・抽出"
   },
   {
     "name": "EPUBの画像をまとめてZIPに変換するツール",
     "path": "EpubToZipConverter",
     "url": "/Tools/EpubToZipConverter/",
     "description": "EPUB形式のマンガなどから画像を抽出し、連番付きZIPファイルに変換するツール。複数のEPUBファイルの一括処理に対応。",
-    "lastUpdated": "2025-08-22"
+    "lastUpdated": "2025-08-22",
+    "category": "変換・抽出"
   },
   {
     "name": "はてなブログ アイキャッチデザイン プレビューア",
-    "path": "Eyecatch-design-previewer",
-    "url": "/Tools/Eyecatch-design-previewer/",
+    "path": "EyecatchDesignPreviewer",
+    "url": "/Tools/EyecatchDesignPreviewer/",
     "description": "はてなブログ用の自動生成アイキャッチデザイン案＆プレビューアです",
-    "lastUpdated": "2025-09-10"
+    "lastUpdated": "2025-09-10",
+    "category": "シミュレーション"
   },
   {
     "name": "FANBOX支援者リスト抽出ツール",
     "path": "FanboxEnumerator",
     "url": "/Tools/FanboxEnumerator/",
     "description": "Pixiv FANBOXの支援者一覧から情報を簡単に抽出できるChrome拡張機能「FanboxEnumerator」の紹介とダウンロードページです。",
-    "lastUpdated": "2025-06-01"
+    "lastUpdated": "2025-06-01",
+    "category": "変換・抽出"
   },
   {
     "name": "フリマ設定価格計算ツール",
     "path": "FleamarketValueCalculator",
     "url": "/Tools/FleamarketValueCalculator/",
     "description": "手数料・送料を考慮して利益や価格を自動計算するツール。メルカリ、ラクマ、Yahoo!フリマに対応。",
-    "lastUpdated": "2026-02-08"
+    "lastUpdated": "2026-02-08",
+    "category": "計算・比較"
   },
   {
     "name": "iPhoneバッテリー残量比較シミュレーター",
     "path": "iPhoneBatteryCompare",
     "url": "/Tools/iPhoneBatteryCompare/",
     "description": "今のiPhoneの電池残量(％)から、別のiPhoneだと何％になるかを比較するツール",
-    "lastUpdated": "2026-01-29"
+    "lastUpdated": "2026-01-29",
+    "category": "計算・比較"
   },
   {
     "name": "歌詞ページ印刷用整形ツール",
     "path": "LyricPrinter",
     "url": "/Tools/LyricPrinter/",
     "description": "指定された歌詞ページのURLまたはHTMLソースから、印刷に適した形式に整形するツールです。ルビ表示、フォントサイズ、改行、改ページなどを調整できます。",
-    "lastUpdated": "2025-05-29"
+    "lastUpdated": "2025-05-29",
+    "category": "変換・抽出"
   },
   {
     "name": "壁と光のカラーシミュレーター",
     "path": "TheWitnessColorSimulator",
     "url": "/Tools/TheWitnessColorSimulator/",
     "description": "パズルゲーム「The Witness」の特定エリアの攻略補助ツール。色のついた壁に特定の光を当てた時の見え方をシミュレートしたり、複数の観測結果から元の壁の色を推定することができます。",
-    "lastUpdated": "2025-06-10"
+    "lastUpdated": "2025-06-10",
+    "category": "シミュレーション"
   }
 ]
