@@ -1,0 +1,2178 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog Card Builder — はてなブログ向け商品カード作成Chrome拡張</title>
+  <meta name="version" content="1">
+  <meta name="last-updated" content="2026-02-08">
+  <meta name="category" content="自動化・効率化">
+  <meta name="description"
+    content="Amazon・AliExpress・Sunstella対応。商品ページから情報を自動取得し、はてなブログに貼れるHTMLカードを生成するChrome拡張機能の紹介・ダウンロードページです。">
+  <!-- OGP / Twitter Card -->
+  <meta property="og:title" content="Blog Card Builder — はてなブログ向け商品カード作成Chrome拡張">
+  <meta property="og:description"
+    content="Amazon・AliExpress・Sunstella対応。商品ページから情報を自動取得し、はてなブログに貼れるHTMLカードを生成するChrome拡張機能の紹介・ダウンロードページです。">
+  <meta property="og:image" content="https://kiyo.bio/Tools/LinkToAffiliateCard/ogp.png">
+  <meta property="og:url" content="https://kiyo.bio/Tools/LinkToAffiliateCard/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="kiyo.bio">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Blog Card Builder — はてなブログ向け商品カード作成Chrome拡張">
+  <meta name="twitter:description"
+    content="Amazon・AliExpress・Sunstella対応。商品ページから情報を自動取得し、はてなブログに貼れるHTMLカードを生成するChrome拡張機能の紹介・ダウンロードページです。">
+  <meta name="twitter:image" content="https://kiyo.bio/Tools/LinkToAffiliateCard/ogp.png">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-WWQTE7VWKG"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-WWQTE7VWKG');
+  </script>
+
+  <style>
+    /* ====== Reset & Base ====== */
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans JP', sans-serif;
+      color: #1e293b;
+      background: #f8fafc;
+      line-height: 1.7;
+    }
+
+    a {
+      color: #4f46e5;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    /* ====== Hero ====== */
+    .hero {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #a855f7 100%);
+      color: #fff;
+      text-align: center;
+      padding: 70px 20px 50px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -60%;
+      left: -20%;
+      width: 140%;
+      height: 140%;
+      background: radial-gradient(ellipse at 30% 50%, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(4px);
+      padding: 6px 16px;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      font-weight: 800;
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+
+    .hero p {
+      font-size: 1.05rem;
+      opacity: 0.9;
+      max-width: 600px;
+      margin: 0 auto 30px;
+    }
+
+    .hero-platforms {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+
+    .platform-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .chip-amazon {
+      background: #FF9900;
+    }
+
+    .chip-aliexpress {
+      background: #FF4747;
+    }
+
+    .chip-sunstella {
+      background: #666;
+    }
+
+    .chip-ogp {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      color: #4f46e5;
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .hero-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+      text-decoration: none;
+    }
+
+    /* ====== Navigation ====== */
+    .page-nav {
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .page-nav-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      gap: 4px;
+      padding: 8px 20px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .page-nav a {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      white-space: nowrap;
+      color: #64748b;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .page-nav a:hover {
+      background: #f1f5f9;
+      color: #4f46e5;
+      text-decoration: none;
+    }
+
+    /* ====== Content Container ====== */
+    .content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+    }
+
+    /* ====== Section ====== */
+    .section {
+      margin-top: 56px;
+    }
+
+    .section-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #1e293b;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .section-subtitle {
+      color: #64748b;
+      font-size: 0.95rem;
+      margin-bottom: 28px;
+    }
+
+    /* ====== Feature Cards ====== */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 28px 24px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 16px;
+    }
+
+    .feature-card h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #1e293b;
+    }
+
+    .feature-card p {
+      font-size: 0.9rem;
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    /* ====== Side Panel Demo ====== */
+    .demo-container {
+      display: flex;
+      gap: 32px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .sidepanel-mock {
+      width: 340px;
+      min-width: 300px;
+      background: #f8fafc;
+      border-radius: 16px;
+      border: 2px solid #e2e8f0;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+      flex-shrink: 0;
+    }
+
+    .sp-content {
+      padding: 16px;
+      min-height: 420px;
+      display: none;
+    }
+
+    .sp-content.active {
+      display: block;
+    }
+
+    /* Builder Tab */
+    .sp-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .sp-header h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .sp-reset-btn {
+      font-size: 0.7rem;
+      color: #cbd5e1;
+      background: none;
+      border: none;
+      cursor: default;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .sp-fetch-btn {
+      width: 100%;
+      padding: 10px;
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: default;
+      box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+      margin-bottom: 16px;
+    }
+
+    .sp-fetch-icon {
+      background: rgba(255, 255, 255, 0.2);
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+    }
+
+    .sp-image-preview {
+      width: 100%;
+      aspect-ratio: 1.91/1;
+      background: #e2e8f0;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .sp-image-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .sp-image-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #94a3b8;
+      font-size: 0.8rem;
+    }
+
+    .sp-label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: #94a3b8;
+      margin-bottom: 4px;
+    }
+
+    .sp-title-input {
+      width: 100%;
+      padding: 8px;
+      font-size: 0.8rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      resize: none;
+      font-family: inherit;
+      color: #334155;
+      background: #fff;
+      margin-bottom: 16px;
+    }
+
+    .sp-shops-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+
+    .sp-shop-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+
+    .sp-shop-grip {
+      color: #cbd5e1;
+      font-size: 0.8rem;
+      cursor: default;
+    }
+
+    .sp-shop-color {
+      width: 4px;
+      height: 32px;
+      border-radius: 100px;
+      flex-shrink: 0;
+    }
+
+    .sp-shop-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sp-shop-name {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 2px;
+    }
+
+    .sp-shop-url {
+      width: 100%;
+      padding: 4px 6px;
+      font-size: 0.65rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      color: #64748b;
+      background: #fff;
+      font-family: inherit;
+    }
+
+    .sp-shop-clear {
+      color: #cbd5e1;
+      font-size: 0.75rem;
+      background: none;
+      border: none;
+      cursor: default;
+      padding: 4px;
+    }
+
+    .sp-copy-btn {
+      width: 100%;
+      padding: 12px;
+      background: #4f46e5;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: default;
+      margin-top: 16px;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    /* Config Tab */
+    .sp-config-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f1f5f9;
+      margin-bottom: 20px;
+    }
+
+    .sp-config-section-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .sp-config-card {
+      background: #fff;
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      margin-bottom: 16px;
+    }
+
+    .sp-config-field {
+      margin-bottom: 12px;
+    }
+
+    .sp-config-field:last-child {
+      margin-bottom: 0;
+    }
+
+    .sp-config-field label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: #334155;
+      margin-bottom: 4px;
+    }
+
+    .sp-config-field input {
+      width: 100%;
+      padding: 6px 8px;
+      font-size: 0.7rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      font-family: inherit;
+      color: #475569;
+    }
+
+    .sp-config-field .hint {
+      font-size: 0.6rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    .sp-color-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      padding: 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      margin-bottom: 8px;
+    }
+
+    .sp-color-row span {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #334155;
+    }
+
+    .sp-color-preview {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sp-color-hex {
+      font-size: 0.7rem;
+      font-family: monospace;
+      color: #64748b;
+    }
+
+    .sp-color-swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* History Tab */
+    .sp-history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f1f5f9;
+      margin-bottom: 16px;
+    }
+
+    .sp-history-clear {
+      font-size: 0.7rem;
+      color: #ef4444;
+      background: none;
+      border: none;
+      cursor: default;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .sp-history-item {
+      display: flex;
+      gap: 10px;
+      background: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      margin-bottom: 10px;
+    }
+
+    .sp-history-thumb {
+      width: 52px;
+      height: 52px;
+      background: #f1f5f9;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sp-history-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .sp-history-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sp-history-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #334155;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-height: 1.3;
+      margin-bottom: 3px;
+    }
+
+    .sp-history-date {
+      font-size: 0.6rem;
+      color: #94a3b8;
+      margin-bottom: 4px;
+    }
+
+    .sp-history-tags {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .sp-history-tag {
+      font-size: 0.55rem;
+      padding: 2px 8px;
+      border-radius: 100px;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .sp-history-actions {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .sp-history-action-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: none;
+      background: none;
+      cursor: default;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+    }
+
+    .sp-action-restore {
+      color: #4f46e5;
+    }
+
+    .sp-action-delete {
+      color: #cbd5e1;
+    }
+
+    /* Bottom Nav */
+    .sp-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      height: 56px;
+      background: #fff;
+      border-top: 1px solid #e2e8f0;
+      box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.03);
+    }
+
+    .sp-nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 6px 16px;
+      border-radius: 10px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      transition: background 0.15s;
+      color: #94a3b8;
+      font-size: 0.6rem;
+      font-weight: 500;
+    }
+
+    .sp-nav-btn:hover {
+      background: #f1f5f9;
+    }
+
+    .sp-nav-btn.active {
+      color: #4f46e5;
+      background: #eef2ff;
+    }
+
+    .sp-nav-icon {
+      font-size: 1.15rem;
+    }
+
+    /* ====== Demo Description ====== */
+    .demo-desc {
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .demo-desc h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #1e293b;
+    }
+
+    .demo-desc p {
+      font-size: 0.95rem;
+      color: #64748b;
+      margin-bottom: 16px;
+      line-height: 1.7;
+    }
+
+    .demo-feature-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .demo-feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.9rem;
+      color: #475569;
+    }
+
+    .demo-feature-list li:last-child {
+      border-bottom: none;
+    }
+
+    .demo-feature-bullet {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: #eef2ff;
+      color: #4f46e5;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ====== Output Preview ====== */
+    .output-preview-container {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .output-card-demo {
+      flex: 1;
+      min-width: 280px;
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .output-card-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+
+    /* Live card styles (from actual tool output) */
+    .hatena-asin-detail.ali-item {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #fff;
+      align-items: flex-start;
+    }
+
+    .hatena-asin-detail-image-link {
+      display: block;
+      width: 120px;
+      flex-shrink: 0;
+    }
+
+    .hatena-asin-detail-image {
+      width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+
+    .hatena-asin-detail-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .hatena-asin-detail-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      line-height: 1.5;
+      margin-bottom: 4px;
+    }
+
+    .hatena-asin-detail-title a {
+      color: #1e293b;
+      text-decoration: none;
+    }
+
+    .hatena-asin-detail-title a:hover {
+      color: #4f46e5;
+      text-decoration: underline;
+    }
+
+    .product-link-buttons {
+      margin-top: 12px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .hatena-asin-detail .asin-detail-buy {
+      width: 100%;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 0;
+      margin: 0;
+      font-size: 14px;
+      font-weight: bold;
+      text-decoration: none;
+      border-radius: 3px;
+      transition: opacity 0.2s ease;
+      background-color: #FF9900;
+      color: #ffffff;
+    }
+
+    .hatena-asin-detail .asin-detail-buy:hover {
+      opacity: 0.8;
+      text-decoration: none;
+    }
+
+    .hatena-asin-detail .asin-detail-buy.shop-amazon {
+      background-color: #FF9900;
+      color: #ffffff;
+    }
+
+    .hatena-asin-detail .asin-detail-buy.shop-aliexpress {
+      background-color: #FF4747;
+      color: #ffffff;
+    }
+
+    .hatena-asin-detail .asin-detail-buy.shop-sunstella {
+      background-color: #f0f0f0;
+      color: #333333;
+      border: 1px solid #ccc;
+    }
+
+    .hatena-asin-detail .asin-detail-buy.shop-sunstella:hover {
+      background-color: #e0e0e0;
+      opacity: 1;
+    }
+
+    /* Code output block */
+    .output-code-demo {
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .code-block {
+      background: #1e293b;
+      color: #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 0.75rem;
+      line-height: 1.6;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .code-block-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      background: #0f172a;
+      font-size: 0.7rem;
+      color: #94a3b8;
+    }
+
+    .code-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .code-block pre {
+      padding: 16px;
+      overflow-x: auto;
+      margin: 0;
+      background: none;
+    }
+
+    .code-block code {
+      background: none;
+      padding: 0;
+      font-size: inherit;
+    }
+
+    .code-tag {
+      color: #f472b6;
+    }
+
+    .code-attr {
+      color: #a78bfa;
+    }
+
+    .code-val {
+      color: #34d399;
+    }
+
+    .code-text {
+      color: #e2e8f0;
+    }
+
+    .code-comment {
+      color: #64748b;
+    }
+
+    /* ====== Workflow ====== */
+    .workflow {
+      display: flex;
+      gap: 0;
+      align-items: stretch;
+      flex-wrap: wrap;
+      counter-reset: step;
+    }
+
+    .workflow-step {
+      flex: 1;
+      min-width: 180px;
+      position: relative;
+      padding: 0 16px;
+      text-align: center;
+    }
+
+    .workflow-step::after {
+      content: '';
+      position: absolute;
+      top: 28px;
+      right: -8px;
+      width: 16px;
+      height: 16px;
+      border-top: 2px solid #c7d2fe;
+      border-right: 2px solid #c7d2fe;
+      transform: rotate(45deg);
+    }
+
+    .workflow-step:last-child::after {
+      display: none;
+    }
+
+    .workflow-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: #fff;
+      font-size: 1.5rem;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+    }
+
+    .workflow-step h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 6px;
+    }
+
+    .workflow-step p {
+      font-size: 0.82rem;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    .workflow-visual {
+      margin-top: 14px;
+      background: #f1f5f9;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 0.75rem;
+      color: #475569;
+      text-align: left;
+    }
+
+    .workflow-visual-url {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-family: monospace;
+      font-size: 0.68rem;
+      color: #64748b;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .workflow-visual-url .lock-icon {
+      color: #22c55e;
+      font-weight: bold;
+    }
+
+    .workflow-visual-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #4f46e5;
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    .workflow-visual-paste {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 8px;
+      font-family: monospace;
+      font-size: 0.62rem;
+      color: #64748b;
+      line-height: 1.5;
+      overflow: hidden;
+      max-height: 60px;
+    }
+
+    /* ====== Download Section ====== */
+    .download-box {
+      background: linear-gradient(135deg, #eef2ff, #faf5ff);
+      border: 2px solid #c7d2fe;
+      border-radius: 20px;
+      padding: 40px 32px;
+      text-align: center;
+    }
+
+    .download-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+    }
+
+    .download-box h3 {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+
+    .download-box p {
+      font-size: 0.95rem;
+      color: #64748b;
+      margin-bottom: 24px;
+    }
+
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: #fff;
+      padding: 16px 36px;
+      border-radius: 14px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(79, 70, 229, 0.4);
+      text-decoration: none;
+    }
+
+    .download-note {
+      margin-top: 12px;
+      font-size: 0.82rem;
+      color: #94a3b8;
+    }
+
+    /* ====== Install Steps ====== */
+    .install-steps {
+      counter-reset: install;
+      list-style: none;
+      padding: 0;
+    }
+
+    .install-steps li {
+      display: flex;
+      gap: 16px;
+      padding: 20px 0;
+      border-bottom: 1px solid #f1f5f9;
+      align-items: flex-start;
+    }
+
+    .install-steps li:last-child {
+      border-bottom: none;
+    }
+
+    .install-step-num {
+      counter-increment: install;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: #eef2ff;
+      color: #4f46e5;
+      font-weight: 800;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    .install-step-content {
+      flex: 1;
+    }
+
+    .install-step-content strong {
+      display: block;
+      font-size: 0.95rem;
+      color: #1e293b;
+      margin-bottom: 4px;
+    }
+
+    .install-step-content p {
+      font-size: 0.88rem;
+      color: #64748b;
+      margin: 0;
+    }
+
+    .install-step-visual {
+      margin-top: 10px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.78rem;
+      font-family: monospace;
+      color: #475569;
+    }
+
+    .install-step-visual .chrome-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 6px 12px;
+    }
+
+    .install-step-visual .chrome-bar-dots {
+      display: flex;
+      gap: 4px;
+    }
+
+    .install-step-visual .chrome-bar-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .install-step-visual .chrome-bar-url {
+      flex: 1;
+      background: #f1f5f9;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 0.72rem;
+      color: #64748b;
+    }
+
+    .toggle-mock {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .toggle-track {
+      width: 36px;
+      height: 20px;
+      background: #4f46e5;
+      border-radius: 100px;
+      position: relative;
+    }
+
+    .toggle-thumb {
+      width: 16px;
+      height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    }
+
+    .toggle-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    /* ====== Note Box ====== */
+    .note-box {
+      background: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      padding: 16px 20px;
+      border-radius: 0 8px 8px 0;
+      margin: 20px 0;
+    }
+
+    .note-box strong {
+      color: #92400e;
+    }
+
+    .note-box p {
+      color: #78350f;
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    /* ====== Tech Stack ====== */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .tech-item {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      transition: transform 0.15s;
+    }
+
+    .tech-item:hover {
+      transform: translateY(-2px);
+    }
+
+    .tech-item-icon {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+    }
+
+    .tech-item-name {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .tech-item-desc {
+      font-size: 0.72rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    /* ====== Footer ====== */
+    .page-footer {
+      background: #1e293b;
+      color: #94a3b8;
+      text-align: center;
+      padding: 32px 20px;
+      font-size: 0.85rem;
+      margin-top: 60px;
+    }
+
+    .page-footer a {
+      color: #818cf8;
+    }
+
+    /* ====== Responsive ====== */
+    @media (max-width: 768px) {
+      .demo-container {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .sidepanel-mock {
+        width: 100%;
+        max-width: 360px;
+      }
+
+      .workflow-step::after {
+        display: none;
+      }
+
+      .workflow {
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .workflow-step {
+        padding: 0;
+      }
+
+      .output-preview-container {
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero {
+        padding: 50px 16px 40px;
+      }
+
+      .content {
+        padding: 0 16px 40px;
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ====== Hero ====== -->
+  <header class="hero">
+    <div class="hero-badge">
+      <span>&#9878;</span> Chrome Extension &#183; Manifest V3
+    </div>
+    <h1>Blog Card Builder</h1>
+    <p>ECサイトの商品ページから情報を自動取得し、はてなブログに貼れるHTMLカードを一発生成するChrome拡張機能</p>
+
+    <div class="hero-platforms">
+      <span class="platform-chip chip-amazon">&#9679; Amazon</span>
+      <span class="platform-chip chip-aliexpress">&#9679; AliExpress</span>
+      <span class="platform-chip chip-sunstella">&#9679; Sunstella</span>
+      <span class="platform-chip chip-ogp">&#9679; OGP対応サイト</span>
+    </div>
+
+    <a href="#download" class="hero-cta">&#8595; ダウンロードはこちら</a>
+  </header>
+
+  <!-- ====== Navigation ====== -->
+  <nav class="page-nav">
+    <div class="page-nav-inner">
+      <a href="#features">主な機能</a>
+      <a href="#demo">UI デモ</a>
+      <a href="#output">出力サンプル</a>
+      <a href="#workflow">使い方</a>
+      <a href="#download">ダウンロード</a>
+      <a href="#install">インストール</a>
+      <a href="#tech">技術スタック</a>
+    </div>
+  </nav>
+
+  <div class="content">
+
+    <!-- ====== Features ====== -->
+    <section class="section" id="features">
+      <h2 class="section-title">
+        <span class="section-title-icon" style="background:#eef2ff;color:#4f46e5;">&#9733;</span>
+        主な機能
+      </h2>
+      <p class="section-subtitle">商品リンクカードの作成に必要な全てを、ブラウザのサイドパネルに凝縮しました。</p>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#dbeafe;color:#2563eb;">&#128270;</div>
+          <h3>ワンクリックで情報取得</h3>
+          <p>閲覧中の商品ページからタイトル・画像・URLを自動スクレイピング。手入力不要です。</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#fef3c7;color:#d97706;">&#127968;</div>
+          <h3>複数ECサイト対応</h3>
+          <p>Amazon、AliExpress、Sunstellaに専用パーサーを搭載。その他のサイトもOGPフォールバックで対応。</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#d1fae5;color:#059669;">&#128279;</div>
+          <h3>アフィリエイトリンク自動生成</h3>
+          <p>Amazonアソシエイトタグの付与やSunstellaアフィリエイトURLへの変換を自動で処理します。</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#fce7f3;color:#db2777;">&#127912;</div>
+          <h3>ボタン色のカスタマイズ</h3>
+          <p>各ショップボタンの色をカラーピッカーで自由に設定。ブログのデザインに合わせられます。</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#ede9fe;color:#7c3aed;">&#128196;</div>
+          <h3>HTML/CSSコード生成</h3>
+          <p>はてなブログのテーマに互換のあるHTMLとCSSを自動生成。コピペで即利用可能。</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon" style="background:#f1f5f9;color:#475569;">&#128338;</div>
+          <h3>履歴管理（最大50件）</h3>
+          <p>作成したカードを自動保存。過去のカードをワンクリックで復元・再利用できます。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== UI Demo ====== -->
+    <section class="section" id="demo">
+      <h2 class="section-title">
+        <span class="section-title-icon" style="background:#fef3c7;color:#d97706;">&#128187;</span>
+        サイドパネル UI
+      </h2>
+      <p class="section-subtitle">Chromeのサイドパネルとして動作します。実際のUIを操作して確認してください。</p>
+
+      <div class="demo-container">
+        <!-- Side Panel Mock -->
+        <div class="sidepanel-mock">
+          <!-- Builder Tab Content -->
+          <div class="sp-content active" id="tab-builder">
+            <div class="sp-header">
+              <h3>Card Builder</h3>
+              <button class="sp-reset-btn">Reset</button>
+            </div>
+
+            <button class="sp-fetch-btn">
+              <span class="sp-fetch-icon">&#8635;</span>
+              <span>Fetch from Current Tab</span>
+            </button>
+
+            <div class="sp-image-preview">
+              <div class="sp-image-placeholder" id="demo-image-area">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <path d="m21 15-5-5L5 21" />
+                </svg>
+              </div>
+            </div>
+
+            <label class="sp-label">Product Title</label>
+            <textarea class="sp-title-input" rows="2"
+              placeholder="Enter product title...">Anker Soundcore Liberty 4 NC ワイヤレスイヤホン</textarea>
+
+            <div class="sp-shops-label">Shop Links</div>
+
+            <div class="sp-shop-item">
+              <span class="sp-shop-grip">&#8942;&#8942;</span>
+              <div class="sp-shop-color" style="background:#FF9900;"></div>
+              <div class="sp-shop-info">
+                <div class="sp-shop-name">Amazon</div>
+                <input class="sp-shop-url" value="https://www.amazon.co.jp/dp/B0CN..." readonly>
+              </div>
+              <button class="sp-shop-clear">&#10005;</button>
+            </div>
+
+            <div class="sp-shop-item">
+              <span class="sp-shop-grip">&#8942;&#8942;</span>
+              <div class="sp-shop-color" style="background:#FF4747;"></div>
+              <div class="sp-shop-info">
+                <div class="sp-shop-name">AliExpress</div>
+                <input class="sp-shop-url" value="https://s.click.aliexpress.com/e/..." readonly>
+              </div>
+              <button class="sp-shop-clear">&#10005;</button>
+            </div>
+
+            <div class="sp-shop-item">
+              <span class="sp-shop-grip">&#8942;&#8942;</span>
+              <div class="sp-shop-color" style="background:#999;"></div>
+              <div class="sp-shop-info">
+                <div class="sp-shop-name">Sunstella</div>
+                <input class="sp-shop-url" placeholder="Paste Sunstella URL..." readonly>
+              </div>
+              <button class="sp-shop-clear">&#10005;</button>
+            </div>
+
+            <button class="sp-copy-btn">
+              <span>&#128203;</span>
+              <span>Copy HTML Code</span>
+            </button>
+          </div>
+
+          <!-- Config Tab Content -->
+          <div class="sp-content" id="tab-config">
+            <div class="sp-config-header">
+              <h3 style="font-size:1rem;font-weight:700;color:#1e293b;">Configuration</h3>
+            </div>
+
+            <div class="sp-config-section-title">
+              <span>&#9881;</span> Affiliate Settings
+            </div>
+            <div class="sp-config-card">
+              <div class="sp-config-field">
+                <label>Amazon Affiliate Tag / ID</label>
+                <input type="text" value="your-tag-22" readonly>
+                <div class="hint">Appended as ?tag=... to Amazon URLs.</div>
+              </div>
+              <div class="sp-config-field" style="margin-top:12px;">
+                <label>Sunstella Affiliate Base URL</label>
+                <input type="text" value="https://shopa.jp/...?url=" readonly style="font-family:monospace;">
+                <div class="hint">The product path will be appended to this URL.</div>
+              </div>
+            </div>
+
+            <div class="sp-config-section-title" style="margin-top:20px;">
+              <span>&#127912;</span> CSS Generator
+            </div>
+
+            <div class="sp-color-row">
+              <span>Amazon</span>
+              <div class="sp-color-preview">
+                <span class="sp-color-hex">#FF9900</span>
+                <div class="sp-color-swatch" style="background:#FF9900;"></div>
+              </div>
+            </div>
+            <div class="sp-color-row">
+              <span>AliExpress</span>
+              <div class="sp-color-preview">
+                <span class="sp-color-hex">#FF4747</span>
+                <div class="sp-color-swatch" style="background:#FF4747;"></div>
+              </div>
+            </div>
+            <div class="sp-color-row">
+              <span>Sunstella (Bg)</span>
+              <div class="sp-color-preview">
+                <span class="sp-color-hex">#f0f0f0</span>
+                <div class="sp-color-swatch" style="background:#f0f0f0;"></div>
+              </div>
+            </div>
+            <div class="sp-color-row">
+              <span>Sunstella (Text)</span>
+              <div class="sp-color-preview">
+                <span class="sp-color-hex">#333333</span>
+                <div class="sp-color-swatch" style="background:#333;"></div>
+              </div>
+            </div>
+
+            <button class="sp-copy-btn" style="background:#4f46e5;">
+              <span>&#128203;</span>
+              <span>Copy CSS Code</span>
+            </button>
+          </div>
+
+          <!-- History Tab Content -->
+          <div class="sp-content" id="tab-history">
+            <div class="sp-history-header">
+              <h3 style="font-size:1rem;font-weight:700;color:#1e293b;">History</h3>
+              <button class="sp-history-clear">Clear All</button>
+            </div>
+
+            <div class="sp-history-item">
+              <div class="sp-history-thumb">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <path d="m21 15-5-5L5 21" />
+                </svg>
+              </div>
+              <div class="sp-history-info">
+                <div class="sp-history-title">Anker Soundcore Liberty 4 NC ワイヤレスイヤホン</div>
+                <div class="sp-history-date">2/8 14:32</div>
+                <div class="sp-history-tags">
+                  <span class="sp-history-tag" style="background:#FF9900;">Amazon</span>
+                  <span class="sp-history-tag" style="background:#FF4747;">AliExpress</span>
+                </div>
+              </div>
+              <div class="sp-history-actions">
+                <button class="sp-history-action-btn sp-action-restore">&#8634;</button>
+                <button class="sp-history-action-btn sp-action-delete">&#128465;</button>
+              </div>
+            </div>
+
+            <div class="sp-history-item">
+              <div class="sp-history-thumb">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <path d="m21 15-5-5L5 21" />
+                </svg>
+              </div>
+              <div class="sp-history-info">
+                <div class="sp-history-title">ロジクール MX Master 3S ワイヤレスマウス</div>
+                <div class="sp-history-date">2/7 10:15</div>
+                <div class="sp-history-tags">
+                  <span class="sp-history-tag" style="background:#FF9900;">Amazon</span>
+                </div>
+              </div>
+              <div class="sp-history-actions">
+                <button class="sp-history-action-btn sp-action-restore">&#8634;</button>
+                <button class="sp-history-action-btn sp-action-delete">&#128465;</button>
+              </div>
+            </div>
+
+            <div class="sp-history-item">
+              <div class="sp-history-thumb">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <path d="m21 15-5-5L5 21" />
+                </svg>
+              </div>
+              <div class="sp-history-info">
+                <div class="sp-history-title">UGREEN USB-C ハブ 7-in-1 アダプター</div>
+                <div class="sp-history-date">2/5 22:48</div>
+                <div class="sp-history-tags">
+                  <span class="sp-history-tag" style="background:#FF9900;">Amazon</span>
+                  <span class="sp-history-tag" style="background:#FF4747;">AliExpress</span>
+                  <span class="sp-history-tag" style="background:#999;">Sunstella</span>
+                </div>
+              </div>
+              <div class="sp-history-actions">
+                <button class="sp-history-action-btn sp-action-restore">&#8634;</button>
+                <button class="sp-history-action-btn sp-action-delete">&#128465;</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Nav -->
+          <nav class="sp-nav">
+            <button class="sp-nav-btn active" onclick="switchTab('builder')" id="nav-builder">
+              <span class="sp-nav-icon">&#9874;</span>
+              Builder
+            </button>
+            <button class="sp-nav-btn" onclick="switchTab('history')" id="nav-history">
+              <span class="sp-nav-icon">&#128338;</span>
+              History
+            </button>
+            <button class="sp-nav-btn" onclick="switchTab('config')" id="nav-config">
+              <span class="sp-nav-icon">&#9881;</span>
+              Config
+            </button>
+          </nav>
+        </div>
+
+        <!-- Demo Description -->
+        <div class="demo-desc">
+          <h3>3つのタブで完結する操作</h3>
+          <p>左のUIは実際の拡張機能の画面を再現したものです。下のタブを切り替えて、各画面の雰囲気を確認できます。</p>
+
+          <ul class="demo-feature-list">
+            <li>
+              <span class="demo-feature-bullet">B</span>
+              <div><strong>Builder タブ</strong> &#8212; 商品ページの情報を取得し、タイトルの編集やショップリンクの追加を行います。完成したらHTMLコードをワンクリックでコピー。</div>
+            </li>
+            <li>
+              <span class="demo-feature-bullet">H</span>
+              <div><strong>History タブ</strong> &#8212; 作成済みカードを最大50件保存。サムネイル・タイトル・対応ショップのタグが一覧で確認でき、ワンクリックで復元できます。</div>
+            </li>
+            <li>
+              <span class="demo-feature-bullet">C</span>
+              <div><strong>Config タブ</strong> &#8212; アフィリエイトIDの設定と、ショップボタンの色カスタマイズ。CSSコードの自動生成＆コピーもここで完結します。</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== Output Sample ====== -->
+    <section class="section" id="output">
+      <h2 class="section-title">
+        <span class="section-title-icon" style="background:#d1fae5;color:#059669;">&#128196;</span>
+        出力サンプル
+      </h2>
+      <p class="section-subtitle">実際にツールが生成するHTMLとCSSのサンプルです。カードのプレビューとコードを確認できます。</p>
+
+      <div class="output-preview-container">
+        <!-- Live Card Preview -->
+        <div class="output-card-demo">
+          <div class="output-card-label">&#9656; カードプレビュー</div>
+
+          <div class="hatena-asin-detail ali-item">
+            <a href="#" class="hatena-asin-detail-image-link" onclick="return false;">
+              <svg width="120" height="120" viewBox="0 0 120 120" style="background:#f1f5f9;border-radius:4px;">
+                <rect width="120" height="120" fill="#e2e8f0" rx="4" />
+                <rect x="25" y="15" width="70" height="50" rx="8" fill="#c7d2fe" />
+                <circle cx="60" cy="80" r="4" fill="#a5b4fc" />
+                <path d="M35 85 Q60 100 85 85" stroke="#a5b4fc" fill="none" stroke-width="2" />
+                <rect x="45" y="95" width="30" height="8" rx="4" fill="#e0e7ff" />
+              </svg>
+            </a>
+
+            <div class="hatena-asin-detail-info">
+              <p class="hatena-asin-detail-title">
+                <a href="#" onclick="return false;">Anker Soundcore Liberty 4 NC ワイヤレスイヤホン Bluetooth 5.3</a>
+              </p>
+
+              <div class="product-link-buttons">
+                <a href="#" class="asin-detail-buy shop-amazon" onclick="return false;">Amazon</a>
+                <a href="#" class="asin-detail-buy shop-aliexpress" onclick="return false;">AliExpress</a>
+                <a href="#" class="asin-detail-buy shop-sunstella" onclick="return false;">Sunstella</a>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:20px; padding-top:16px; border-top:1px solid #f1f5f9;">
+            <div class="output-card-label">&#9656; Amazon のみの場合</div>
+            <div class="hatena-asin-detail ali-item" style="margin-top:12px;">
+              <a href="#" class="hatena-asin-detail-image-link" onclick="return false;">
+                <svg width="120" height="120" viewBox="0 0 120 120" style="background:#f1f5f9;border-radius:4px;">
+                  <rect width="120" height="120" fill="#e2e8f0" rx="4" />
+                  <rect x="20" y="25" width="80" height="45" rx="6" fill="#c7d2fe" />
+                  <rect x="30" y="80" width="60" height="10" rx="3" fill="#e0e7ff" />
+                  <rect x="35" y="95" width="50" height="6" rx="3" fill="#eef2ff" />
+                </svg>
+              </a>
+              <div class="hatena-asin-detail-info">
+                <p class="hatena-asin-detail-title">
+                  <a href="#" onclick="return false;">ロジクール MX Master 3S ワイヤレスマウス</a>
+                </p>
+                <div class="product-link-buttons">
+                  <a href="#" class="asin-detail-buy shop-amazon" onclick="return false;">Amazon</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Code Preview -->
+        <div class="output-code-demo">
+          <div class="output-card-label">&#9656; 生成される HTML コード</div>
+          <div class="code-block">
+            <div class="code-block-header">
+              <span class="code-dot" style="background:#ef4444;"></span>
+              <span class="code-dot" style="background:#f59e0b;"></span>
+              <span class="code-dot" style="background:#22c55e;"></span>
+              <span style="margin-left:8px;">output.html</span>
+            </div>
+            <pre><code><span class="code-tag">&lt;div</span> <span class="code-attr">class</span>=<span class="code-val">"hatena-asin-detail ali-item"</span><span class="code-tag">&gt;</span>
+  <span class="code-tag">&lt;a</span> <span class="code-attr">href</span>=<span class="code-val">"https://amazon.co.jp/dp/B0CN...?tag=xxx-22"</span>
+     <span class="code-attr">class</span>=<span class="code-val">"hatena-asin-detail-image-link"</span><span class="code-tag">&gt;</span>
+    <span class="code-tag">&lt;img</span> <span class="code-attr">src</span>=<span class="code-val">"https://..."</span>
+         <span class="code-attr">class</span>=<span class="code-val">"hatena-asin-detail-image"</span><span class="code-tag">/&gt;</span>
+  <span class="code-tag">&lt;/a&gt;</span>
+
+  <span class="code-tag">&lt;div</span> <span class="code-attr">class</span>=<span class="code-val">"hatena-asin-detail-info"</span><span class="code-tag">&gt;</span>
+    <span class="code-tag">&lt;p</span> <span class="code-attr">class</span>=<span class="code-val">"hatena-asin-detail-title"</span><span class="code-tag">&gt;</span>
+      <span class="code-tag">&lt;a</span> <span class="code-attr">href</span>=<span class="code-val">"..."</span><span class="code-tag">&gt;</span><span class="code-text">Product Title</span><span class="code-tag">&lt;/a&gt;</span>
+    <span class="code-tag">&lt;/p&gt;</span>
+    <span class="code-tag">&lt;div</span> <span class="code-attr">class</span>=<span class="code-val">"product-link-buttons"</span><span class="code-tag">&gt;</span>
+      <span class="code-tag">&lt;a</span> <span class="code-attr">class</span>=<span class="code-val">"asin-detail-buy shop-amazon"</span><span class="code-tag">&gt;</span>
+        <span class="code-text">Amazon</span><span class="code-tag">&lt;/a&gt;</span>
+      <span class="code-tag">&lt;a</span> <span class="code-attr">class</span>=<span class="code-val">"asin-detail-buy shop-aliexpress"</span><span class="code-tag">&gt;</span>
+        <span class="code-text">AliExpress</span><span class="code-tag">&lt;/a&gt;</span>
+    <span class="code-tag">&lt;/div&gt;</span>
+  <span class="code-tag">&lt;/div&gt;</span>
+<span class="code-tag">&lt;/div&gt;</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== Workflow ====== -->
+    <section class="section" id="workflow">
+      <h2 class="section-title">
+        <span class="section-title-icon" style="background:#fce7f3;color:#db2777;">&#127919;</span>
+        使い方
+      </h2>
+      <p class="section-subtitle">たった4ステップで、商品ページからブログカードが完成します。</p>
+
+      <div class="workflow">
+        <div class="workflow-step">
+          <div class="workflow-num">1</div>
+          <h4>商品ページを開く</h4>
+          <p>Amazon等の商品ページをブラウザで表示します</p>
+          <div class="workflow-visual">
+            <div class="workflow-visual-url">
+              <span class="lock-icon">&#128274;</span>
+              amazon.co.jp/dp/B0CN...
+            </div>
+          </div>
+        </div>
+
+        <div class="workflow-step">
+          <div class="workflow-num">2</div>
+          <h4>Fetch ボタンを押す</h4>
+          <p>サイドパネルで「Fetch from Current Tab」をクリック</p>
+          <div class="workflow-visual">
+            <div class="workflow-visual-btn">
+              &#8635; Fetch from Current Tab
+            </div>
+            <div
+              style="margin-top:8px; font-size:0.65rem; color:#22c55e; display:flex; align-items:center; gap:4px;">
+              &#10003; タイトル・画像・URLを自動取得
+            </div>
+          </div>
+        </div>
+
+        <div class="workflow-step">
+          <div class="workflow-num">3</div>
+          <h4>編集 &#183; リンク追加</h4>
+          <p>タイトルの修正やショップリンクの追加・削除</p>
+          <div class="workflow-visual">
+            <div
+              style="display:flex;gap:4px;flex-direction:column;font-size:0.65rem;">
+              <div style="display:flex;align-items:center;gap:4px;">
+                <span
+                  style="width:6px;height:16px;border-radius:100px;background:#FF9900;display:inline-block;"></span>
+                Amazon &#10003;
+              </div>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <span
+                  style="width:6px;height:16px;border-radius:100px;background:#FF4747;display:inline-block;"></span>
+                AliExpress &#10003;
+              </div>
+              <div style="display:flex;align-items:center;gap:4px;">
+                <span
+                  style="width:6px;height:16px;border-radius:100px;background:#999;display:inline-block;"></span>
+                Sunstella (optional)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="workflow-step">
+          <div class="workflow-num">4</div>
+          <h4>コピー &#183; 貼り付け</h4>
+          <p>生成HTMLをコピーしてブログに貼り付け</p>
+          <div class="workflow-visual">
+            <div class="workflow-visual-paste">
+              &lt;div class="hatena-asin-detail ali-item"&gt;<br>
+              &nbsp;&nbsp;&lt;a href="..." class="hatena-asin-detail-image-link"&gt;...<br>
+              &lt;/div&gt;
+            </div>
+            <div
+              style="margin-top:6px;font-size:0.65rem;color:#4f46e5;font-weight:600;">
+              &#10003; Copied to clipboard!
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== Download ====== -->
+    <section class="section" id="download">
+      <h2 class="section-title">
+        <span class="section-title-icon" style="background:#d1fae5;color:#059669;">&#11015;</span>
+        ダウンロード
+      </h2>
+      <p class="section-subtitle">Chrome拡張機能のパッケージをダウンロードして手動インストールできます。</p>
+
+      <div class="download-box">
+        <div class="download-icon">&#128230;</div>
+        <h3>Blog Card Builder</h3>
+        <p>Chrome Extension &#183; Version 1.0.0</p>
+        <a href="https://github.com/kiyo4act/LinkToAffiliateCard/releases" class="download-btn" target="_blank"
+          rel="noopener">
+          &#11015; GitHub Releases からダウンロード
+        </a>
+        <p class="download-note">※ ビルド済みパッケージは GitHub Releases ページからダウンロードできます</p>
+      </div>
+    </section>
+
+    <!-- ====== Installation ====== -->
+    <section class="section" id="install">
+      <h2 class="section-title">
+        <span class="section-title-icon" style="background:#ede9fe;color:#7c3aed;">&#128295;</span>
+        インストール方法
+      </h2>
+      <p class="section-subtitle">Chromeウェブストア未公開のため、手動でインストールしてください。</p>
+
+      <ol class="install-steps">
+        <li>
+          <span class="install-step-num">1</span>
+          <div class="install-step-content">
+            <strong>パッケージをダウンロード・解凍</strong>
+            <p>GitHub Releasesから最新のZIPファイルをダウンロードし、任意の場所に解凍します。</p>
+          </div>
+        </li>
+        <li>
+          <span class="install-step-num">2</span>
+          <div class="install-step-content">
+            <strong>Chrome拡張機能ページを開く</strong>
+            <p>アドレスバーに入力して拡張機能の管理ページを開きます。</p>
+            <div class="install-step-visual">
+              <div class="chrome-bar">
+                <div class="chrome-bar-dots">
+                  <span class="chrome-bar-dot" style="background:#ef4444;"></span>
+                  <span class="chrome-bar-dot" style="background:#f59e0b;"></span>
+                  <span class="chrome-bar-dot" style="background:#22c55e;"></span>
+                </div>
+                <div class="chrome-bar-url">chrome://extensions</div>
+              </div>
+            </div>
+          </div>
+        </li>
+        <li>
+          <span class="install-step-num">3</span>
+          <div class="install-step-content">
+            <strong>デベロッパーモードを有効化</strong>
+            <p>右上のトグルスイッチをオンにします。</p>
+            <div class="toggle-mock">
+              <div class="toggle-track">
+                <div class="toggle-thumb"></div>
+              </div>
+              <span class="toggle-label">デベロッパーモード</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <span class="install-step-num">4</span>
+          <div class="install-step-content">
+            <strong>「パッケージ化されていない拡張機能を読み込む」をクリック</strong>
+            <p>解凍したフォルダ（<code>manifest.json</code> が含まれるフォルダ）を選択します。</p>
+          </div>
+        </li>
+        <li>
+          <span class="install-step-num">5</span>
+          <div class="install-step-content">
+            <strong>インストール完了</strong>
+            <p>「Blog Card Builder」が一覧に表示されたら完了です。ツールバーのアイコンをクリックするとサイドパネルが開きます。</p>
+          </div>
+        </li>
+      </ol>
+
+      <div class="note-box">
+        <p><strong>注意:</strong> 手動インストールした拡張機能は、Chrome再起動時に無効化されることがあります。その場合は再度有効化してください。</p>
+      </div>
+    </section>
+
+    <!-- ====== First Setup ====== -->
+    <section class="section" id="setup">
+      <h2 class="section-title">
+        <span class="section-title-icon" style="background:#fef3c7;color:#d97706;">&#9881;</span>
+        初回設定
+      </h2>
+      <p class="section-subtitle">インストール後、最初にConfigタブでアフィリエイト情報を設定してください。</p>
+
+      <div style="display:flex;gap:24px;flex-wrap:wrap;">
+        <div
+          style="flex:1;min-width:260px;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px;">
+          <div
+            style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+            <div
+              style="width:32px;height:32px;background:#FF9900;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.8rem;">
+              A</div>
+            <h4 style="font-size:1rem;font-weight:700;color:#1e293b;">Amazon</h4>
+          </div>
+          <p style="font-size:0.88rem;color:#64748b;line-height:1.6;">
+            Amazonアソシエイトのタグ（例: <code
+              style="background:#f1f5f9;padding:2px 6px;border-radius:3px;font-size:0.82rem;">your-tag-22</code>）を入力してください。商品URLに自動で
+            <code
+              style="background:#f1f5f9;padding:2px 6px;border-radius:3px;font-size:0.82rem;">?tag=...</code>
+            が付与されます。
+          </p>
+        </div>
+        <div
+          style="flex:1;min-width:260px;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px;">
+          <div
+            style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+            <div
+              style="width:32px;height:32px;background:#999;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.8rem;">
+              S</div>
+            <h4 style="font-size:1rem;font-weight:700;color:#1e293b;">Sunstella</h4>
+          </div>
+          <p style="font-size:0.88rem;color:#64748b;line-height:1.6;">
+            アフィリエイトのベースURLを入力します。商品のパスが自動追加され、アフィリエイトリンクが生成されます。
+          </p>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:24px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <div
+            style="width:32px;height:32px;background:#4f46e5;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem;">
+            &#127912;</div>
+          <h4 style="font-size:1rem;font-weight:700;color:#1e293b;">CSSの設定</h4>
+        </div>
+        <p style="font-size:0.88rem;color:#64748b;line-height:1.6;margin-bottom:12px;">
+          カラーピッカーで各ショップボタンの色を調整し、生成されたCSSコードをコピーして、はてなブログの「デザインCSS」に一度だけ貼り付けてください。
+        </p>
+        <div
+          style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <span
+            style="display:inline-block;padding:8px 24px;background:#FF9900;color:#fff;font-weight:700;font-size:0.85rem;border-radius:3px;">Amazon</span>
+          <span
+            style="display:inline-block;padding:8px 24px;background:#FF4747;color:#fff;font-weight:700;font-size:0.85rem;border-radius:3px;">AliExpress</span>
+          <span
+            style="display:inline-block;padding:8px 24px;background:#f0f0f0;color:#333;font-weight:700;font-size:0.85rem;border-radius:3px;border:1px solid #ccc;">Sunstella</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== Tech Stack ====== -->
+    <section class="section" id="tech">
+      <h2 class="section-title">
+        <span class="section-title-icon" style="background:#f1f5f9;color:#475569;">&#128736;</span>
+        技術スタック
+      </h2>
+      <p class="section-subtitle">モダンなフロントエンド技術で構築されています。</p>
+
+      <div class="tech-grid">
+        <div class="tech-item">
+          <div class="tech-item-icon">&#9927;</div>
+          <div class="tech-item-name">TypeScript</div>
+          <div class="tech-item-desc">Strict Mode</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-item-icon">&#9883;</div>
+          <div class="tech-item-name">React 18</div>
+          <div class="tech-item-desc">UI Framework</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-item-icon">&#127912;</div>
+          <div class="tech-item-name">Tailwind CSS 3</div>
+          <div class="tech-item-desc">Styling</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-item-icon">&#9889;</div>
+          <div class="tech-item-name">Vite 5</div>
+          <div class="tech-item-desc">Build Tool</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-item-icon">&#128268;</div>
+          <div class="tech-item-name">CRXJS</div>
+          <div class="tech-item-desc">Vite Plugin</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-item-icon">&#128737;</div>
+          <div class="tech-item-name">Manifest V3</div>
+          <div class="tech-item-desc">Chrome Extension</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-item-icon">&#128270;</div>
+          <div class="tech-item-name">Zod</div>
+          <div class="tech-item-desc">Validation</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-item-icon">&#128161;</div>
+          <div class="tech-item-name">Lucide React</div>
+          <div class="tech-item-desc">Icons</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== Notes ====== -->
+    <section class="section">
+      <h2 class="section-title">
+        <span class="section-title-icon" style="background:#fef3c7;color:#d97706;">&#128221;</span>
+        その他
+      </h2>
+      <ul style="list-style:none;padding:0;">
+        <li
+          style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid #f1f5f9;font-size:0.92rem;color:#475569;">
+          <span style="color:#22c55e;font-weight:bold;font-size:1rem;">&#10003;</span>
+          この拡張機能はクライアントサイドでのみ動作します。入力・取得した情報が外部サーバーに送信されることはありません。
+        </li>
+        <li
+          style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid #f1f5f9;font-size:0.92rem;color:#475569;">
+          <span style="color:#22c55e;font-weight:bold;font-size:1rem;">&#10003;</span>
+          設定データは Chrome Storage API に保存され、ブラウザ内のみで管理されます。
+        </li>
+        <li
+          style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid #f1f5f9;font-size:0.92rem;color:#475569;">
+          <span style="color:#f59e0b;font-weight:bold;font-size:1rem;">&#9888;</span>
+          各ECサイトのHTML構造が変更された場合、データ取得が正常に動作しなくなる可能性があります。
+        </li>
+        <li
+          style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;font-size:0.92rem;color:#475569;">
+          <span style="color:#4f46e5;font-weight:bold;font-size:1rem;">&#9432;</span>
+          不具合や要望があれば、GitHubリポジトリのIssueでお知らせください。
+        </li>
+      </ul>
+    </section>
+
+  </div>
+
+  <!-- ====== Footer ====== -->
+  <footer class="page-footer">
+    <p>&copy; 2026 Kiyo. All rights reserved.</p>
+    <p style="margin-top:8px;">
+      <a href="https://github.com/kiyo4act/LinkToAffiliateCard" target="_blank" rel="noopener">GitHub
+        Repository</a>
+    </p>
+  </footer>
+
+  <script>
+    function switchTab(tab) {
+      // Hide all content tabs
+      document.querySelectorAll('.sp-content').forEach(el => el.classList.remove('active'));
+      // Deactivate all nav buttons
+      document.querySelectorAll('.sp-nav-btn').forEach(el => el.classList.remove('active'));
+
+      // Show selected tab
+      document.getElementById('tab-' + tab).classList.add('active');
+      document.getElementById('nav-' + tab).classList.add('active');
+    }
+  </script>
+</body>
+
+</html>
