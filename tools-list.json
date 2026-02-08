@@ -28,7 +28,7 @@
     "path": "FanboxEnumerator",
     "url": "/Tools/FanboxEnumerator/",
     "description": "Pixiv FANBOXの支援者一覧から情報を簡単に抽出できるChrome拡張機能「FanboxEnumerator」の紹介とダウンロードページです。",
-    "lastUpdated": "2025-06-01",
+    "lastUpdated": "2026-02-08",
     "category": "自動化・効率化"
   },
   {
@@ -46,6 +46,14 @@
     "description": "今のiPhoneの電池残量(％)から、別のiPhoneだと何％になるかを比較するツール",
     "lastUpdated": "2026-01-29",
     "category": "シミュレーション"
+  },
+  {
+    "name": "Blog Card Builder — はてなブログ向け商品カード作成Chrome拡張",
+    "path": "LinkToAffiliateCard",
+    "url": "/Tools/LinkToAffiliateCard/",
+    "description": "Amazon・AliExpress・Sunstella対応。商品ページから情報を自動取得し、はてなブログに貼れるHTMLカードを生成するChrome拡張機能の紹介・ダウンロードページです。",
+    "lastUpdated": "2026-02-08",
+    "category": "自動化・効率化"
   },
   {
     "name": "歌詞ページ印刷用整形ツール",
