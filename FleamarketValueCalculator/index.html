@@ -135,6 +135,7 @@
                 color: 'bg-yellow-500',
                 borderHex: '#eab308',
                 shippingUrl: 'https://paypayfleamarket.yahoo.co.jp/contents/shipping',
+                supportsBuyerShipping: false,
                 shippingCategories: [
                     {
                         name: 'おてがる配送（ヤマト運輸）',
@@ -206,6 +207,7 @@
                 color: 'bg-red-500',
                 borderHex: '#ef4444',
                 shippingUrl: 'https://help.jp.mercari.com/guide/categories/1424/',
+                supportsBuyerShipping: true,
                 shippingCategories: [
                     {
                         name: 'らくらくメルカリ便（ヤマト運輸）',
@@ -278,11 +280,20 @@
             {
                 id: 'rakuma',
                 name: 'ラクマ',
-                feeRate: 0.10,
+                feeRate: 0.06,
                 feeType: 'percent',
                 color: 'bg-blue-500',
                 borderHex: '#3b82f6',
                 shippingUrl: 'https://fril.jp/ts/kantanrakumapack/#merit01',
+                supportsBuyerShipping: true,
+                feeTiers: [
+                    { label: '4.5%（楽天モバイル利用）', rate: 4.5 },
+                    { label: '6%（標準）', rate: 6 },
+                    { label: '7%', rate: 7 },
+                    { label: '8%', rate: 8 },
+                    { label: '9%', rate: 9 },
+                    { label: '10%（初期）', rate: 10 },
+                ],
                 shippingCategories: [
                     {
                         name: 'かんたんラクマパック（日本郵便）',
@@ -364,6 +375,7 @@
             const [basicSizeIndex, setBasicSizeIndex] = useState(0);
             const [basicCustomCost, setBasicCustomCost] = useState(0);
             const [isBasicCustom, setIsBasicCustom] = useState(false);
+            const [isBuyerShipping, setIsBuyerShipping] = useState(false);
 
             const [isAdvancedMode, setIsAdvancedMode] = useState(false);
             const [shippingRanges, setShippingRanges] = useState([]);
@@ -377,18 +389,20 @@
                     setBasicMethodIndex(0);
                     setBasicSizeIndex(0);
                     setIsBasicCustom(false);
+                    setIsBuyerShipping(false);
                     setIsAdvancedMode(false);
                     setShippingRanges([]);
                 }
             }, [selectedPlatformId]);
 
             const currentBasicShippingCost = useMemo(() => {
+                if (isBuyerShipping) return 0;
                 if (isBasicCustom) return basicCustomCost;
                 const cat = currentPlatform?.shippingCategories[basicCategoryIndex];
                 const method = cat?.methods[basicMethodIndex];
                 const size = method?.sizes[basicSizeIndex];
                 return size?.price || 0;
-            }, [currentPlatform, basicCategoryIndex, basicMethodIndex, basicSizeIndex, isBasicCustom, basicCustomCost]);
+            }, [currentPlatform, basicCategoryIndex, basicMethodIndex, basicSizeIndex, isBasicCustom, basicCustomCost, isBuyerShipping]);
 
             useEffect(() => {
                 if (isAdvancedMode && shippingRanges.length === 0) {
@@ -492,7 +506,9 @@
                 for (let qty = 1; qty <= Math.max(1, maxQuantity); qty++) {
                     let shipping = 0;
 
-                    if (isAdvancedMode) {
+                    if (isBuyerShipping) {
+                        shipping = 0;
+                    } else if (isAdvancedMode) {
                         const range = shippingRanges.find(r => qty >= r.min && qty <= r.max);
                         if (range) {
                             if (range.isCustom) {
@@ -536,7 +552,7 @@
                     results.push(result);
                 }
                 return results;
-            }, [inputValue, feeRatePercent, mode, maxQuantity, isAdvancedMode, shippingRanges, currentBasicShippingCost, currentPlatform]);
+            }, [inputValue, feeRatePercent, mode, maxQuantity, isAdvancedMode, shippingRanges, currentBasicShippingCost, currentPlatform, isBuyerShipping]);
 
             const mainResult = calculationResults[0];
 
@@ -579,8 +595,22 @@
                                 ))}
                             </div>
                             {/* Fee Rate Input */}
-                            <div className="flex items-center gap-2 mt-3">
+                            <div className="flex items-center gap-2 mt-3 flex-wrap">
                                 <label className="text-xs text-slate-500">販売手数料 (%):</label>
+                                {currentPlatform?.feeTiers && (
+                                    <select
+                                        value={currentPlatform.feeTiers.find(t => t.rate === feeRatePercent) ? feeRatePercent : ''}
+                                        onChange={(e) => setFeeRatePercent(parseFloat(e.target.value))}
+                                        className="px-2 py-1 text-sm border rounded bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    >
+                                        {!currentPlatform.feeTiers.find(t => t.rate === feeRatePercent) && (
+                                            <option value="" disabled>カスタム ({feeRatePercent}%)</option>
+                                        )}
+                                        {currentPlatform.feeTiers.map((tier, idx) => (
+                                            <option key={idx} value={tier.rate}>{tier.label}</option>
+                                        ))}
+                                    </select>
+                                )}
                                 <input
                                     type="number"
                                     value={feeRatePercent}
@@ -609,83 +639,122 @@
                                     )}
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-slate-500">1. 配送サービス種別</label>
-                                        <select
-                                            className="w-full p-2.5 text-sm border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
-                                            value={basicCategoryIndex}
-                                            disabled={isBasicCustom}
-                                            onChange={(e) => {
-                                                setBasicCategoryIndex(Number(e.target.value));
-                                                setBasicMethodIndex(0);
-                                                setBasicSizeIndex(0);
-                                            }}
-                                        >
-                                            {currentPlatform?.shippingCategories.map((cat, idx) => (
-                                                <option key={idx} value={idx}>{cat.name}</option>
-                                            ))}
-                                        </select>
+                                {/* Buyer-paid shipping toggle */}
+                                {currentPlatform?.supportsBuyerShipping && (
+                                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                        <div className="flex items-center gap-4">
+                                            <span className="text-sm font-semibold text-slate-700">送料負担:</span>
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="radio"
+                                                    name="shippingBurden"
+                                                    checked={!isBuyerShipping}
+                                                    onChange={() => setIsBuyerShipping(false)}
+                                                    className="text-indigo-600 focus:ring-indigo-500"
+                                                />
+                                                <span className="text-sm text-slate-700">出品者負担（送料込み）</span>
+                                            </label>
+                                            <label className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="radio"
+                                                    name="shippingBurden"
+                                                    checked={isBuyerShipping}
+                                                    onChange={() => setIsBuyerShipping(true)}
+                                                    className="text-indigo-600 focus:ring-indigo-500"
+                                                />
+                                                <span className="text-sm text-slate-700">購入者負担（着払い）</span>
+                                            </label>
+                                        </div>
+                                        {isBuyerShipping && (
+                                            <p className="text-xs text-amber-700 mt-2 flex items-center gap-1">
+                                                <Info className="w-3 h-3 flex-shrink-0" />
+                                                着払いの場合、匿名配送（{currentPlatform.id === 'mercari' ? 'らくらくメルカリ便・ゆうゆうメルカリ便' : 'かんたんラクマパック'}）は利用できません。送料は購入者が支払うため、利益計算では送料0円として計算します。
+                                            </p>
+                                        )}
                                     </div>
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-slate-500 flex items-center gap-1">
-                                            <ChevronRight className="w-3 h-3 text-slate-400" /> 2. 配送方法
-                                        </label>
-                                        <select
-                                            className="w-full p-2.5 text-sm border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
-                                            value={basicMethodIndex}
-                                            disabled={isBasicCustom}
-                                            onChange={(e) => {
-                                                setBasicMethodIndex(Number(e.target.value));
-                                                setBasicSizeIndex(0);
-                                            }}
-                                        >
-                                            {currentPlatform?.shippingCategories[basicCategoryIndex]?.methods.map((method, idx) => (
-                                                <option key={idx} value={idx}>{method.name}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-semibold text-slate-500 flex items-center gap-1">
-                                            <ChevronRight className="w-3 h-3 text-slate-400" /> 3. サイズ・詳細
-                                        </label>
-                                        <select
-                                            className="w-full p-2.5 text-sm border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
-                                            value={basicSizeIndex}
-                                            disabled={isBasicCustom}
-                                            onChange={(e) => setBasicSizeIndex(Number(e.target.value))}
-                                        >
-                                            {currentPlatform?.shippingCategories[basicCategoryIndex]?.methods[basicMethodIndex]?.sizes.map((size, idx) => (
-                                                <option key={idx} value={idx}>
-                                                    {size.name} ({size.price}円)
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
+                                )}
 
-                                <div className="flex items-center justify-end gap-4 mt-2 bg-slate-50 p-3 rounded-lg">
-                                    <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            checked={isBasicCustom}
-                                            onChange={(e) => setIsBasicCustom(e.target.checked)}
-                                            className="rounded text-indigo-600 focus:ring-indigo-500"
-                                        />
-                                        送料を手入力する (その他)
-                                    </label>
-                                    <div className={`flex items-center gap-2 transition-opacity ${isBasicCustom ? 'opacity-100' : 'opacity-50'}`}>
-                                        <span className="text-xs font-bold text-slate-500">送料:</span>
-                                        <input
-                                            type="number"
-                                            value={basicCustomCost}
-                                            disabled={!isBasicCustom}
-                                            onChange={(e) => setBasicCustomCost(parseInt(e.target.value) || 0)}
-                                            className="w-24 px-2 py-1 text-sm border rounded bg-white text-right font-mono font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
-                                        />
-                                        <span className="text-xs text-slate-500">円</span>
-                                    </div>
-                                </div>
+                                {!isBuyerShipping && (
+                                    <>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold text-slate-500">1. 配送サービス種別</label>
+                                                <select
+                                                    className="w-full p-2.5 text-sm border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                                                    value={basicCategoryIndex}
+                                                    disabled={isBasicCustom}
+                                                    onChange={(e) => {
+                                                        setBasicCategoryIndex(Number(e.target.value));
+                                                        setBasicMethodIndex(0);
+                                                        setBasicSizeIndex(0);
+                                                    }}
+                                                >
+                                                    {currentPlatform?.shippingCategories.map((cat, idx) => (
+                                                        <option key={idx} value={idx}>{cat.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                                                    <ChevronRight className="w-3 h-3 text-slate-400" /> 2. 配送方法
+                                                </label>
+                                                <select
+                                                    className="w-full p-2.5 text-sm border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                                                    value={basicMethodIndex}
+                                                    disabled={isBasicCustom}
+                                                    onChange={(e) => {
+                                                        setBasicMethodIndex(Number(e.target.value));
+                                                        setBasicSizeIndex(0);
+                                                    }}
+                                                >
+                                                    {currentPlatform?.shippingCategories[basicCategoryIndex]?.methods.map((method, idx) => (
+                                                        <option key={idx} value={idx}>{method.name}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+                                                    <ChevronRight className="w-3 h-3 text-slate-400" /> 3. サイズ・詳細
+                                                </label>
+                                                <select
+                                                    className="w-full p-2.5 text-sm border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                                                    value={basicSizeIndex}
+                                                    disabled={isBasicCustom}
+                                                    onChange={(e) => setBasicSizeIndex(Number(e.target.value))}
+                                                >
+                                                    {currentPlatform?.shippingCategories[basicCategoryIndex]?.methods[basicMethodIndex]?.sizes.map((size, idx) => (
+                                                        <option key={idx} value={idx}>
+                                                            {size.name} ({size.price}円)
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-end gap-4 mt-2 bg-slate-50 p-3 rounded-lg">
+                                            <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isBasicCustom}
+                                                    onChange={(e) => setIsBasicCustom(e.target.checked)}
+                                                    className="rounded text-indigo-600 focus:ring-indigo-500"
+                                                />
+                                                送料を手入力する (その他)
+                                            </label>
+                                            <div className={`flex items-center gap-2 transition-opacity ${isBasicCustom ? 'opacity-100' : 'opacity-50'}`}>
+                                                <span className="text-xs font-bold text-slate-500">送料:</span>
+                                                <input
+                                                    type="number"
+                                                    value={basicCustomCost}
+                                                    disabled={!isBasicCustom}
+                                                    onChange={(e) => setBasicCustomCost(parseInt(e.target.value) || 0)}
+                                                    className="w-24 px-2 py-1 text-sm border rounded bg-white text-right font-mono font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                                                />
+                                                <span className="text-xs text-slate-500">円</span>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         )}
 
@@ -787,7 +856,12 @@
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-slate-500">送料</span>
-                                                <span className="font-mono">-&yen;{mainResult.shipping.toLocaleString()}</span>
+                                                <span className="font-mono">
+                                                    {isBuyerShipping
+                                                        ? <span className="text-amber-600 text-xs font-bold">購入者負担</span>
+                                                        : <>-&yen;{mainResult.shipping.toLocaleString()}</>
+                                                    }
+                                                </span>
                                             </div>
                                             <div className="flex justify-between font-bold text-slate-700 pt-2 border-t border-dashed border-slate-300">
                                                 <span>利益 (手残り)</span>
@@ -812,7 +886,12 @@
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-slate-500">送料</span>
-                                                <span className="font-mono text-red-500">-&yen;{mainResult.shipping.toLocaleString()}</span>
+                                                <span className={`font-mono ${!isBuyerShipping ? 'text-red-500' : ''}`}>
+                                                    {isBuyerShipping
+                                                        ? <span className="text-amber-600 text-xs font-bold">購入者負担</span>
+                                                        : <>-&yen;{mainResult.shipping.toLocaleString()}</>
+                                                    }
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -971,7 +1050,10 @@
                                             <tr key={row.quantity} className="bg-white border-b hover:bg-slate-50 transition-colors">
                                                 <td className="px-6 py-4 font-bold">{row.quantity}個</td>
                                                 <td className="px-6 py-4 text-right text-slate-500 text-xs">
-                                                    -&yen;{row.shipping.toLocaleString()}
+                                                    {isBuyerShipping
+                                                        ? <span className="text-amber-600 font-bold">購入者負担</span>
+                                                        : <>-&yen;{row.shipping.toLocaleString()}</>
+                                                    }
                                                 </td>
                                                 <td className="px-6 py-4 text-right font-bold text-indigo-700 text-base">
                                                     &yen;{row.sellPrice.toLocaleString()}
@@ -993,9 +1075,11 @@
                             <div className="p-4 text-xs text-slate-400 flex items-start gap-2">
                                 <Info className="w-4 h-4 shrink-0" />
                                 <p>
-                                    {!isAdvancedMode
-                                        ? `※現在の設定では、個数に関わらず一律「${currentBasicShippingCost}円」の送料で計算しています。サイズが変わる場合は「詳細設定」ボタンを押してください。`
-                                        : '※個数範囲ごとに設定された送料が適用されています。'
+                                    {isBuyerShipping
+                                        ? '※送料は購入者負担（着払い）のため、送料0円で計算しています。'
+                                        : !isAdvancedMode
+                                            ? `※現在の設定では、個数に関わらず一律「${currentBasicShippingCost}円」の送料で計算しています。サイズが変わる場合は「詳細設定」ボタンを押してください。`
+                                            : '※個数範囲ごとに設定された送料が適用されています。'
                                     }
                                 </p>
                             </div>
